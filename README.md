@@ -2,10 +2,14 @@
 
 ### → [voice-check-m8b7.onrender.com](https://voice-check-m8b7.onrender.com)
 
-> **It may take 30–50 seconds to load.** The free tier sleeps after fifteen
-> minutes with no traffic, and the first visitor after a quiet spell pays for
-> the restart. Nothing is wrong and there is no queue — the page is served by
-> a process that has to start first.
+> **It may take up to a minute to load the first time.** The free tier is
+> documented as sleeping after fifteen minutes with no traffic, and the first
+> visitor after a quiet spell waits for the process to start. Nothing is wrong
+> and there is no queue.
+>
+> *Render documents that wait as 30–50 seconds. Two attempts to observe it here
+> both failed — the service was awake each time — so that figure is the
+> vendor's and is unverified by this repository.*
 
 A style guide, compiled into checks. It grades prose against one writer's own
 documented rules, in Serbian and English.
@@ -213,8 +217,10 @@ server-rendered, **no client JavaScript** — a form post, not a fetch, so it
 works in a text browser and with scripts disabled. Nothing is stored: no
 database, no log of what you pasted, no analytics. The limits (40,000
 characters, 20 submissions a minute) are printed on the page rather than
-discovered by hitting them. On the free tier the service sleeps after fifteen
-minutes idle and takes **30–50 seconds to wake**, which the page also says.
+discovered by hitting them. On the free tier the service is documented as
+sleeping after fifteen minutes idle; the wake time is Render's published
+30–50 seconds and **has not been reproduced here** — two attempts, both
+finding the service already awake.
 
 **Private, CLI only — `brief`.** It makes two Claude calls at about $0.11 a
 run. A public endpoint for that is a public endpoint for spending somebody
@@ -258,9 +264,10 @@ deploy that can outrun its own tests is not a gate.
 > window. Nine measurements taken faster than the thing being measured are one
 > measurement ([ADR 015](docs/decisions/015-an-observation-window-shorter-than-the-phenomenon.md)).
 
-**CI has never gated a deploy here yet.** Every green result so far was either
-a manual dispatch or arrived twenty minutes after the push it describes. The
-gate is configured; it has not yet been the thing that stopped something.
+**The gate has fired once.** The check for `8b4790c` passed at 16:31:14 UTC and
+the service process restarted 73 seconds later. It has not yet *stopped*
+anything — no run here has failed — and a gate is only really demonstrated by a
+failure it blocks.
 
 ---
 

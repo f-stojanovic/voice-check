@@ -24,7 +24,8 @@ Evidence: Direct. The page serves, checks, highlights findings at the offsets
           Still unobserved: no traffic, no abuse, and therefore no evidence
           that a 20-per-minute limit or a 40,000-character cap is anywhere
           near right. The cold start is quoted at 30–50 seconds from Render's
-          own documentation and has not been timed here.
+          own documentation and has not been reproduced here in two attempts —
+          see the consequences below.
 
 ## Context
 
@@ -203,10 +204,21 @@ looked like before the corpus, and what a p90 from four documents looks like in
 a table. Repetition is not independence. Nine measurements inside one latency
 window are one measurement.
 
-**CI has never gated a deploy here yet.** Every green result to date was either
-a manual dispatch or arrived twenty minutes after the push it describes. The
-gate is configured and has not yet been the thing that stopped something, which
-is a weaker claim than "CI protects the deploy" and it is the true one.
+**THE GATE HAS NOW FIRED, ONCE, AND THE TIMING IS RECORDED.** The check for
+`8b4790c` completed at 16:31:14 UTC; the service process restarted at 16:32:27,
+73 seconds later. `checksPass` waited for the check, the check passed, and
+Render deployed. That is the first time anything automated in this repository
+has been the thing that let something through.
+
+It has not yet been the thing that *stopped* something, which is the harder
+half. A gate is only demonstrated by a failure it blocks, and no run has failed
+here.
+
+The correlation was established from outside: run completion time from the
+GitHub API, process start time inferred from `uptimeSeconds` on `/healthz`. It
+is not proof — nothing exposes which commit is deployed — and a 73-second gap
+between a check passing and a process restarting is strong enough to act on and
+weak enough to say so.
 
 **The gate is `autoDeployTrigger: "checksPass"`.** A push deploys only after
 the branch's checks pass, so a deploy trails its push by the queue delay above
@@ -232,6 +244,33 @@ The reasoning error has its own record in
 The rejected alternative remains `commit`, which is what this service did on
 its first day: deploy every push whether or not the tests passed. A deploy that
 can outrun its own tests is not a gate.
+
+**THE COLD START IS STILL UNMEASURED AFTER TWO ATTEMPTS, and both failures were
+caused by this investigation rather than by the service.**
+
+Attempt one measured 0.169s after what was believed to be a 15-minute idle
+window. It was 13 minutes: polling `/healthz` to check the deployment had kept
+the service awake, and that polling was not counted as traffic when the window
+was planned.
+
+Attempt two measured 0.140s after a genuine 21-minute window with no requests
+at all. Also not a cold start: `uptimeSeconds` showed 478, so the process had
+restarted 8 minutes earlier — the deploy described above. The gate firing reset
+the clock.
+
+So "30–50 seconds" remains what it has always been: **Render's documentation,
+quoted, unverified here**, and now quoted in four places. It is the same shape
+as the phrase catalogue this repository retired in ADR 014 — a figure adopted
+on a vendor's authority, repeated until it reads as established, and never
+checked against the thing it describes. The difference is that this one is
+labelled.
+
+There is a second possibility that neither attempt can exclude: that this
+service does not spin down at all. `render.yaml` sets `healthCheckPath:
+/healthz`, and whether Render's own health probing counts as traffic against
+the free tier's idle timer is not something this repository can observe from
+outside. If it does, the warning on the page describes an event that never
+happens here.
 
 **The health endpoint cannot say which build it is running.** It reports the
 lexicon identity, which is the thing ADR 003 asked for, and not the commit. So
