@@ -1,9 +1,9 @@
 # 007. The analyst returns structure, not prose
 
-Date: 2026-08-27
+Date: 2026-08-26
 Status: Accepted
 Evidence: Direct, from one live run against
-          `martinfowler.com/articles/2021-test-shapes.html`, 2026-08-27.
+          `martinfowler.com/articles/2021-test-shapes.html`, 2026-08-26.
           Both agents returned validated structures on the first attempt; no
           parser was involved anywhere in the path, and the second agent
           received the first's output as an object rather than as text.

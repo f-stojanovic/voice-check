@@ -19,15 +19,31 @@
  * a `quote`, `verifyQuotes` checks each one against the source, and a quote
  * that is not there FAILS THE RUN. Day two printed the ratio as a statistic;
  * a statistic nobody compares against anything is an observation, and this is
- * the one number here that can be a control. A quote absent from the source is
- * not a judgement call the reader can weigh — it is a fact about the model:
- * it produced text and attributed it to a document that does not contain it.
+ * the one number here that can be a control.
  *
- * The gate distinguishes three outcomes, because conflating them would make it
- * fire on formatting. An EXACT match is byte-for-byte. A NORMALISED match
- * differs only in whitespace or case — a quote spanning a line break in a
- * wrapped file, or one whose capitalisation was tidied — and passes, because
- * the text is there. Only ABSENT fails.
+ * WHAT THE GATE CLAIMS, AND WHAT IT DOES NOT. It claims a CONSEQUENCE, and the
+ * consequence is certain: this analysis cannot be relied on. Every statement in
+ * it rests on a quote, one of those quotes is not in the document, and there is
+ * no way to tell from here which of the other statements are sound.
+ *
+ * It does NOT claim a cause. An earlier version said a missing quote meant the
+ * analyst invented it. That is one possibility among at least four:
+ *
+ *   1. The model fabricated the quote.
+ *   2. The extractor damaged the source — a smart quote, an entity, a
+ *      character set — so the text is there and no longer matches.
+ *   3. The source changed between being fetched and being checked.
+ *   4. The model translated the quote. On a Serbian source this is the
+ *      likeliest failure of the four, and it has never been observed, because
+ *      no Serbian source has been run.
+ *
+ * The failure message names all four rather than asserting the first.
+ *
+ * THE OUTCOMES. `exact` is byte-for-byte. `normalized` differs only in
+ * whitespace or case — a quote spanning a line break in a wrapped file — and
+ * passes, because the text is there. `foreign` is absent AND written in a
+ * different script or language from the source, which is the one cause the
+ * gate can actually diagnose. `absent` is everything else. The last two fail.
  *
  * EMPTY IS AN ANSWER. The system prompt says so explicitly and the schema
  * allows it: `novelty` may be empty, `hype` may be empty, evidence may be
@@ -223,13 +239,17 @@ export async function analyse(
     );
   }
 
-  const traceability = verifyQuotes(parsed.data, input.text);
-  if (traceability.some((c) => c.match === 'absent')) {
+  const traceability = verifyQuotes(parsed.data, input.text, input.language);
+  if (traceability.some((c) => FAILING_MATCHES.includes(c.match))) {
     // The gate. Not a warning printed under the result — the run fails, and
     // the caller decides. Everything else the analyst produces is judgement
     // and needs a judge or a human; this is the one claim that can be checked
     // mechanically, so it is checked.
-    throw new UntraceableQuoteError(traceability, input.origin ?? 'the source');
+    throw new UntraceableQuoteError(
+      traceability,
+      input.origin ?? 'the source',
+      input.language,
+    );
   }
 
   return { ...runOf(parsed.data, response), traceability };
@@ -243,10 +263,14 @@ export async function analyse(
  *   quote that crossed a line break in a hard-wrapped file lands here, and so
  *   does one whose capitalisation was tidied. The text IS in the source; only
  *   its formatting moved. This passes.
- * `absent` — not in the source under either comparison. The model attributed
- *   text to a document that does not contain it. This fails the run.
+ * `foreign` — not in the source, AND in a different script or language from
+ *   it. The one cause the gate can diagnose rather than list: a Cyrillic
+ *   source quoted in Latin, or a Serbian source quoted in English, is a
+ *   translation. This fails the run, with a message that says so.
+ * `absent` — not in the source under any comparison, cause unknown. This fails
+ *   the run, with a message that lists what the cause might be.
  */
-export type QuoteMatch = 'exact' | 'normalized' | 'absent';
+export type QuoteMatch = 'exact' | 'normalized' | 'foreign' | 'absent';
 
 /** One traceability verdict. */
 export interface QuoteCheck {
@@ -257,18 +281,48 @@ export interface QuoteCheck {
   readonly match: QuoteMatch;
 }
 
-/** The gate failed: at least one quote is not in the source. */
+/** Outcomes that fail the gate. */
+export const FAILING_MATCHES: readonly QuoteMatch[] = ['absent', 'foreign'];
+
+/**
+ * The gate failed: at least one quote is not in the source.
+ *
+ * The message states the consequence, which is certain, and lists the possible
+ * causes, which are not. Naming a cause the gate cannot establish would be the
+ * tool asserting something it has not checked, in a report whose whole purpose
+ * is that its claims are checked.
+ */
 export class UntraceableQuoteError extends Error {
   readonly checks: readonly QuoteCheck[];
-  constructor(checks: readonly QuoteCheck[], origin: string) {
-    const absent = checks.filter((c) => c.match === 'absent');
+  constructor(checks: readonly QuoteCheck[], origin: string, language: Language) {
+    const failed = checks.filter((c) => FAILING_MATCHES.includes(c.match));
+    const foreign = failed.filter((c) => c.match === 'foreign');
+    const plural = failed.length === 1 ? '' : 's';
+
+    const causes =
+      foreign.length === failed.length
+        ? `Every one of them is written in a different script or language from the ` +
+          `source, which is diagnostic: the model translated the quote instead of ` +
+          `copying it. The statements may still be sound; the trace is not.`
+        : `Why is not established, and this message will not guess. It may be that ` +
+          `the model fabricated the quote; that the extractor damaged the source ` +
+          `(a smart quote, an entity, a character set); that the source changed ` +
+          `between being fetched and being checked; or that the model translated ` +
+          `the quote rather than copying it.` +
+          (foreign.length > 0
+            ? ` ${foreign.length} of them differ in script or language from the ` +
+              `source, which points at translation for those.`
+            : '');
+
     super(
-      `the analyst attributed ${absent.length} quote${absent.length === 1 ? '' : 's'} ` +
-        `to ${origin} that ${absent.length === 1 ? 'is' : 'are'} not in it:\n` +
-        absent
+      `this analysis cannot be relied on: ${failed.length} quote${plural} ` +
+        `attributed to ${origin} (${language}) ${failed.length === 1 ? 'is' : 'are'} ` +
+        `not in it.\n\n${causes}\n\n` +
+        failed
           .map(
             (c) =>
-              `  ${c.field}\n    statement: ${c.statement}\n    quote:     ${JSON.stringify(c.quote)}`,
+              `  ${c.field} [${c.match}]\n    statement: ${c.statement}\n` +
+              `    quote:     ${JSON.stringify(c.quote)}`,
           )
           .join('\n'),
     );
@@ -285,7 +339,11 @@ export class UntraceableQuoteError extends Error {
  * and case-folded. A quote that only survives the second is still a quote that
  * is in the source.
  */
-export function verifyQuotes(analysis: Analysis, source: string): QuoteCheck[] {
+export function verifyQuotes(
+  analysis: Analysis,
+  source: string,
+  language: Language = 'en',
+): QuoteCheck[] {
   const normalised = normalise(source);
   const checks: QuoteCheck[] = [];
 
@@ -295,7 +353,9 @@ export function verifyQuotes(analysis: Analysis, source: string): QuoteCheck[] {
       ? 'exact'
       : normalised.includes(normalise(quote))
         ? 'normalized'
-        : 'absent';
+        : looksForeign(quote, source, language)
+          ? 'foreign'
+          : 'absent';
     checks.push({ field, statement, quote, match });
   };
 
@@ -314,4 +374,37 @@ export function verifyQuotes(analysis: Analysis, source: string): QuoteCheck[] {
 
 function normalise(text: string): string {
   return text.replace(/\s+/gu, ' ').trim().toLowerCase();
+}
+
+const CYRILLIC = /\p{Script=Cyrillic}/u;
+const SERBIAN_DIACRITIC = /[šđčćžŠĐČĆŽ]/u;
+
+/**
+ * Whether a missing quote looks like a translation rather than a fabrication.
+ *
+ * Two signals, both conservative, because a wrong `foreign` verdict changes
+ * the diagnosis in a failure message and never changes pass/fail:
+ *
+ * 1. SCRIPT. The source is Cyrillic and the quote is not, or the reverse.
+ *    Unambiguous when it fires and silent otherwise.
+ * 2. LANGUAGE, for Serbian sources only. A Serbian source contains diacritics;
+ *    a quote of five or more words carrying none of them, while carrying two
+ *    or more English function words, was not copied out of it.
+ *
+ * The second is a heuristic and will miss a Serbian source quoted in Serbian
+ * but reworded, which is not a translation anyway. It exists because the
+ * script test cannot see Serbian Latin, and Serbian Latin is what the author
+ * writes.
+ */
+function looksForeign(quote: string, source: string, language: Language): boolean {
+  if (CYRILLIC.test(source) !== CYRILLIC.test(quote)) return true;
+
+  if (language !== 'sr') return false;
+  if (!SERBIAN_DIACRITIC.test(source)) return false; // cannot tell
+  if (SERBIAN_DIACRITIC.test(quote)) return false; // still Serbian
+
+  const words = quote.toLowerCase().match(/\p{L}+/gu) ?? [];
+  if (words.length < 5) return false; // too short to vote on
+  const english = new Set(['the', 'of', 'and', 'to', 'is', 'in', 'that', 'it', 'for', 'with', 'was', 'as']);
+  return words.filter((w) => english.has(w)).length >= 2;
 }

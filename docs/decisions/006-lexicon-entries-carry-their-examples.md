@@ -1,6 +1,6 @@
 # 006. Every lexicon entry carries the example that proves it works
 
-Date: 2026-08-27
+Date: 2026-08-26
 Status: Accepted
 Evidence: Direct, from a defect this repository shipped and then caught.
           Two entries in `lexicons/sr.yaml` matched nothing at all:
@@ -10,7 +10,7 @@ Evidence: Direct, from a defect this repository shipped and then caught.
           The lists looked full. Every report they appeared in was clean for
           the wrong reason, and nothing in the tool distinguished an entry that
           found nothing from an entry that looked and approved.
-          Verified by deliberate reversion, 2026-08-27: restoring both broken
+          Verified by deliberate reversion, 2026-08-26: restoring both broken
           stems fails the build with the entry named —
           `entry "neverovatn*" matched nothing in "Rezultat je neverovatan."`
           Restoring the `ključ*` entry's exception to something that does not

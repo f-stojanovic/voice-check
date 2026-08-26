@@ -1,13 +1,13 @@
 # 008. There is no writing agent
 
-Date: 2026-08-27
+Date: 2026-08-26
 Status: Accepted. Enforced by `src/agents/no-writer.test.ts`.
 Evidence: The argument is a priori, and this line should not pretend
           otherwise: no drafting agent was built, so no draft has been graded
           by the checker in the next directory, and the specific claim below —
           that a generated draft would score badly against the style guide —
           is UNTESTED.
-          What is observed, from the live run of 2026-08-27: the angles agent
+          What is observed, from the live run of 2026-08-26: the angles agent
           produced three `questionForWriter` fields, and every one of them
           asks for something only the writer has. One reads, in translation,
           "when did you last stay silent in a meeting because you did not want

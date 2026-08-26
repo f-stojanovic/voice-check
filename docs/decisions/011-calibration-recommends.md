@@ -1,9 +1,9 @@
 # 011. Calibration recommends; a human moves the constant
 
-Date: 2026-08-28
+Date: 2026-08-26
 Status: Accepted. The command exists and has been run; no constant has moved.
 Evidence: Direct, and the first run is the argument. Run against the author's
-          own `scratch/` on 2026-08-28: two documents, 397 words total, one
+          own `scratch/` on 2026-08-26: two documents, 397 words total, one
           Serbian at 139 words and one English at 258. Every phrase rule
           abstained on both — the Serbian document is below the 167-word gate
           for a ceiling of 6, and both are below the 334-word gate for

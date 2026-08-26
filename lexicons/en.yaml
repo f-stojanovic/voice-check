@@ -94,12 +94,21 @@ patterns:
   rule-of-three:
     - pattern: (?<![\p{L}])\p{L}{3,}(?:[ \t]+\p{L}+){0,2},\s+\p{L}{3,}(?:[ \t]+\p{L}+){0,2},?\s+and\s+\p{L}{3,}(?![\p{L}])
       matches: "Knowledge, tools, and people."
-      # An ordinary enumeration in technical prose, not a tricolon tic. There
-      # is no structural difference between the two — see the README: this
-      # suppresses one literal list and does not generalise.
-      doesNotMatch: "I care about architecture, code quality, and shipping."
-      except:
-        - architecture, code quality, and shipping
+      # NO `except` here, deliberately, and this is a reversal.
+      #
+      # Day three added one suppressing the literal list `architecture, code
+      # quality, and shipping`, because that phrase in a real post read as an
+      # ordinary enumeration rather than a tricolon tic. It was removed the
+      # same day it was proved wrong: `DDD, TDD i code review` turned up in
+      # another real post with exactly the same shape, and the list of literals
+      # to suppress is unbounded.
+      #
+      # There is no structural difference between an ordinary three-item list
+      # and the tic — same shape, same punctuation, different intent — so a
+      # per-instance exception is a category error inside a rule that measures
+      # a RATE. One tricolon is not a finding; twelve per thousand words is.
+      # The lever is the floor, and the floor is what a corpus settles.
+      doesNotMatch: "Two settings where one should have done."
 # Exceptions for STRUCTURAL rules. See lexicons/sr.yaml for the reasoning.
 #
 # `participial-close` fires on any `-ing` word directly after a comma, and most

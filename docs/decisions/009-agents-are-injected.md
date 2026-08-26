@@ -1,6 +1,6 @@
 # 009. Agents take an injected client, so tests never touch the network
 
-Date: 2026-08-27
+Date: 2026-08-26
 Status: Accepted
 Evidence: Direct. 250 tests run in under a second, make no network call, and
           need no API key — including the ones for the failure modes that
@@ -10,7 +10,7 @@ Evidence: Direct. 250 tests run in under a second, make no network call, and
           `strict: true` plus a forced `tool_choice` makes a malformed tool
           call very unlikely, and a 429 arrives when the rate limiter says so
           and not when a test wants one. Both are one line against a fake.
-          The seam also caught a real defect on 2026-08-27: a test asserting
+          The seam also caught a real defect on 2026-08-26: a test asserting
           the audience profile reaches the model showed the brief was passing
           a profile that described Serbian readers while instructing the model
           to answer in English, on any English source. Fixed in `brief.ts`; the

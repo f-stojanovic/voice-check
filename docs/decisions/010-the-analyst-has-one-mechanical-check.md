@@ -1,11 +1,12 @@
 # 010. The analyst's only mechanical check is whether its evidence exists
 
-Date: 2026-08-28
-Status: Accepted. The gate is enforced; nothing else about the analyst is.
+Date: 2026-08-26
+Status: Accepted. Revised the same day — see "What the gate claims" below.
+        The gate is enforced; nothing else about the analyst is.
 Evidence: Direct, from live runs. Two runs against
-          `martinfowler.com/articles/2021-test-shapes.html` on 2026-08-27
+          `martinfowler.com/articles/2021-test-shapes.html` on 2026-08-26
           produced 12 of 12 quotes present in the source, and a third on
-          2026-08-28 after the gate landed did the same. So the gate has
+          2026-08-26 after the gate landed did the same. So the gate has
           never fired in production and its false-positive rate is unmeasured.
           What IS measured is the distinction it depends on: the day-two
           check normalised whitespace and case before comparing, so it could
@@ -32,6 +33,32 @@ procedure, the procedure is cheap, and its answer is not a matter of opinion.
 Day two printed the result of that procedure as a statistic under the brief.
 Which is to say: it was computed, formatted, and compared against nothing.
 
+## What the gate claims, and what it does not
+
+The first version of this ADR said a quote absent from the source "is a fact
+about the model: it produced text and attributed it to a document that does not
+contain it". That is one possibility among at least four, and the gate cannot
+tell them apart:
+
+1. The model fabricated the quote.
+2. The extractor damaged the source — a smart quote, an entity, a character
+   set — so the text is there and no longer matches.
+3. The source changed between being fetched and being checked.
+4. The model translated the quote. On a Serbian source this is the likeliest
+   of the four, and it has never been observed, because no Serbian source has
+   been run.
+
+**The gate claims a CONSEQUENCE, which is certain: this analysis cannot be
+relied on.** Every statement rests on a quote, one of those quotes is not in
+the document, and nothing here can say which of the others are sound. The
+failure message lists the possible causes rather than asserting one — a tool
+whose whole argument is that its claims are checked should not assert a cause
+it has not established.
+
+One cause IS diagnosable, and gets its own outcome. A quote in a different
+script from the source, or an English quote of a Serbian source, was not copied
+out of it. `foreign` fails like `absent` and says translation.
+
 ## Decision
 
 **Traceability is a gate.** `analyse` verifies every quote against the source
@@ -39,9 +66,10 @@ and throws `UntraceableQuoteError` when any is absent. The analysis is
 discarded, the `brief` command exits 7, and the failure names the field, the
 statement, and the quote.
 
-**Three outcomes, not two.** `exact` is byte-for-byte. `normalized` differs
-only in collapsed whitespace and folded case. `absent` is neither. Only
-`absent` fails.
+**Four outcomes.** `exact` is byte-for-byte. `normalized` differs only in
+collapsed whitespace and folded case. `foreign` is missing AND in a different
+script or language from the source. `absent` is missing with no diagnosis.
+`exact` and `normalized` pass; `foreign` and `absent` fail.
 
 That distinction is load-bearing rather than fussy. Sources are hard-wrapped
 Markdown and scraped HTML; a quote spanning a line break is the same quote,

@@ -46,8 +46,35 @@ export interface ToolCallResponse {
   readonly model: string;
 }
 
+/**
+ * A plain-prose request.
+ *
+ * WHY THIS EXISTS ALONGSIDE `callTool`, when the rest of the repository argues
+ * for forced tool calls: the corpus generator needs the model's DEFAULT
+ * REGISTER — what it writes when nobody constrains it — because that register
+ * is the thing being measured. A forced tool call is a different mode of
+ * generation, and text produced to fill a schema field is not the text a
+ * model writes when asked for a blog post. Using the structured path here
+ * would quietly change the measurement.
+ *
+ * Nothing else in the repository uses this, and nothing should: an agent whose
+ * output is read by code returns structure (ADR 007).
+ */
+export interface CompletionRequest {
+  readonly system?: string;
+  readonly userContent: string;
+  readonly maxTokens?: number;
+}
+
+export interface CompletionResponse {
+  readonly text: string;
+  readonly usage: Usage;
+  readonly model: string;
+}
+
 export interface ModelClient {
   callTool(request: ToolCallRequest): Promise<ToolCallResponse>;
+  complete(request: CompletionRequest): Promise<CompletionResponse>;
 }
 
 /** The model produced no usable tool call. Distinct from the API failing. */
@@ -81,6 +108,50 @@ export function anthropicClient(options: { apiKey?: string; model?: string } = {
   const client = new Anthropic({ apiKey: options.apiKey ?? readApiKey() });
 
   return {
+    async complete(request: CompletionRequest): Promise<CompletionResponse> {
+      let response: Anthropic.Message;
+      try {
+        response = await client.messages.create({
+          model,
+          max_tokens: request.maxTokens ?? MAX_TOKENS,
+          ...(request.system === undefined ? {} : { system: request.system }),
+          messages: [{ role: 'user', content: request.userContent }],
+        });
+      } catch (cause) {
+        if (cause instanceof Anthropic.APIError) {
+          throw new ModelUnavailableError(
+            `completion: API error ${cause.status ?? '?'} — ${cause.message}`,
+            cause.status,
+          );
+        }
+        throw new ModelUnavailableError(`completion: ${(cause as Error).message}`);
+      }
+
+      if (response.stop_reason === 'refusal') {
+        throw new ModelUnavailableError(
+          `completion: the model declined the request ` +
+            `(${response.stop_details?.category ?? 'no category'})`,
+        );
+      }
+
+      const text = response.content
+        .filter((b): b is Anthropic.TextBlock => b.type === 'text')
+        .map((b) => b.text)
+        .join('\n')
+        .trim();
+
+      return {
+        text,
+        model: response.model,
+        usage: {
+          inputTokens: response.usage.input_tokens,
+          outputTokens: response.usage.output_tokens,
+          cacheCreationInputTokens: response.usage.cache_creation_input_tokens ?? 0,
+          cacheReadInputTokens: response.usage.cache_read_input_tokens ?? 0,
+        },
+      };
+    },
+
     async callTool(request: ToolCallRequest): Promise<ToolCallResponse> {
       let response: Anthropic.Message;
       try {

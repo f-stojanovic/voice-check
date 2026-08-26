@@ -7,7 +7,13 @@
  * the ones a live call reproduces least reliably and a fake reproduces exactly.
  */
 
-import type { ModelClient, ToolCallRequest, ToolCallResponse } from './client.js';
+import type {
+  CompletionRequest,
+  CompletionResponse,
+  ModelClient,
+  ToolCallRequest,
+  ToolCallResponse,
+} from './client.js';
 import type { Usage } from './pricing.js';
 
 export const FAKE_USAGE: Usage = {
@@ -20,22 +26,36 @@ export const FAKE_USAGE: Usage = {
 /** Records what it was asked, so a test can assert on the prompt it received. */
 export interface RecordingClient extends ModelClient {
   readonly requests: readonly ToolCallRequest[];
+  readonly completions: readonly CompletionRequest[];
 }
 
 /** Returns the given tool inputs in order, one per call. */
 export function scriptedClient(
   inputs: readonly unknown[],
-  options: { model?: string; usage?: Usage } = {},
+  options: { model?: string; usage?: Usage; texts?: readonly string[] } = {},
 ): RecordingClient {
   const requests: ToolCallRequest[] = [];
+  const completions: CompletionRequest[] = [];
   let i = 0;
+  let j = 0;
   return {
     requests,
+    completions,
     async callTool(request: ToolCallRequest): Promise<ToolCallResponse> {
       requests.push(request);
       if (i >= inputs.length) throw new Error(`scripted client ran out after ${i} calls`);
       return {
         input: inputs[i++],
+        model: options.model ?? 'claude-opus-5',
+        usage: options.usage ?? FAKE_USAGE,
+      };
+    },
+    async complete(request: CompletionRequest): Promise<CompletionResponse> {
+      completions.push(request);
+      const texts = options.texts ?? [];
+      if (j >= texts.length) throw new Error(`scripted client ran out after ${j} completions`);
+      return {
+        text: texts[j++] ?? '',
         model: options.model ?? 'claude-opus-5',
         usage: options.usage ?? FAKE_USAGE,
       };
@@ -46,10 +66,16 @@ export function scriptedClient(
 /** Fails every call with the given error, the way an outage would. */
 export function failingClient(error: Error): RecordingClient {
   const requests: ToolCallRequest[] = [];
+  const completions: CompletionRequest[] = [];
   return {
     requests,
+    completions,
     async callTool(request: ToolCallRequest): Promise<ToolCallResponse> {
       requests.push(request);
+      throw error;
+    },
+    async complete(request: CompletionRequest): Promise<CompletionResponse> {
+      completions.push(request);
       throw error;
     },
   };

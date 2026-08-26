@@ -1,8 +1,15 @@
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { formatReport, observe, percentile, readCorpus } from './calibrate-report.js';
+import {
+  formatReport,
+  observe,
+  percentile,
+  readCorpus,
+  stripFrontmatter,
+  verdictFor,
+} from './calibrate-report.js';
 import { loadLexicon } from './lexicon.js';
 import type { Language } from './types.js';
 
@@ -41,6 +48,15 @@ describe('reading a corpus', () => {
     const byName = new Map(readCorpus(dir).map((d) => [d.name, d.language]));
     expect(byName.get('sr.md')).toBe('sr');
     expect(byName.get('en.md')).toBe('en');
+  });
+
+  it('descends one level, so a corpus grouped by language reads as one', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'voice-check-corpus-'));
+    mkdirSync(join(dir, 'sr'));
+    mkdirSync(join(dir, 'en'));
+    writeFileSync(join(dir, 'sr', 'a.md'), cleanSerbian());
+    writeFileSync(join(dir, 'en', 'b.md'), 'The query ran slowly and nobody noticed. '.repeat(40));
+    expect(readCorpus(dir).map((d) => d.name)).toEqual(['en/b.md', 'sr/a.md']);
   });
 
   it('says which directory it could not read', () => {
@@ -98,30 +114,123 @@ describe('percentiles', () => {
   });
 });
 
+describe('two-corpus separation', () => {
+  const band = (accepted: number[], generated: number[]) => ({
+    rule: 'r',
+    accepted: [...accepted].sort((a, b) => a - b),
+    generated: [...generated].sort((a, b) => a - b),
+    acceptedExcluded: 0,
+    generatedExcluded: 0,
+    minWords: 0,
+  });
+
+  it('separates when generated densities sit above accepted ones', () => {
+    const v = verdictFor(
+      band(Array.from({ length: 10 }, (_, i) => i * 0.1), Array.from({ length: 10 }, (_, i) => 5 + i)),
+      10,
+    );
+    expect(v.status).toBe('separates');
+    expect(v.margin ?? 0).toBeGreaterThan(0);
+  });
+
+  it('reports OVERLAP when no threshold puts nine in ten of each on the right side', () => {
+    // A finding about the rule, not a failed run — the same shape as
+    // agent-evals discovering its semantic threshold could not classify its
+    // own labelled pairs.
+    const same = Array.from({ length: 12 }, (_, i) => i);
+    const v = verdictFor(band(same, same), 10);
+    expect(v.status).toBe('overlaps');
+    expect(v.margin ?? 1).toBeLessThanOrEqual(0);
+  });
+
+  it('reports the extremes overlapping separately from the percentile band', () => {
+    // Two strengths of the same question. The band can separate while the
+    // extremes still touch, and a reader should see both.
+    const v = verdictFor(
+      band([0, 0, 0, 0, 0, 0, 0, 0, 0, 9], [1, 10, 11, 12, 13, 14, 15, 16, 17, 18]),
+      10,
+    );
+    expect(v.status).toBe('separates');
+    expect(v.extremesOverlap).toBe(true);
+  });
+
+  it('refuses a verdict when either corpus is too small', () => {
+    const v = verdictFor(band([1, 2], [8, 9]), 10);
+    expect(v.status).toBe('insufficient');
+  });
+
+  it('refuses a verdict when a corpus produced no densities at all', () => {
+    const v = verdictFor(band([], [8, 9]), 10);
+    expect(v.status).toBe('insufficient');
+    expect(v.floor).toBeNull();
+  });
+});
+
+describe('frontmatter', () => {
+  it('strips it and reads the provenance out on the way past', () => {
+    const raw = '---\nprovenance: generated\nmodel: claude-opus-5\n---\n\nBody text.\n';
+    expect(stripFrontmatter(raw)).toEqual({ text: '\nBody text.\n', provenance: 'generated' });
+  });
+
+  it('treats a file with no frontmatter as accepted writing', () => {
+    expect(stripFrontmatter('Just prose.')).toEqual({ text: 'Just prose.', provenance: 'accepted' });
+  });
+
+  it('keeps generated frontmatter out of the prose it labels', () => {
+    // It contains a prompt sentence, a model id and a date. Left in, it would
+    // add words to every denominator and enter the sentence-length
+    // distribution — the corpus measuring its own labels.
+    const dir = corpusDir({
+      'g.md': '---\nprovenance: generated\nprompt: Write a blog post about bread.\n---\n\n' + cleanSerbian(),
+    });
+    const doc = readCorpus(dir)[0];
+    expect(doc?.provenance).toBe('generated');
+    expect(doc?.text).not.toContain('Write a blog post');
+  });
+});
+
 describe('the report', () => {
   const emptyObs = { sr: [], en: [] } as Readonly<Record<Language, never[]>>;
 
   it('says plainly when the corpus is too small', () => {
     const docs = readCorpus(corpusDir({ 'a.md': cleanSerbian() }));
     const report = formatReport(docs, { sr: observe(docs, 'sr', LEXICONS), en: [] }, 'corpus');
-    expect(report).toContain('too small to calibrate anything');
-    expect(report).toContain('1 document against a minimum of 10');
+    expect(report).toContain('Below the 10-document minimum');
+    expect(report).toContain('the accepted corpus has 1 document');
   });
 
   it('states the sample size beside every figure', () => {
-    // C4's requirement, and the reason a percentile from four documents is
-    // dangerous: the number looks the same whatever produced it.
+    // The reason a percentile from four documents is dangerous: the number
+    // looks the same whatever produced it.
     const docs = readCorpus(corpusDir({ 'a.md': cleanSerbian() }));
     const report = formatReport(docs, { sr: observe(docs, 'sr', LEXICONS), en: [] }, 'corpus');
-    expect(report).toContain('n=1, too few');
-    expect(report).not.toMatch(/\| p90 \| max \| implied floor \| implied ceiling \|\n.*\| 0\.90 \|/);
+    expect(report).toContain('n=1');
   });
 
-  it('never derives a ceiling, and says why', () => {
+  it('offers no ceiling at all when there is no generated corpus', () => {
     const docs = readCorpus(corpusDir({ 'a.md': cleanSerbian() }));
     const report = formatReport(docs, { sr: observe(docs, 'sr', LEXICONS), en: [] }, 'corpus');
-    expect(report).toContain('not derivable');
-    expect(report).toContain('needs a second corpus');
+    expect(report).toContain('no generated corpus');
+  });
+
+  it('reports both corpora side by side when given both', () => {
+    const accepted = readCorpus(corpusDir({ 'a.md': cleanSerbian() }));
+    const generated = readCorpus(
+      corpusDir({ 'g.md': `---\nprovenance: generated\n---\n\n${cleanSerbian()}` }),
+    );
+    const report = formatReport(
+      accepted,
+      { sr: observe(accepted, 'sr', LEXICONS), en: [] },
+      'accepted',
+      {
+        docs: generated,
+        dir: 'generated',
+        observations: { sr: observe(generated, 'sr', LEXICONS), en: [] },
+      },
+    );
+    expect(report).toContain('implied floor (accepted p90)');
+    expect(report).toContain('implied ceiling (generated p10)');
+    expect(report).toContain('Generated — machine-written by construction');
   });
 
   it('states that it wrote nothing', () => {

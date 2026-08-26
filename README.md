@@ -5,9 +5,10 @@ and English. You point it at a Markdown file and it tells you where the text
 stops sounding like you and starts sounding like a language model.
 
 ```
+npm run web                                     # the public page: check, in a browser
 npm run check -- samples/machine-sr.md          # grade prose against the rules
 npm run brief -- https://example.com/article    # prepare material from a source
-npm run calibrate -- ~/drafts                   # what densities do you write at?
+npm run calibrate -- ~/drafts --generated corpus/generated/sr
 ```
 
 It is not a general-purpose prose linter and it is not trying to be. The rules
@@ -15,6 +16,29 @@ are a compilation of one documented style guide: half of it describes how the
 author's voice should sound, and half is a catalogue of the patterns that make
 prose read as machine-written, adapted from Wikipedia's *Signs of AI writing*.
 Somebody else's guide would produce a different tool.
+
+## Two surfaces, split on marginal cost
+
+**Public, free, no key — `check`.** One page: a textarea, a language selector,
+a submit button, and the report with findings underlined in place. Hono,
+server-rendered, **no client JavaScript at all** — a form post, not a fetch, so
+it works in a text browser and with scripts disabled. Nothing is stored: no
+database, no log of what you pasted, no analytics. The limits (40,000
+characters, 20 submissions a minute) are printed on the page rather than
+discovered by hitting them.
+
+**Private, CLI only — `brief`.** It makes two Claude calls at about $0.11 a
+run, on the author's key. A public endpoint for that is a public endpoint for
+spending somebody else's money, and rate limiting does not fix it — it prices
+the abuse. The split follows from which half has a per-request cost, and that
+will not change when the UI gets nicer
+([ADR 013](docs/decisions/013-the-public-surface-splits-on-marginal-cost.md)).
+
+The web report is rendered from the same `check()` the CLI calls — one
+implementation, two renderers, so the two cannot disagree about a score. The
+underlining uses the `line`/`column`/`offset` recorded on day one, when
+[ADR 004](docs/decisions/004-findings-carry-positions.md) justified carrying
+them on the strength of an interface that did not exist yet.
 
 ## The idea
 
@@ -126,26 +150,42 @@ and the report says "shape only" rather than pretending otherwise.
 ```
 # voice-check: samples/machine-sr.md
 
-**0.278** over 12 density rules · 274 words · `sr` · lexicon `0.3.0+…`
+**0.278** over 12 density rules · 274 words · `sr` · lexicon `0.3.0+a1e590743b64`
 
 Hard rules: 2 passed.
+
+## Not measured (1)
+
+- `negative-parallelism` — not scored: 274 words. One occurrence here is 3.65
+  per 1000, at or above this rule's ceiling of 3, so a single ordinary use
+  would score 0. Needs 334 words (1000 / 3)
+
+### Observed, not scored
+
+**negative-parallelism** — 3 found
+
+- `3:47` — "nije samo tehnologija, već"
+- `18:5` — "nije mali korak, nego"
+- `23:49` — "nije tehnički projekat, nego"
 
 ## Density rules
 
 | rule | score | measured | findings |
 | --- | --- | --- | --- |
-| negative-parallelism | 0.00 | 11.63 | 2 |
-| weasel-words | 0.00 | 23.26 | 4 |
-| editorializing | 0.00 | 11.63 | 2 |
+| weasel-words | 0.00 | 14.60 | 4 |
+| editorializing | 0.00 | 7.30 | 2 |
+| promotional-tone | 0.00 | 14.60 | 4 |
+| inflated-vocabulary | 0.00 | 25.55 | 7 |
 ...
-
-### negative-parallelism — 0.00
-
-2 found, 11.63 per 1000 words (clean at or below 0.5, zero at 3)
-
-- `3:47` — "nije samo tehnologija, već"
-- `18:5` — "nije mali korak, nego"
 ```
+
+Note what the abstention costs there. Three `nije … već` constructions in 274
+words is plainly the pattern the rule exists for, and the rule still declines
+to score it, because the gate is a property of the text's LENGTH and not of
+what was found in it. The findings are reported rather than swallowed — that
+is what "observed, not scored" is for — but the number is missing from a case
+where the signal is strong. The gate as derived protects a single ordinary use
+and cannot tell that apart from a third one.
 
 Four sample texts ship in [`samples/`](samples/), two written to trip the rules
 and two written as ordinary prose:
@@ -156,6 +196,10 @@ and two written as ordinary prose:
 | `machine-en.md` | 322 | 0.262 |
 | `ordinary-sr.md` | 322 | 0.986 |
 | `ordinary-en.md` | 352 | 0.992 |
+
+Those four are the author's own guesses at good and bad prose. The generated
+corpus in `corpus/generated/` is the first evidence in this project that did
+not come from him, and it disagrees with two of them — see below.
 
 The two machine samples were 172 and 199 words on day one. They had to be
 lengthened, because at that length every density rule now abstains and the
@@ -299,11 +343,23 @@ because it is the one claim the analyst makes that is not judgement. Whether a
 point is "genuinely new" is arguable. Whether a sentence is in the document is
 not ([ADR 010](docs/decisions/010-the-analyst-has-one-mechanical-check.md)).
 
-The gate has three outcomes, and the distinction matters: `exact` is
-byte-for-byte, `normalized` differs only in whitespace or case — a quote
-spanning a line break in a hard-wrapped file — and only `absent` fails. A gate
-that conflated the last two would fire on formatting on most real inputs, be
-switched off within a week, and take the real check with it.
+**The gate claims a consequence, not a cause.** An earlier version said a
+missing quote meant the model invented it. It is one possibility of four: the
+model fabricated it; the extractor damaged the source; the source changed
+between fetch and check; or the model *translated* it. What is certain is the
+consequence — this analysis cannot be relied on — and the failure message says
+that and lists the causes rather than asserting one.
+
+One cause is diagnosable and gets its own outcome. A quote in a different
+script from the source, or an English quote of a Serbian source, was not copied
+out of it. The four outcomes are `exact` (byte-for-byte), `normalized`
+(whitespace or case only — a quote spanning a line break), `foreign`
+(missing and in another script or language) and `absent`. The first two pass;
+a gate that failed on `normalized` would fire on formatting on most real
+inputs, be switched off within a week, and take the real check with it.
+
+Translation is the likeliest Serbian failure and **has never been observed**,
+because no Serbian source has been run through `brief`.
 
 Empty is an answer. `novelty.genuinelyNew: []` is a value the system prompt
 explicitly asks for, and the brief prints **"Nothing genuinely new"** in bold
@@ -396,45 +452,173 @@ most common of those into an error instead of an analysis of an empty div.
 
 When a page reads wrong, save it as Markdown and pass the file.
 
-## Calibration: against your own writing
+## Calibration: two corpora, and one of them is free
 
 ```
-npm run calibrate -- <dir> [--lang sr|en]
+npm run corpus:generate -- --lang sr|en --count 15 --out corpus/generated/sr
+npm run calibrate -- <accepted-dir> --generated corpus/generated/sr
 ```
 
-Twenty-three constants are declared as guesses, and nearly every note says the
-same thing: *this would be justified by measuring the author's own accepted
-drafts, a corpus that does not exist*. That sentence has been in the code since
-day one. Writing it is honest; leaving it there forever is not.
+Twenty-three constants are declared as guesses. Day three built `calibrate` and
+found the wall: **a corpus of writing you accept gives a floor and never a
+ceiling**, because it contains no information about where writing that has gone
+wrong sits. That left half the registry uncalibratable, waiting on a corpus
+nobody had assembled.
 
-`calibrate` reads a directory of texts you consider good and reports, per rule:
-how many documents produced a density, the min, median, p90 and max of those
-densities, and the floor that distribution would imply — the p90, so that nine
-in ten of the writing you already accept passes untouched.
+That corpus turns out to be free, because machine-written text can be generated
+rather than found.
 
-**It recommends. It does not write.** Nothing edits a constant, and that is the
-decision rather than an unfinished feature. A tool that tunes its own
+### The provenance is the label
+
+`corpus:generate` asks the model for blog posts on ordinary subjects — coffee
+grinders, compound interest, sourdough, moving city — and writes back what
+comes out. Each file carries its own frontmatter:
+
+```yaml
+---
+provenance: generated
+subject: sourdough-howto
+model: claude-opus-5
+generated: 2026-08-26
+words: 1422
+prompt: Write a blog post about how to make sourdough bread.
+---
+```
+
+**A text in that directory is machine-written because a machine wrote it.** No
+annotator decides, nobody disagrees, and there is nothing for a second reader
+to check. That is the *inverse* of the labelling problem in agent-evals rather
+than a repeat of it: there, a label was a judgement about a model's output and
+a model could not be trusted to make it. Here the judgement has moved entirely
+to the other corpus — "I consider this good" is exactly the call a model cannot
+make for you ([ADR 012](docs/decisions/012-the-negative-corpus-is-generated.md)).
+
+**The prompts carry no style instruction.** No tone, no audience, no length,
+not "write engagingly" and not "avoid clichés" — and no system prompt either,
+because *you are a helpful assistant* is a style instruction wearing a
+different hat. The measurement is the **default register**, which is what a
+ceiling is supposed to describe.
+
+The corpus is committed, in [`corpus/generated/`](corpus/generated/). It is not
+personal writing, it is evidence, and a ceiling nobody can re-derive is a
+ceiling nobody can check — every file carries the prompt that produced it, so
+the experiment is repeatable rather than merely reported. A test asserts every
+committed file is labelled, so a hand-written text dropped into the directory
+cannot be silently counted as machine-written.
+
+### Floors, ceilings, and rules that cannot separate
+
+The floor goes at the **90th percentile of accepted writing** — nine documents
+in ten of what you already accept pass untouched. The ceiling goes at the
+**10th percentile of generated writing** — nine in ten generated documents
+score zero. The gap between them is the rule's usable band.
+
+**When the two overlap, the report says so and stops.** If the ceiling lands at
+or below the floor, no pair of thresholds separates the distributions and the
+rule cannot tell machine from human at any setting. That is a finding about the
+rule, not a failed run — the same shape as agent-evals discovering its semantic
+threshold could not classify its own labelled pairs, and recording the negative
+result instead of inventing a number.
+
+**It still only recommends.** Nothing edits a constant. A tool that tunes its
 thresholds against a corpus it also scores converges on "this writing is
-perfect", which is true by construction and carries no information. Moving a
-constant is a commit somebody signs
+perfect", which is true by construction
 ([ADR 011](docs/decisions/011-calibration-recommends.md)).
 
-**No ceiling is derivable and none is offered.** A floor answers "how much of
-this appears in writing you accept", which a corpus of accepted writing
-contains. A ceiling answers "how much appears in writing that has gone wrong",
-which it does not contain at all. Every ceiling cell reads `not derivable`.
-Calibrating ceilings needs a second, labelled corpus.
-
 **Every figure carries its own n.** Below ten documents no percentile is
-reported at all — the cell says `n=1, too few`, because a 90th percentile of
-four values is the largest of the four wearing a statistical hat, and in a
-table it looks identical to a percentile of four hundred.
+reported at all, because a p90 of four values is the largest of the four
+wearing a statistical hat and looks identical in a table to a p90 of four
+hundred.
 
 **An abstention is an exclusion, not a zero.** A document too short for a rule
-contributes no density. A zero would be a measurement — "this text contains no
-weasel words" — and a short text supports no such claim; averaging it in would
-drag every floor toward zero in proportion to how many short texts the corpus
-happened to contain.
+contributes no density. A zero would be a measurement the text does not
+support.
+
+### The first run, verbatim
+
+Accepted corpus: the author's `scratch/` — **two documents, 397 words**, which
+is nowhere near enough and the report says so on every line. Generated corpus:
+**30 documents, 33,621 words**. Every verdict below reads `too few`, because
+the accepted side has an n of 1.
+
+What the generated side shows is not `too few`, and it is the finding.
+
+```
+## en — 1 accepted, 15 generated
+
+| rule                 | generated n / min / median / max |
+| weasel-words         | n=15 | 0.00 | 0.00 |  0.00 |
+| editorializing       | n=15 | 0.00 | 0.00 |  0.00 |
+| promotional-tone     | n=15 | 0.00 | 0.00 |  0.00 |
+| summary-close        | n=15 | 0.00 | 0.00 |  0.00 |
+| transition-density   | n=15 | 0.00 | 0.00 |  0.00 |
+| negative-parallelism | n=15 | 0.00 | 0.00 |  0.86 |
+| inflated-vocabulary  | n=15 | 0.00 | 0.00 |  0.91 |
+| participial-close    | n=15 | 0.00 | 2.21 |  4.12 |
+| rule-of-three        | n=15 | 0.00 | 1.47 |  5.05 |
+| bullet-bold-shape    | n=15 | 0.00 | 2.99 | 11.74 |
+| em-dash-density      | n=15 | 5.44 |10.72 | 16.01 |
+| bold-ratio           | n=15 | 0.00 |47.18 | 76.30 |
+| sentence-uniformity  | n=15 | 5.88 | 7.75 | 10.06 |
+```
+
+Five rules have a **maximum of zero across fifteen machine-written
+documents**. Two more never exceed 1 per thousand words. The four with real
+signal are `em-dash-density`, `bold-ratio`, `bullet-bold-shape` and
+`participial-close` — typography, structure and rhythm.
+
+### What that means, and it is not what the guide predicts
+
+Across **18,612 words** of machine-written English — 15 blog posts, no style
+instruction — the phrase catalogue that makes up most of the rule set fired
+almost not at all:
+
+| tell | occurrences in 18,612 machine-written words |
+| --- | --- |
+| `delve`, `landscape`, `synergy`, `empower`, `robust`, `seamless`, `tapestry` | 0 |
+| `leverage` | 2 |
+| `incredible`, `stunning`, `breathtaking` | 0 |
+| `experts say`, `many believe`, `reports suggest`, `critics argue` | 0 |
+| `in conclusion`, `all in all`, `to summarize` | 0 |
+| `however`, `moreover`, `furthermore`, `additionally`, `on the other hand` | **0** |
+| — (em dash) | **202** |
+| `**bold**` runs | **232** |
+
+Six phrase rules never fired on any of the fifteen documents. `transition-density`
+found nothing at all: not one `however` in eighteen thousand words.
+
+**The rules that separate machine from human are typographic and structural,
+not lexical.** `em-dash-density`, `bold-ratio`, `bullet-bold-shape` and
+`sentence-uniformity` all show a usable band. The phrase rules — the ones
+adapted most directly from Wikipedia's *Signs of AI writing* — cannot separate
+the two corpora at any threshold, because the machine text does not contain the
+phrases.
+
+That catalogue describes a distribution of models across several years. It does
+not describe `claude-opus-5` in August 2026, and this project had assumed it
+did. The word lists are not wrong about what bad prose looks like; they are
+measuring a register this model no longer writes in.
+
+### The Serbian half came back in the wrong language
+
+Prompted in Serbian, with no other instruction, the model wrote Croatian.
+Across the Serbian corpus: **77 `što` against 29 `šta`**, and **58 ijekavian
+forms** (`vrijeme`, `svjetlo`, `prije`) — every document affected, five of them
+heavily.
+
+The Serbian rules are ekavica-specific, so a ceiling calibrated against that
+half would be a ceiling for a language the author does not write. **No Serbian
+ceiling from this corpus should be adopted.** The English half is unaffected.
+
+The fix is to name the variant in the prompt, which is a *language* constraint
+rather than a style one and so is compatible with the design. It had not
+occurred to anyone that it would be needed, which is what a first run is for.
+
+Two things follow, and neither is "delete the phrase rules". They still catch
+those phrases when a human writes them, which is what the *first* half of the
+style guide asks for. But their ceilings cannot be calibrated against this
+corpus, and any claim that they detect machine writing is now falsified for
+this model.
 
 ## False positives: what fires on prose that is fine
 
@@ -473,18 +657,38 @@ catches adjectives — `The output was long, boring and repetitive.` — as
 readily as participles. It is asserted as a known false positive in its own
 test file.
 
-**`rule-of-three` — suppressed for one literal list, and that does not
-generalise.** It fired on `care about architecture, code quality, and
-shipping`, which is an ordinary enumeration in technical prose. There is **no
-structural difference** between that and the tricolon tic the guide objects to
-— same shape, same punctuation, different intent — so the only available fix
-was an `except` naming that exact list. It is in the lexicon with a
-`doesNotMatch` guarding it, and it suppresses precisely one sentence. Adding
-lists one at a time will not scale, and the honest read is that this rule's
-signal is the *rate* rather than any instance.
+**`rule-of-three` — a suppression was added and then reverted the same day.**
+It fired on `care about architecture, code quality, and shipping`, an ordinary
+enumeration in technical prose, and an `except` naming that literal list was
+added. It was removed within hours: `DDD, TDD i code review` turned up in
+another real post with exactly the same shape, and the list of literals to
+suppress is unbounded.
+
+There is **no structural difference** between an ordinary three-item list and
+the tic — same shape, same punctuation, different intent — so a per-instance
+exception is a category error inside a rule that measures a **rate**. One
+tricolon is not a finding; twelve per thousand words is. The lever is the
+floor, and the floor is what a corpus settles.
 
 **What this survey is still missing.** Four texts, all written by the author of
 the tool, two of them written specifically to trip it.
+
+## The corpora
+
+```
+corpus/generated/sr/   15 Serbian blog posts, machine-written by construction
+corpus/generated/en/   15 English, the same 15 subjects
+```
+
+Committed. Each file carries `provenance: generated`, the model, the date and
+the exact prompt. Regenerate with:
+
+```
+npm run corpus:generate -- --lang sr --count 15 --out corpus/generated/sr
+```
+
+The accepted corpus is not in this repository and is not going to be — it is
+the author's own writing. Point `calibrate` at wherever it lives.
 
 ## Install and run
 
@@ -523,69 +727,76 @@ right answer whenever it is known.
 
 ## Status
 
-Day three of a one-week project.
+Day four of a one-week project.
 
-**Day one — the checker**
+**Days one to three**
 
-- [x] Domain types, two kinds of rule, continuous density scoring
-- [x] Zod-validated YAML lexicons, versioned and content-hashed
-- [x] All sixteen rules registered, with positions on every finding
-- [x] CLI with markdown and JSON output, exiting 1 only on hard failures
+- [x] Sixteen rules, two kinds, continuous scoring, positions on every finding
+- [x] Zod-validated YAML lexicons, versioned and content-hashed, every entry
+      carrying the example that proves it works
+- [x] Per-rule abstention derived from each rule's own ceiling
+- [x] Analyst and angles agents through forced tool calls; no drafting agent
+- [x] Traceability as a gate; injected client, so tests never touch the network
+- [x] `calibrate` — observes densities, recommends, writes nothing
 
-**Day two — the agents**
+**Day four**
 
-- [x] Analyst and angles agent, both through forced tool calls
-- [x] The refusal: no drafting agent, as a module with a test that keeps it one
-- [x] Injected client, so tests never touch the network
-- [x] Usage and cost recorded per call; API key read from `.env` by path
-
-**Day three — measurement**
-
-- [x] **Per-rule abstention, derived** from each rule's ceiling
-      (`1000 / ceiling` words). `density.min-words` is deleted — the gate now
-      inherits the ceiling's error instead of adding its own
-- [x] **An abstaining rule still reports what it found**, marked observed and
-      not scored, so a 150-word post produces something usable
-- [x] **Exception lists for structural rules** — 32 Serbian `-ći` infinitives,
-      each with a `suppresses` example and a test that it is load-bearing
-- [x] **Stemmed entries must pin their stem** with examples in two
-      grammatical forms. All six Serbian stemmed entries failed the stricter
-      check and were fixed
-- [x] **Traceability is a gate.** An invented quote fails the run and names
-      the statement; `normalized` matches pass, so it cannot fire on formatting
-- [x] **`npm run calibrate`** — observes densities across a corpus, reports
-      implied floors, refuses to derive ceilings, and writes nothing
+- [x] **The negative corpus, generated.** 15 Serbian and 15 English documents
+      on ordinary subjects, no style instruction, ~$2.50 of inference. Each
+      labelled by its own frontmatter — the provenance *is* the label, so
+      nothing here needed an annotator
+- [x] **`calibrate` takes both corpora** and reports floor, ceiling, margin,
+      and — the part that matters — **which rules cannot separate them at any
+      threshold**
+- [x] **The `rule-of-three` suppression reverted.** A per-instance exception
+      inside a rule that measures a rate is a category error, and a second real
+      case proved it the same day
+- [x] **The traceability gate reframed** around the consequence, with a
+      `foreign` outcome for the one cause it can actually diagnose
+- [x] **The public page** — `check` only, server-rendered, no client
+      JavaScript, nothing stored, limits printed on the page
+- [x] The ADR dates corrected: 005–011 carried dates incremented by hand rather
+      than read from a clock
 
 **Not done**
 
-- [ ] **A corpus.** The bottleneck everything else waits on. `calibrate` has
-      run against two documents and reported that two is not enough
-- [ ] **A single calibrated constant.** All 23 are still guesses
-- [ ] **A negative corpus** — texts the author labels machine-written. Without
-      one, no ceiling can be calibrated, only floors
-- [ ] **Refusing a comparison across lexicon versions.** Recorded, not enforced
-- [ ] **A record of which figure justified which constant.** Nothing enforces
-      that a calibration run happened before a threshold moved
-- [ ] **A judge for `bullet-bold-shape`**, so it checks restatement not shape
-- [ ] **A recorded-fixture test of the real request shape.** Every agent test
-      runs against a fake
-- [ ] CI
-- [ ] Editor integration — the reason positions are recorded
+- [ ] **The accepted corpus.** Still the bottleneck. The negative half now
+      exists; the half only a human can label does not
+- [ ] **A single calibrated constant.** Ceilings are now derivable and none
+      has been adopted — that is a commit the author signs, not the tool
+- [ ] **A lockfile for the generating model.** The ceiling is calibrated
+      against `claude-opus-5` in August 2026. A better model would move every
+      ceiling and look like the tool going lenient — ADR 003's problem, one
+      level up, unsolved
+- [ ] **Length is uncontrolled** between the corpora. Generated documents
+      average 1,241 words; the author's posts run 150–400
+- [ ] Deployment. The page runs locally and has never seen traffic
+- [ ] Refusing a comparison across lexicon versions
+- [ ] A judge for `bullet-bold-shape`; a recorded-fixture test of the real
+      request shape; CI
 
 ## Known limitations
 
 Everything here is true of the current commit.
 
 **No constant in this tool has been calibrated against anything.** Twenty-three
-distinct guesses, each declared and counted, none measured. `calibrate` now
-exists to change that and has been run once, against two documents, which it
-correctly refused to draw a conclusion from. The scores discriminate between
-the two sample sets by a wide margin (0.26–0.28 against 0.99), and that remains
-the only evidence that any of the numbers are in the right place.
+distinct guesses, each declared and counted, none measured. Ceilings are now
+*derivable* — the negative corpus exists — and none has been adopted, because
+adopting one is the author's commit and not the tool's.
 
-**Half the constants cannot be calibrated by the command that exists.** Floors
-come from a corpus of accepted writing. Ceilings need a corpus of writing the
-author considers machine-written, labelled by him, which nobody has assembled.
+**The accepted corpus still does not exist**, so no floor has a figure behind
+it either. The negative half was the half that could be automated; the half
+that needs a human to say "I consider this good" is the half that is left.
+
+**The ceiling is calibrated against one model on one date.** `claude-opus-5` in
+August 2026 is not "machine-written prose", it is one point in a space. A newer
+model that writes better would move every ceiling down and look exactly like
+the tool becoming lenient — ADR 003's failure mode, one level up, with no
+lockfile.
+
+**Length is not controlled between the corpora.** The generated documents
+average 1,241 words against 150–400 for the author's posts, so a rule whose
+density varies with length would show a separation that is partly about length.
 
 **The agents have been run against one article.** Three times. Both runs returned
 valid structures and 12-of-12 traceable quotes, which is one data point about

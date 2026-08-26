@@ -17,3 +17,18 @@ is "nothing yet".
 - [009. Agents take an injected client, so tests never touch the network](009-agents-are-injected.md)
 - [010. The analyst’s only mechanical check is whether its evidence exists](010-the-analyst-has-one-mechanical-check.md)
 - [011. Calibration recommends; a human moves the constant](011-calibration-recommends.md)
+- [012. The negative corpus is generated, and the provenance is the label](012-the-negative-corpus-is-generated.md)
+- [013. The public surface is `check` only, and the split is marginal cost](013-the-public-surface-splits-on-marginal-cost.md)
+
+## A note on the dates
+
+Every ADR here is dated 2026-08-26, because that is when all of them were
+written — four days of project work inside one calendar day.
+
+Earlier versions of 005 through 011 were dated 2026-08-27 and 2026-08-28. Those
+dates were incremented by hand to match the narrative rather than read from a
+clock, and nothing in the repository checked them. That is the defect
+[ADR 017 in agent-evals](https://github.com/f-stojanovic/agent-evals/blob/main/docs/decisions/017-checkable-documentation-claims-are-checked.md)
+exists for, occurring in a file whose whole purpose is to record what was
+actually observed. Corrected on 2026-08-26; the Evidence lines that quoted
+those dates are corrected with them.

@@ -1,6 +1,6 @@
 # 005. A density rule may abstain, and an abstention is not a pass
 
-Date: 2026-08-27
+Date: 2026-08-26
 Status: Accepted
 Evidence: Direct, and the defect it fixes was measured before the fix.
           Day one's `transition-density` scored a 7-word note containing one
@@ -11,7 +11,7 @@ Evidence: Direct, and the defect it fixes was measured before the fix.
           hidden, which is how it survived long enough to be fixed.
           Since the change: the same note abstains, and the test now asserts
           the abstention and its reason.
-          Second, unplanned observation, 2026-08-27: `samples/machine-sr.md`
+          Second, unplanned observation, 2026-08-26: `samples/machine-sr.md`
           at 172 words became UNMEASURABLE — every one of its 13 density rules
           abstained and the report scored `null`. The sample had to be
           lengthened to 274 words to remain a demonstration. That is the cost

@@ -109,6 +109,77 @@ describe('the traceability gate', () => {
     ).rejects.toThrow(UntraceableQuoteError);
   });
 
+  it('claims a consequence, not a cause', async () => {
+    // An earlier version said a missing quote meant the model invented it.
+    // That is one possibility among four, and the gate cannot tell them apart.
+    const invented = {
+      ...GOOD_ANALYSIS,
+      claim: { statement: 'x', quote: 'A sentence that appears nowhere at all.' },
+    };
+    let error: UntraceableQuoteError | undefined;
+    try {
+      await analyse(scriptedClient([invented]), { text: SOURCE, language: 'sr' });
+    } catch (cause) {
+      error = cause as UntraceableQuoteError;
+    }
+    expect(error?.message).toContain('this analysis cannot be relied on');
+    expect(error?.message).toContain('Why is not established');
+    expect(error?.message).toContain('the extractor damaged the source');
+    expect(error?.message).not.toContain('the analyst invented');
+  });
+
+  it('diagnoses a translated quote as foreign, which it CAN establish', async () => {
+    // The one cause the gate can actually name. A Serbian source quoted in
+    // English was not copied out of it.
+    const translated = {
+      ...GOOD_ANALYSIS,
+      claim: {
+        statement: 'x',
+        quote: 'Nothing in the code had changed and the data was the problem.',
+      },
+      evidence: [],
+      novelty: { genuinelyNew: [], restated: [] },
+    };
+    let error: UntraceableQuoteError | undefined;
+    try {
+      await analyse(scriptedClient([translated]), { text: SOURCE, language: 'sr' });
+    } catch (cause) {
+      error = cause as UntraceableQuoteError;
+    }
+    expect(error?.checks.find((c) => c.field === 'claim')?.match).toBe('foreign');
+    expect(error?.message).toContain('the model translated the quote');
+  });
+
+  it('detects a script change without needing a language guess', async () => {
+    const cyrillic = 'Упит је радио споро и нико то није приметио недељама.';
+    const latinQuote = {
+      ...GOOD_ANALYSIS,
+      claim: { statement: 'x', quote: 'The query ran slowly for weeks.' },
+      evidence: [],
+      novelty: { genuinelyNew: [], restated: [] },
+    };
+    let error: UntraceableQuoteError | undefined;
+    try {
+      await analyse(scriptedClient([latinQuote]), { text: cyrillic, language: 'sr' });
+    } catch (cause) {
+      error = cause as UntraceableQuoteError;
+    }
+    expect(error?.checks[0]?.match).toBe('foreign');
+  });
+
+  it('does not call a short Serbian-Latin quote foreign on a hunch', async () => {
+    // The language test needs five words and two English function words before
+    // it will vote. A wrong `foreign` only changes the diagnosis, but a gate
+    // that guesses in its error messages teaches people to ignore them.
+    const analysis = AnalysisSchema.parse({
+      ...GOOD_ANALYSIS,
+      claim: { statement: 'x', quote: 'Nema ovoga ovde' },
+      evidence: [],
+      novelty: { genuinelyNew: [], restated: [] },
+    });
+    expect(verifyQuotes(analysis, SOURCE, 'sr')[0]?.match).toBe('absent');
+  });
+
   it('names the failing statement and its quote, so the failure is actionable', async () => {
     const invented = {
       ...GOOD_ANALYSIS,

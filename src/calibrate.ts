@@ -9,20 +9,29 @@ import { loadLexicon } from './lexicon.js';
 import { formatReport, observe, readCorpus } from './calibrate-report.js';
 import type { Language } from './types.js';
 
-const USAGE = `voice-check calibrate — reports the density distribution of a corpus you consider good.
+const USAGE = `voice-check calibrate — compares the density distributions of two corpora.
 
-  npm run calibrate -- <dir> [--lang sr|en]
+  npm run calibrate -- <accepted-dir> [--generated <dir>] [--lang sr|en]
+
+  <accepted-dir>      texts you consider good. Gives the FLOOR.
+  --generated <dir>   machine-written texts. Gives the CEILING.
+
+Without --generated only floors are reported: a corpus of good writing carries
+no information about where bad writing sits.
 
 It recommends. It never writes a constant.`;
 
 function main(): number {
   const argv = process.argv.slice(2);
   let dir: string | undefined;
+  let generatedDir: string | undefined;
   let override: Language | undefined;
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
-    if (arg === '--lang') {
+    if (arg === '--generated') {
+      generatedDir = argv[++i];
+    } else if (arg === '--lang') {
       const value = argv[++i];
       if (value !== 'sr' && value !== 'en') {
         process.stderr.write(`calibrate: --lang must be "sr" or "en"\n`);
@@ -43,13 +52,41 @@ function main(): number {
   }
 
   try {
-    const docs = readCorpus(dir, override);
     const lexicons = { sr: loadLexicon('sr'), en: loadLexicon('en') } as const;
+    const docs = readCorpus(dir, override);
     const observations = {
       sr: observe(docs, 'sr', lexicons),
       en: observe(docs, 'en', lexicons),
     } as const;
-    process.stdout.write(`${formatReport(docs, observations, dir)}\n`);
+
+    if (generatedDir === undefined) {
+      process.stdout.write(`${formatReport(docs, observations, dir)}\n`);
+      return 0;
+    }
+
+    const generatedDocs = readCorpus(generatedDir, override);
+    const notGenerated = generatedDocs.filter((d) => d.provenance !== 'generated');
+    if (notGenerated.length > 0) {
+      // The provenance IS the label. A file in the generated directory without
+      // it is unlabelled, and quietly counting it as machine-written would
+      // reintroduce exactly the human judgement this corpus avoids needing.
+      process.stderr.write(
+        `calibrate: ${notGenerated.length} file(s) in ${generatedDir} carry no ` +
+          `\`provenance: generated\` frontmatter: ${notGenerated.map((d) => d.name).join(', ')}\n`,
+      );
+      return 2;
+    }
+
+    process.stdout.write(
+      `${formatReport(docs, observations, dir, {
+        docs: generatedDocs,
+        dir: generatedDir,
+        observations: {
+          sr: observe(generatedDocs, 'sr', lexicons),
+          en: observe(generatedDocs, 'en', lexicons),
+        },
+      })}\n`,
+    );
     return 0;
   } catch (cause) {
     process.stderr.write(`calibrate: ${(cause as Error).message}\n`);

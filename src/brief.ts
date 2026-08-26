@@ -158,10 +158,10 @@ function reportFailure(cause: unknown): number {
     // Distinct from a malformed tool call: the shape was fine, the content was
     // invented. Retrying may well produce the same fabrication.
     process.stderr.write(
-      `brief: traceability gate failed.\n${cause.message}\n\n` +
-        `The analysis was discarded. Every statement the analyst makes has to be ` +
-        `traceable to the source; a quote that is not in it is a fact about the ` +
-        `model, not a judgement call.\n`,
+      `brief: traceability gate failed.\n\n${cause.message}\n\n` +
+        `The analysis was discarded. Every statement rests on a quote, one of ` +
+        `them is not in the document, and nothing here can tell you which of ` +
+        `the others are sound.\n`,
     );
     return 7;
   }

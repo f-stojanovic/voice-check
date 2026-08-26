@@ -51,6 +51,30 @@ export interface Document {
   readonly text: string;
   readonly words: number;
   readonly language: Language;
+  /** `generated` when the file declares it in frontmatter; otherwise `accepted`. */
+  readonly provenance: 'accepted' | 'generated';
+}
+
+/**
+ * Strips YAML frontmatter, and reads the provenance out of it on the way past.
+ *
+ * WHY THIS MATTERS MORE THAN IT LOOKS: without it, the generated corpus's own
+ * frontmatter — which contains the word `prompt`, a model id and a date —
+ * counts as prose. It would add words to every denominator and, worse, the
+ * prompt line is a sentence, so it would enter the sentence-length
+ * distribution. The corpus would be measuring its own labels.
+ */
+export function stripFrontmatter(raw: string): {
+  text: string;
+  provenance: 'accepted' | 'generated';
+} {
+  const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/u.exec(raw);
+  if (match === null) return { text: raw, provenance: 'accepted' };
+  const declared = /^provenance:\s*(\S+)/mu.exec(match[1] ?? '')?.[1];
+  return {
+    text: raw.slice(match[0].length),
+    provenance: declared === 'generated' ? 'generated' : 'accepted',
+  };
 }
 
 /** One rule's observations across the corpus. */
@@ -65,6 +89,16 @@ export interface Observation {
   readonly minWords: number;
 }
 
+/**
+ * Reads a corpus directory, descending ONE level into subdirectories.
+ *
+ * One level, not arbitrary depth: the generated corpus is grouped by language
+ * (`corpus/generated/sr`, `.../en`) and a single calibration run should cover
+ * both, but a corpus is a flat set of documents and a deep tree would mean
+ * somebody has organised it into a structure this tool would then flatten and
+ * ignore. Subdirectory names appear in the document name, so a report still
+ * says which group a figure came from.
+ */
 export function readCorpus(dir: string, override?: Language): readonly Document[] {
   let names: string[];
   try {
@@ -74,17 +108,29 @@ export function readCorpus(dir: string, override?: Language): readonly Document[
   }
 
   const docs: Document[] = [];
+  const entries: Array<{ name: string; path: string }> = [];
   for (const name of names) {
     const path = join(dir, name);
-    if (!statSync(path).isFile()) continue;
+    if (statSync(path).isDirectory()) {
+      for (const inner of readdirSync(path).sort()) {
+        const innerPath = join(path, inner);
+        if (statSync(innerPath).isFile()) entries.push({ name: `${name}/${inner}`, path: innerPath });
+      }
+      continue;
+    }
+    entries.push({ name, path });
+  }
+
+  for (const { name, path } of entries) {
     if (!READABLE.has(extname(name).toLowerCase())) continue;
-    const text = readFileSync(path, 'utf8');
+    const { text, provenance } = stripFrontmatter(readFileSync(path, 'utf8'));
     if (text.trim().length === 0) continue;
     docs.push({
       name,
       text,
       words: countWords(text),
       language: override ?? detectLanguage(text).language,
+      provenance,
     });
   }
   return docs;
@@ -151,87 +197,227 @@ export function percentile(sorted: readonly number[], p: number): number {
   return lowValue + (highValue - lowValue) * (index - low);
 }
 
+/** One rule's two distributions, and what they imply. */
+export interface Band {
+  readonly rule: string;
+  readonly accepted: readonly number[];
+  readonly generated: readonly number[];
+  readonly acceptedExcluded: number;
+  readonly generatedExcluded: number;
+  readonly minWords: number;
+}
+
+export function bandsFor(
+  accepted: readonly Observation[],
+  generated: readonly Observation[],
+): readonly Band[] {
+  const byRule = new Map(generated.map((o) => [o.rule, o]));
+  return accepted.map((a) => {
+    const g = byRule.get(a.rule);
+    return {
+      rule: a.rule,
+      accepted: a.densities,
+      generated: g?.densities ?? [],
+      acceptedExcluded: a.tooShort.length,
+      generatedExcluded: g?.tooShort.length ?? 0,
+      minWords: a.minWords || (g?.minWords ?? 0),
+    };
+  });
+}
+
+/**
+ * The verdict on whether a rule can separate the two corpora at all.
+ *
+ * The floor goes at the 90th percentile of accepted writing, so nine in ten
+ * accepted documents pass untouched. The ceiling goes at the 10th percentile
+ * of generated writing, so nine in ten generated documents score zero. If the
+ * ceiling lands at or below the floor, no pair of thresholds separates the two
+ * distributions and the rule cannot tell machine from human at ANY setting.
+ *
+ * That is a finding about the RULE, not a failure of the run — the same shape
+ * as agent-evals discovering that its semantic threshold could not classify
+ * its own labelled pairs, and recording the negative result instead of
+ * inventing a number to close the ticket.
+ */
+export interface Verdict {
+  readonly floor: number | null;
+  readonly ceiling: number | null;
+  /** ceiling − floor. Positive means a usable band exists. */
+  readonly margin: number | null;
+  /** The strictest test: does any generated value fall at or below every accepted one? */
+  readonly extremesOverlap: boolean | null;
+  readonly status: 'separates' | 'overlaps' | 'insufficient';
+}
+
+export function verdictFor(band: Band, minDocs: number): Verdict {
+  if (band.accepted.length === 0 || band.generated.length === 0) {
+    return { floor: null, ceiling: null, margin: null, extremesOverlap: null, status: 'insufficient' };
+  }
+
+  const floor = percentile(band.accepted, 0.9);
+  const ceiling = percentile(band.generated, 0.1);
+  const margin = ceiling - floor;
+  const maxAccepted = band.accepted[band.accepted.length - 1] ?? 0;
+  const minGenerated = band.generated[0] ?? 0;
+
+  if (band.accepted.length < minDocs || band.generated.length < minDocs) {
+    return { floor, ceiling, margin, extremesOverlap: minGenerated <= maxAccepted, status: 'insufficient' };
+  }
+
+  return {
+    floor,
+    ceiling,
+    margin,
+    extremesOverlap: minGenerated <= maxAccepted,
+    status: margin > 0 ? 'separates' : 'overlaps',
+  };
+}
+
+function fmt(x: number | null): string {
+  return x === null ? '—' : x.toFixed(2);
+}
+
+function stats(values: readonly number[], minDocs: number): string {
+  if (values.length === 0) return 'n=0 | — | — | —';
+  const n = values.length;
+  const enough = n >= minDocs;
+  const median = enough ? fmt(percentile(values, 0.5)) : 'n too small';
+  return `n=${n} | ${fmt(values[0] ?? 0)} | ${median} | ${fmt(values[n - 1] ?? 0)}`;
+}
+
 export function formatReport(
   docs: readonly Document[],
   observations: Readonly<Record<Language, readonly Observation[]>>,
   dir: string,
+  generated?: {
+    readonly docs: readonly Document[];
+    readonly observations: Readonly<Record<Language, readonly Observation[]>>;
+    readonly dir: string;
+  },
 ): string {
   const out: string[] = [];
-  out.push(`# calibration report: ${dir}`);
+  out.push(`# calibration report`);
+  out.push('');
+  out.push(`Accepted corpus: \`${dir}\``);
+  if (generated !== undefined) out.push(`Generated corpus: \`${generated.dir}\``);
   out.push('');
 
-  if (docs.length === 0) {
+  if (docs.length === 0 && (generated?.docs.length ?? 0) === 0) {
     out.push('No readable documents found (`.md`, `.markdown`, `.txt`).');
     return out.join('\n');
   }
 
-  out.push(`**${docs.length} document${docs.length === 1 ? '' : 's'}**, totalling ${docs.reduce((a, d) => a + d.words, 0)} words:`);
-  out.push('');
-  out.push('| document | words | language |');
-  out.push('| --- | --- | --- |');
-  for (const doc of docs) out.push(`| ${doc.name} | ${doc.words} | \`${doc.language}\` |`);
-  out.push('');
+  out.push(corpusTable('Accepted — writing you consider good', docs));
+  if (generated !== undefined) {
+    out.push(corpusTable('Generated — machine-written by construction', generated.docs));
+  }
 
+  const thin: string[] = [];
   if (docs.length < MIN_DOCS.value) {
+    thin.push(`the accepted corpus has ${docs.length} document${docs.length === 1 ? '' : 's'}`);
+  }
+  if (generated !== undefined && generated.docs.length < MIN_DOCS.value) {
+    thin.push(`the generated corpus has ${generated.docs.length}`);
+  }
+  if (thin.length > 0) {
     out.push(
-      `> **This corpus is too small to calibrate anything.** ${docs.length} document` +
-        `${docs.length === 1 ? '' : 's'} against a minimum of ${MIN_DOCS.value}. ` +
-        `No percentile below is reported, and no constant should move on the ` +
-        `strength of this run. What follows is the raw observation — every ` +
-        `figure carries its own n, and an n of 1 or 2 is a reading, not a ` +
-        `distribution.`,
+      `> **Below the ${MIN_DOCS.value}-document minimum:** ${thin.join(', and ')}. ` +
+        `No percentile is reported from a sample that small, and no constant should ` +
+        `move on the strength of this run. Every figure below carries its own n.`,
     );
     out.push('');
   }
 
   for (const language of ['sr', 'en'] as const) {
-    const rows = observations[language];
-    const inLanguage = docs.filter((d) => d.language === language);
-    if (inLanguage.length === 0) continue;
+    const acceptedHere = docs.filter((d) => d.language === language);
+    const generatedHere = generated?.docs.filter((d) => d.language === language) ?? [];
+    if (acceptedHere.length === 0 && generatedHere.length === 0) continue;
 
-    out.push(`## ${language} — ${inLanguage.length} document${inLanguage.length === 1 ? '' : 's'}`);
+    out.push(
+      `## ${language} — ${acceptedHere.length} accepted, ${generatedHere.length} generated`,
+    );
     out.push('');
-    out.push('| rule | n | min | median | p90 | max | implied floor | implied ceiling |');
-    out.push('| --- | --- | --- | --- | --- | --- | --- | --- |');
 
-    for (const row of rows) {
-      const n = row.densities.length;
-      if (n === 0) {
+    if (generated === undefined) {
+      out.push('| rule | n | min | median | max | implied floor | implied ceiling |');
+      out.push('| --- | --- | --- | --- | --- | --- | --- |');
+      for (const row of observations[language]) {
+        const n = row.densities.length;
+        const floor = n >= MIN_DOCS.value ? fmt(percentile(row.densities, 0.9)) : `n=${n}, too few`;
         out.push(
-          `| ${row.rule} | 0 | — | — | — | — | ${
-            row.tooShort.length > 0 ? 'every document too short' : 'no data'
-          } | not derivable |`,
+          `| ${row.rule} | ${stats(row.densities, MIN_DOCS.value)} | ${floor} | ` +
+            `no generated corpus |`,
         );
-        continue;
       }
-      const fmt = (x: number): string => x.toFixed(2);
-      const enough = n >= MIN_DOCS.value;
-      const p90 = enough ? fmt(percentile(row.densities, 0.9)) : `n=${n}`;
-      const median = enough ? fmt(percentile(row.densities, 0.5)) : `n=${n}`;
+      out.push('');
+      continue;
+    }
+
+    const bands = bandsFor(observations[language], generated.observations[language]);
+
+    out.push('| rule | accepted n / min / median / max | generated n / min / median / max |');
+    out.push('| --- | --- | --- |');
+    for (const band of bands) {
       out.push(
-        `| ${row.rule} | ${n} | ${fmt(row.densities[0] ?? 0)} | ${median} | ${p90} | ` +
-          `${fmt(row.densities[n - 1] ?? 0)} | ${
-            enough ? fmt(percentile(row.densities, 0.9)) : `n=${n}, too few`
-          } | not derivable |`,
+        `| ${band.rule} | ${stats(band.accepted, MIN_DOCS.value)} | ` +
+          `${stats(band.generated, MIN_DOCS.value)} |`,
       );
     }
     out.push('');
 
-    const excluded = rows.filter((r) => r.tooShort.length > 0);
-    if (excluded.length > 0) {
-      out.push('### Excluded as too short');
+    out.push('| rule | implied floor (accepted p90) | implied ceiling (generated p10) | margin | verdict |');
+    out.push('| --- | --- | --- | --- | --- |');
+    for (const band of bands) {
+      const v = verdictFor(band, MIN_DOCS.value);
+      const verdict =
+        v.status === 'insufficient'
+          ? `too few (${band.accepted.length}/${band.generated.length})`
+          : v.status === 'separates'
+            ? 'separates'
+            : '**OVERLAPS**';
+      out.push(
+        `| ${band.rule} | ${fmt(v.floor)} | ${fmt(v.ceiling)} | ${fmt(v.margin)} | ${verdict} |`,
+      );
+    }
+    out.push('');
+
+    const overlapping = bands.filter((b) => verdictFor(b, MIN_DOCS.value).status === 'overlaps');
+    if (overlapping.length > 0) {
+      out.push('### Rules that cannot separate the two corpora');
       out.push('');
       out.push(
-        'Each rule abstains below a gate derived from its own ceiling ' +
-          '(`1000 / ceiling` words). Documents under that gate contribute no ' +
-          'density, because one occurrence in them would already sit at the ceiling.',
+        'For these, the 10th percentile of generated writing sits at or below the ' +
+          '90th percentile of accepted writing. No pair of thresholds puts nine in ' +
+          'ten of each corpus on the right side, so the rule cannot tell machine ' +
+          'from human at any setting. That is a finding about the rule.',
       );
       out.push('');
-      for (const row of excluded) {
+      for (const band of overlapping) {
+        const v = verdictFor(band, MIN_DOCS.value);
         out.push(
-          `- \`${row.rule}\`${row.minWords > 0 ? ` needs ${row.minWords} words` : ''} — ` +
-            `abstained on ${row.tooShort.length} of ${inLanguage.length}: ` +
-            `${row.tooShort.join(', ')}`,
+          `- \`${band.rule}\` — floor would be ${fmt(v.floor)}, ceiling ${fmt(v.ceiling)}, ` +
+            `margin ${fmt(v.margin)} (n=${band.accepted.length} accepted, ` +
+            `n=${band.generated.length} generated)`,
+        );
+      }
+      out.push('');
+    }
+
+    const excluded = bands.filter((b) => b.acceptedExcluded + b.generatedExcluded > 0);
+    if (excluded.length > 0) {
+      out.push('### Abstentions, excluded from both distributions');
+      out.push('');
+      out.push(
+        'A rule abstains below a gate derived from its own ceiling ' +
+          '(`1000 / ceiling` words). Those documents contribute no density — not a ' +
+          'zero, which would be a measurement the text does not support.',
+      );
+      out.push('');
+      for (const band of excluded) {
+        out.push(
+          `- \`${band.rule}\`${band.minWords > 0 ? ` needs ${band.minWords} words` : ''} — ` +
+            `${band.acceptedExcluded} of ${acceptedHere.length} accepted, ` +
+            `${band.generatedExcluded} of ${generatedHere.length} generated`,
         );
       }
       out.push('');
@@ -243,30 +429,47 @@ export function formatReport(
   out.push('## How to read this');
   out.push('');
   out.push(
-    '**The implied floor is the 90th percentile of your own writing.** The floor ' +
-      'is the density at or below which a rule scores a clean 1.0, so setting it ' +
-      'at your p90 means nine documents in ten of the writing you already accept ' +
-      'pass that rule untouched.',
+    '**The floor comes from your writing, the ceiling from the machine\'s.** The ' +
+      'floor sits at the 90th percentile of the accepted corpus, so nine documents ' +
+      'in ten of the writing you already accept pass that rule untouched. The ' +
+      'ceiling sits at the 10th percentile of the generated corpus, so nine in ten ' +
+      'generated documents score zero.',
   );
   out.push('');
   out.push(
-    '**No ceiling is derivable from this corpus, and none is offered.** A ceiling ' +
-      'is the density at which a rule scores 0 — "this much is machine-written" — ' +
-      'and a corpus of writing you consider good contains no information about ' +
-      'that. Extrapolating one from the maximum would produce a number that looks ' +
-      'measured and is not. Calibrating ceilings needs a second corpus: texts you ' +
-      'consider machine-written, labelled by you.',
+    '**A margin at or below zero means the rule cannot separate the two corpora ' +
+      'at any threshold.** Not that the calibration failed — that the rule does not ' +
+      'carry the signal it was assumed to carry. Report it, do not tune around it.',
   );
   out.push('');
   out.push(
-    `**Nothing here has been written to any file.** These are recommendations. ` +
-      `Moving a constant is a commit somebody signs — a tool that tunes its own ` +
-      `thresholds against a corpus it also scores converges on "this writing is ` +
-      `perfect", which is true by construction.`,
+    '**Nothing here has been written to any file.** These are recommendations. ' +
+      'Moving a constant is a commit somebody signs — a tool that tunes its own ' +
+      'thresholds against a corpus it also scores converges on "this writing is ' +
+      'perfect", which is true by construction.',
   );
   out.push('');
-  out.push(`This run used 1 uncalibrated constant:\n  ${MIN_DOCS.id} = ${MIN_DOCS.value} — ${MIN_DOCS.note}`);
+  out.push(
+    `This run used 1 uncalibrated constant:\n  ${MIN_DOCS.id} = ${MIN_DOCS.value} — ${MIN_DOCS.note}`,
+  );
   out.push('');
 
   return out.join('\n');
+}
+
+function corpusTable(title: string, docs: readonly Document[]): string {
+  const lines: string[] = [];
+  const words = docs.reduce((a, d) => a + d.words, 0);
+  lines.push(`**${title}** — ${docs.length} document${docs.length === 1 ? '' : 's'}, ${words} words`);
+  lines.push('');
+  if (docs.length === 0) {
+    lines.push('_(none)_');
+    lines.push('');
+    return lines.join('\n');
+  }
+  lines.push('| document | words | language |');
+  lines.push('| --- | --- | --- |');
+  for (const doc of docs) lines.push(`| ${doc.name} | ${doc.words} | \`${doc.language}\` |`);
+  lines.push('');
+  return lines.join('\n');
 }
