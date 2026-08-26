@@ -23,9 +23,10 @@ Evidence: Direct. The page serves, checks, highlights findings at the offsets
           $0.10–$0.12 per run, measured across three live runs.
           Still unobserved: no traffic, no abuse, and therefore no evidence
           that a 20-per-minute limit or a 40,000-character cap is anywhere
-          near right. The cold start is quoted at 30–50 seconds from Render's
-          own documentation and has not been reproduced here in two attempts —
-          see the consequences below.
+          near right. The cold start is Render's documented "about one
+          minute", has not been reproduced here in two attempts, and was
+          quoted for two days as a "30–50 seconds" that appears nowhere in
+          their documentation — see the consequences below.
 
 ## Context
 
@@ -258,12 +259,24 @@ at all. Also not a cold start: `uptimeSeconds` showed 478, so the process had
 restarted 8 minutes earlier — the deploy described above. The gate firing reset
 the clock.
 
-So "30–50 seconds" remains what it has always been: **Render's documentation,
-quoted, unverified here**, and now quoted in four places. It is the same shape
-as the phrase catalogue this repository retired in ADR 014 — a figure adopted
-on a vendor's authority, repeated until it reads as established, and never
-checked against the thing it describes. The difference is that this one is
-labelled.
+**AND THE FIGURE WAS NEVER RENDER'S.** Checking their documentation in order to
+attribute it properly, it says: Render "spins down a Free web service that goes
+15 minutes without receiving any inbound traffic", and spinning back up "takes
+about one minute". There is no "30–50 seconds" anywhere in it.
+
+That number was introduced on 2026-08-26 in commit `4b23fa6`, presented as
+Render's documentation, and repeated into four files over two days. It was not
+quoted from anything. It is a plausible-sounding range that was invented and
+then attributed — which is a fabricated citation, and strictly worse than the
+unverified vendor figure it was mistaken for, because a reader checking the
+source would have found nothing to check against.
+
+Corrected everywhere to the documented "about one minute", quoted, and labelled
+as Render's rather than as this repository's.
+
+The shape is the one ADR 014 describes: a figure adopted on authority, repeated
+until it reads as established, never checked against the thing it describes.
+The difference is that the catalogue really was Wikipedia's. This was nobody's.
 
 There is a second possibility that neither attempt can exclude: that this
 service does not spin down at all. `render.yaml` sets `healthCheckPath:

@@ -102,11 +102,11 @@ checker nobody pastes into.</p>
 <p><strong>Limits:</strong> ${options.maxChars.toLocaleString('en-GB')} characters per
 submission, ${options.rateLimitPerMinute} submissions per minute per address.
 Both are stated here rather than discovered by hitting them.</p>
-<p><strong>If this page took a while to load, that is the free tier.</strong>
-The service is documented as sleeping after fifteen minutes with no traffic, and
-the first visitor after a quiet spell waits for it to start. There is no queue
-and nothing is wrong. Render publishes that wait as 30–50 seconds; we have not
-managed to observe it, so treat the number as theirs rather than ours.</p>
+<p><strong>If this page took about a minute to load, that is the free tier.</strong>
+Render spins the service down after fifteen minutes without traffic, and says
+spinning back up takes about a minute. There is no queue and nothing is wrong.
+That figure is Render's; we have tried twice to observe it and failed both
+times, so treat it as theirs rather than ours.</p>
 <p>The rules are deterministic and run in this process — no model is called, so
 this page costs nothing to serve and needs no API key. The <code>brief</code>
 command, which does call a model, stays on the command line.</p>

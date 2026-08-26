@@ -144,10 +144,14 @@ describe('the page copy', () => {
     expect(html.toLowerCase()).not.toContain('detects ai');
   });
 
-  it('warns about the cold start', async () => {
-    // A visitor who waits forty seconds without being told why leaves.
+  it('warns about the cold start, in the vendor\'s words', async () => {
+    // A visitor who waits a minute without being told why leaves. The figure
+    // is Render's and is labelled as theirs — an earlier version of this page
+    // said "30–50 seconds" and attributed it to their documentation, where it
+    // does not appear.
     const html = await (await app.request('/')).text();
-    expect(html).toContain('30–50 seconds');
+    expect(html).toContain('about a minute');
+    expect(html).not.toContain('30–50');
   });
 });
 
