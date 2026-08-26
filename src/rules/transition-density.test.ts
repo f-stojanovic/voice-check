@@ -42,5 +42,16 @@ describe('transition-density', () => {
     const short = runRule(transitionDensity, 'Međutim, planer to nije mogao da zna.', 'sr');
     expect(short.outcome).toBe('abstained');
     expect(short.reason).toContain('Needs 51 words');
+
+    // But TWO occurrences in the same short note are scored, not abstained.
+    // The gate's argument covers a single accident; it does not cover a
+    // pattern. `samples/machine-sr.md` had three and was going unscored.
+    const twice = runRule(
+      transitionDensity,
+      'Međutim, planer to nije mogao da zna. Štaviše, niko nije gledao.',
+      'sr',
+    );
+    expect(twice.outcome).toBe('scored');
+    expect(twice.findings).toHaveLength(2);
   });
 });

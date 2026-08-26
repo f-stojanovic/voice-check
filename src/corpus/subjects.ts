@@ -17,6 +17,17 @@
  * A consequence worth stating: length is unconstrained too, so a generated
  * text may fall below a rule's abstention gate and contribute nothing. That is
  * the correct behaviour and the calibration report counts it.
+ *
+ * THE ONE THING THE SERBIAN PROMPTS DO CONSTRAIN is the language variant, and
+ * that constraint was added because the first run measured the need for it.
+ * Prompted with the subject alone, the model returned Croatian in all fifteen
+ * documents — 77 `što` to 29 `šta`, ijekavian throughout. The Serbian rules
+ * are ekavica-specific, so that corpus could not calibrate them.
+ *
+ * A variant is not a style instruction. `ekavicom` says which standard to
+ * write, not how to write it, in the same way that asking for Serbian at all
+ * does. The first corpus is kept in `corpus/archive/sr-croatian-drift/` as the
+ * evidence that made this necessary.
  */
 
 import type { Language } from '../types.js';
@@ -32,7 +43,7 @@ export const SUBJECTS: readonly Subject[] = [
     id: 'project-tool-review',
     format: 'review',
     prompt: {
-      sr: 'Napiši blog post o alatu za upravljanje projektima koji si koristio.',
+      sr: 'Napiši blog post o alatu za upravljanje projektima koji si koristio. Piši na srpskom jeziku, ekavicom.',
       en: 'Write a blog post about a project management tool you have used.',
     },
   },
@@ -40,7 +51,7 @@ export const SUBJECTS: readonly Subject[] = [
     id: 'coffee-grinder-review',
     format: 'review',
     prompt: {
-      sr: 'Napiši blog post o mlinu za kafu koji si kupio.',
+      sr: 'Napiši blog post o mlinu za kafu koji si kupio. Piši na srpskom jeziku, ekavicom.',
       en: 'Write a blog post about a coffee grinder you bought.',
     },
   },
@@ -48,7 +59,7 @@ export const SUBJECTS: readonly Subject[] = [
     id: 'noise-cancelling-review',
     format: 'review',
     prompt: {
-      sr: 'Napiši blog post o slušalicama sa aktivnim poništavanjem buke.',
+      sr: 'Napiši blog post o slušalicama sa aktivnim poništavanjem buke. Piši na srpskom jeziku, ekavicom.',
       en: 'Write a blog post about noise-cancelling headphones.',
     },
   },
@@ -56,7 +67,7 @@ export const SUBJECTS: readonly Subject[] = [
     id: 'ebike-review',
     format: 'review',
     prompt: {
-      sr: 'Napiši blog post o električnom biciklu koji voziš godinu dana.',
+      sr: 'Napiši blog post o električnom biciklu koji voziš godinu dana. Piši na srpskom jeziku, ekavicom.',
       en: 'Write a blog post about an electric bike you have ridden for a year.',
     },
   },
@@ -64,7 +75,7 @@ export const SUBJECTS: readonly Subject[] = [
     id: 'compound-interest-explainer',
     format: 'explainer',
     prompt: {
-      sr: 'Napiši blog post koji objašnjava kako radi složena kamata.',
+      sr: 'Napiši blog post koji objašnjava kako radi složena kamata. Piši na srpskom jeziku, ekavicom.',
       en: 'Write a blog post explaining how compound interest works.',
     },
   },
@@ -72,7 +83,7 @@ export const SUBJECTS: readonly Subject[] = [
     id: 'sleep-explainer',
     format: 'explainer',
     prompt: {
-      sr: 'Napiši blog post o tome zašto je san važan.',
+      sr: 'Napiši blog post o tome zašto je san važan. Piši na srpskom jeziku, ekavicom.',
       en: 'Write a blog post about why sleep matters.',
     },
   },
@@ -80,7 +91,7 @@ export const SUBJECTS: readonly Subject[] = [
     id: 'dns-explainer',
     format: 'explainer',
     prompt: {
-      sr: 'Napiši blog post koji objašnjava šta je DNS.',
+      sr: 'Napiši blog post koji objašnjava šta je DNS. Piši na srpskom jeziku, ekavicom.',
       en: 'Write a blog post explaining what DNS is.',
     },
   },
@@ -88,7 +99,7 @@ export const SUBJECTS: readonly Subject[] = [
     id: 'renting-explainer',
     format: 'explainer',
     prompt: {
-      sr: 'Napiši blog post o tome šta treba proveriti pre potpisivanja ugovora o zakupu.',
+      sr: 'Napiši blog post o tome šta treba proveriti pre potpisivanja ugovora o zakupu. Piši na srpskom jeziku, ekavicom.',
       en: 'Write a blog post about what to check before signing a rental agreement.',
     },
   },
@@ -96,7 +107,7 @@ export const SUBJECTS: readonly Subject[] = [
     id: 'marathon-experience',
     format: 'experience',
     prompt: {
-      sr: 'Napiši blog post o tome kako si trčao prvi maraton.',
+      sr: 'Napiši blog post o tome kako si trčao prvi maraton. Piši na srpskom jeziku, ekavicom.',
       en: 'Write a blog post about running your first marathon.',
     },
   },
@@ -104,7 +115,7 @@ export const SUBJECTS: readonly Subject[] = [
     id: 'moving-city-experience',
     format: 'experience',
     prompt: {
-      sr: 'Napiši blog post o selidbi u drugi grad.',
+      sr: 'Napiši blog post o selidbi u drugi grad. Piši na srpskom jeziku, ekavicom.',
       en: 'Write a blog post about moving to another city.',
     },
   },
@@ -112,7 +123,7 @@ export const SUBJECTS: readonly Subject[] = [
     id: 'career-change-experience',
     format: 'experience',
     prompt: {
-      sr: 'Napiši blog post o promeni karijere u tridesetim godinama.',
+      sr: 'Napiši blog post o promeni karijere u tridesetim godinama. Piši na srpskom jeziku, ekavicom.',
       en: 'Write a blog post about changing careers in your thirties.',
     },
   },
@@ -120,7 +131,7 @@ export const SUBJECTS: readonly Subject[] = [
     id: 'learning-instrument-experience',
     format: 'experience',
     prompt: {
-      sr: 'Napiši blog post o učenju instrumenta u odraslom dobu.',
+      sr: 'Napiši blog post o učenju instrumenta u odraslom dobu. Piši na srpskom jeziku, ekavicom.',
       en: 'Write a blog post about learning an instrument as an adult.',
     },
   },
@@ -128,7 +139,7 @@ export const SUBJECTS: readonly Subject[] = [
     id: 'sourdough-howto',
     format: 'howto',
     prompt: {
-      sr: 'Napiši blog post o tome kako se pravi hleb od kiselog testa.',
+      sr: 'Napiši blog post o tome kako se pravi hleb od kiselog testa. Piši na srpskom jeziku, ekavicom.',
       en: 'Write a blog post about how to make sourdough bread.',
     },
   },
@@ -136,7 +147,7 @@ export const SUBJECTS: readonly Subject[] = [
     id: 'budget-howto',
     format: 'howto',
     prompt: {
-      sr: 'Napiši blog post o tome kako da napraviš mesečni budžet.',
+      sr: 'Napiši blog post o tome kako da napraviš mesečni budžet. Piši na srpskom jeziku, ekavicom.',
       en: 'Write a blog post about how to set up a monthly budget.',
     },
   },
@@ -144,7 +155,7 @@ export const SUBJECTS: readonly Subject[] = [
     id: 'houseplants-howto',
     format: 'howto',
     prompt: {
-      sr: 'Napiši blog post o tome kako da održiš sobne biljke u životu.',
+      sr: 'Napiši blog post o tome kako da održiš sobne biljke u životu. Piši na srpskom jeziku, ekavicom.',
       en: 'Write a blog post about how to keep houseplants alive.',
     },
   },
@@ -152,7 +163,7 @@ export const SUBJECTS: readonly Subject[] = [
     id: 'bike-maintenance-howto',
     format: 'howto',
     prompt: {
-      sr: 'Napiši blog post o osnovnom održavanju bicikla.',
+      sr: 'Napiši blog post o osnovnom održavanju bicikla. Piši na srpskom jeziku, ekavicom.',
       en: 'Write a blog post about basic bicycle maintenance.',
     },
   },

@@ -5,90 +5,67 @@ format: review
 language: sr
 model: claude-opus-5
 generated: 2026-08-26
-words: 799
-prompt: Napiši blog post o mlinu za kafu koji si kupio.
+words: 755
+prompt: Napiši blog post o mlinu za kafu koji si kupio. Piši na srpskom jeziku,
+  ekavicom.
 ---
 
-*Napomena: ja nemam kuhinju ni bankovni račun, pa je ovo izmišljena priča — ali napisana tako da zvuči kao da je stvarno bilo. Slobodno je prilagodi svom mlinu i svom glasu.*
+# Kupio sam mlin za kafu i, iskreno, ne znam zašto sam toliko čekao
 
----
+Postoji ta faza u životu svakog čoveka koji voli kafu kada shvati da problem nije u aparatu, nije u vodi, nije čak ni u tome što ustaje prerano. Problem je u mlevenoj kafi koja stoji otvorena u kesici već tri nedelje i miriše otprilike kao karton.
 
-# Kupio sam mlin za kafu i sad sam nepodnošljiv u društvu
+Kod mene je taj trenutak nastupio jednog utorka ujutru, kada sam skuvao kafu, seo, otpio gutljaj i pomislio: *ovo je topla voda sa uspomenom na kafu*.
 
-Postoji tačka u životu svakog čovjeka kad shvati da mu supermarket mljevena kafa više nije dovoljna. Kod mene se to desilo jednog utorka u novembru, otprilike u 7:14 ujutro, dok sam iz vakumirane kesice koja stoji otvorena već tri sedmice sipao nešto što je mirisalo kao uspomena na kafu.
+Nedelju dana kasnije stigao mi je paket.
 
-Mjesec dana kasnije, na mom šanku stoji **Timemore Chestnut C3 ESP**. I da, postao sam Ta Osoba.
+## Kako sam birao
 
-## Zašto uopšte mlin?
+Prvo sam, naravno, uradio ono što svi rade — proveo sam četiri večeri čitajući forume i gledajući klipove ljudi koji imaju bolje osvetljenje u kuhinji nego ja u celom stanu. Naučio sam nekoliko stvari:
 
-Kratka verzija: mljevena kafa gubi većinu aromatičnih jedinjenja u prvih 15-ak minuta nakon mljevenja. Sve ono što u zrnu miriše na čokoladu, orah ili citruse — isparava. Ono što ostaje je gorčina i uspomena.
+**Žrvnjevi, ne noževi.** Oni jeftini mlinovi sa rotirajućim nožem, koji koštaju kao dve pice, ne melju kafu — oni je razbijaju. Dobijete mešavinu prašine i krupnih komada, i onda vam ekstrakcija bude istovremeno i prekisela i pregorka. Ne pitajte me kako znam.
 
-Duža verzija je da sam pročitao previše Reddit threadova i da me niko nije mogao zaustaviti.
+**Ručni ili električni.** Ovde sam se dvoumio najduže. Električni je brži i lakši, ali dobri modeli počinju negde gde meni počinje neprijatnost u stomaku. Ručni mlinovi za iste pare daju znatno bolje žrvnjeve.
 
-Prvo pitanje je bilo: **ručni ili električni?** Električni je brži i praktičniji, ali pristojan električni mlin sa pravim žrvnjevima počinje negdje oko 200 KM i brzo ide gore. Ručni mlin za 120 KM daje kvalitet mljevenja koji bi kod električnog koštao dvostruko.
+Na kraju sam uzeo **ručni mlin sa konusnim žrvnjevima od nerđajućeg čelika**, sa spoljašnjim podešavanjem grubine mlevenja i kapacitetom od nekih 25 grama. Metalno telo, drveno dugme na ručici, deluje kao nešto što bi moglo da preživi pad sa stola. (Da, testirano. Nenamerno. Preživelo je.)
 
-Pošto pravim jednu do dvije kafe dnevno, a ne kafeteriju, ručni je imao smisla.
+## Prvo mlevenje
 
-## Šta sam tražio
+Otvorio sam kesu sveže pržene kafe — etiopski *natural*, jer sam odlučio da ako već ulazim u ovu priču, ulazim do kraja — i odmerio 18 grama.
 
-Jedna stvar koju sam naučio dok sam istraživao: **žrvnjevi (burrs) su sve, noževi (blades) su ništa.**
+I tu se desilo ono zbog čega ceo ovaj tekst postoji.
 
-Oni jeftini mlinovi sa rotirajućim nožem ne melju kafu — oni je sjeckaju nasumično. Dobiješ mješavinu prašine i kamenčića. Prašina se preekstrahuje i gorka je, krupni komadi se podekstrahuju i kiseli su, i onda piješ obje greške u istoj šolji.
+Miris. Kada počnete da meljete cele zrna, kuhinja za petnaest sekundi počne da miriše na borovnice i nešto što liči na med. Ozbiljno. Nisam znao da kafa to radi. Godinama sam kupovao mlevenu kafu i verovao da kafa miriše na — pa, na kafu. Ispostavilo se da ona miriše na kafu tek nekih deset minuta nakon što je samlevena, a posle toga polako postaje smeđi prah opšte namene.
 
-Žrvnjevi drobe zrno između dvije nazubljene površine na podesivom razmaku. Rezultat je ujednačena granulacija — i to je razlika koju osjetiš prvog dana.
+## Kako se to radi u praksi
 
-Ostalo na mojoj listi:
-- Podešavanje sa jasnim "klikovima", da mogu ponoviti postavku
-- Dovoljno mali za putovanje
-- Da ne moram vježbati biceps 4 minute za jednu kafu
+Da ne bude da sam samo oduševljen, evo i realnog izveštaja.
 
-## Prvi utisci
+**Vreme.** Za 18 grama treba mi oko 35–40 sekundi za filter kafu. Za espreso, gde je mlivo mnogo sitnije, ide sporije — oko minut i po, i osetite to u podlaktici. Prvih nekoliko dana sam se pitao jesam li kupio mlin ili spravu za vežbanje. Sada mi je to postalo deo rituala i ne bih ga menjao.
 
-Kutija je bila sumnjivo mala i sumnjivo teška. Mlin je od aluminijuma, hladan u ruci, sa teksturisanim tijelom koje ne klizi. Ručica se magnetno kači sa strane — sitnica, ali ona vrsta sitnice zbog koje se stvar osjeća kao alat, a ne kao gedžet.
+**Buka.** Nikakva. Ovo je ozbiljna prednost ako ustajete u šest, a neko u kući ne ustaje u šest. Čuje se samo tiho krckanje zrna, što je, moram reći, jedan od prijatnijih zvukova koje sam otkrio ove godine.
 
-Rasklopio sam ga odmah, jer naravno. Unutra: nerđajući čelični žrvnjevi, dvostruki ležaj koji drži osovinu stabilnom (razlog zašto mljevenje ne "šeta"), i mehanizam za podešavanje sa 24 klika po okretu.
+**Podešavanje.** Klikovi. Okrenete prsten, čujete „klik-klik-klik", i to je to. Za espreso sam negde na 8 klikova od nule, za filter oko 20, za frenč pres oko 30. Prvih par dana sam eksperimentisao i pravio grozne kafe, ali to je deo procesa.
 
-**Prvo mljevenje:** 18 grama etiopske kafe, 22 klika od nule, za French press. Trajalo je oko 25 sekundi i bilo je... zabavno? Osjetiš kad zrno pukne. Zvuk je kao da neko gazi po šljunku, i onda odjednom prestane i znaš da si gotov.
-
-A miris. Prostorija je mirisala kao da sam otvorio pekaru.
-
-## Kako pije?
-
-Ovdje očekujete da napišem "promijenilo mi je život", pa ću biti umjereniji: **promijenilo je kafu, a kafa je jedan mali dio života koji se dešava svaki dan.**
-
-Konkretno:
-- **V60** je odjednom počeo imati onaj citrusni završetak koji su ljudi opisivali a ja nikad nisam nalazio
-- **French press** je prestao biti mutan i pjeskovit na dnu
-- **Moka** je izgubila onu oštru gorčinu koju sam godinama smatrao normalnom
-
-Najveće iznenađenje: kafa koju sam ranije kupovao mljevenu i smatrao osrednjom — ista ta kafa u zrnu ispala je odlična. Nije bio problem u kafi. Problem sam bio ja.
+**Čišćenje.** Rastavi se za trideset sekundi, četkica, gotovo. Jednom nedeljno je sasvim dovoljno.
 
 ## Šta mi smeta
 
-Da ne ispadne reklama:
+Da budem pošten:
 
-**Vrijeme i trud.** 25 sekundi ne zvuči puno dok nisi neispavan i dok ti neko ne traži kafu. Za tri šolje zaredom već razmišljam o električnom.
+- Kapacitet od 25 grama znači da za dve veće šolje moram da meljem dva puta. Nije tragedija, ali jeste sitna nervoza.
+- Statički elektricitet. Kada je vazduh suv, mlivo se lepi za sve. Rešenje je ono što na internetu zovu *Ross Droplet Technique* — pokvasite prst i dodirnite zrna pre mlevenja. Zvuči kao urbana legenda, ali radi.
+- Ako imate goste, ručno mlevenje za pet ljudi je... ozbiljan angažman.
 
-**Espresso je granica.** Model sa "ESP" oznakom ima finije podešavanje za espresso, i radi — ali na najfinijim postavkama treba osjetno više snage i strpljenja. Ako pravite espresso svaki dan, ovo nije vaš mlin.
+## Da li se isplatilo?
 
-**Statika.** Prvih par dana su se sitne čestice lijepile za posudu. Rješenje je smiješno jednostavno: kap vode na zrna prije mljevenja (tzv. RDT). Radi kao čarolija.
+Mlin me je koštao otprilike koliko četiri-pet kafa u boljem kafiću u centru. Za taj novac sam dobio kafu koja je kod kuće ozbiljno bolja nego ranije, i to svaki dan.
 
-**Čišćenje.** Jednom u dvije-tri sedmice treba rasklopiti i očistiti četkicom. Traje dva minuta, ali treba se sjetiti.
+Ali ono što nisam očekivao jeste da se promenio i moj odnos prema samom procesu. Ranije je jutarnja kafa bila stvar koju obavim dok gledam u telefon. Sada sedam, meljem tih četrdeset sekundi, ne radim ništa drugo, i to je verovatno jedini deo dana kada zaista ne radim ništa drugo.
 
-## Da li se isplati?
-
-Ako pijete instant kafu i sretni ste — ne, i iskreno vam zavidim na jednostavnosti.
-
-Ako već kupujete pristojnu kafu, imate V60 ili French press, i pitate se zašto vaša kafa kod kuće nikad nije kao ona u kafiću — **mlin je najveći skok koji možete napraviti za te pare.** Veći od boljeg čajnika, boljeg filtera, ili skuplje kafe.
-
-Redoslijed ulaganja bi, po meni, trebao biti: mlin → vaga → sve ostalo.
-
-## Jedna neočekivana posljedica
-
-Sad imam ritual. Tri minute ujutro kad ne gledam u telefon, nego meljem kafu i slušam kako zrna pucaju. Nisam to tražio kad sam naručivao, ali ispalo je da je to možda najbolji dio.
-
-I da — postao sam nepodnošljiv. Zaustavio sam prijatelja usred rečenice da mu objasnim šta je preinfuzija. Izvinjavam se. Neću prestati.
+Ispostavilo se da sam kupio mlin, a dobio i mali komad tišine ujutru.
 
 ---
 
-*Ako želiš, mogu ovo prepisati u drugom tonu (kraće, ozbiljnije, više tehnički), prilagoditi konkretnom modelu koji si kupio, ili dodati SEO naslove i meta opis.*
+**Kratak savet ako razmišljate o istom:** ne kupujte mlin sa noževima. Ako vam je budžet mali, uzmite jeftiniji ručni mlin sa žrvnjevima — biće bolji od električnog za iste pare. I kupujte kafu u zrnu, u manjim pakovanjima, od nekoga ko na kesici piše datum prženja, a ne samo rok trajanja.
+
+A ako već imate mlin i imate preporuku za nešto što vredi probati — pišite u komentarima. Trenutno sam u fazi u kojoj bih probao bukvalno sve.

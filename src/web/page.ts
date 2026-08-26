@@ -102,17 +102,27 @@ checker nobody pastes into.</p>
 <p><strong>Limits:</strong> ${options.maxChars.toLocaleString('en-GB')} characters per
 submission, ${options.rateLimitPerMinute} submissions per minute per address.
 Both are stated here rather than discovered by hitting them.</p>
-<p>The rules are deterministic and run locally — no model is called, so this
-page costs nothing to run and needs no API key. The
-<code>brief</code> command, which does call a model, stays on the command line.</p>
+<p><strong>If this page took half a minute to load, that is the free tier.</strong>
+The service sleeps after fifteen minutes with no traffic and takes 30–50 seconds
+to wake. There is no queue and nothing is wrong; the first visitor after a quiet
+spell pays for the restart and everyone after them does not.</p>
+<p>The rules are deterministic and run in this process — no model is called, so
+this page costs nothing to serve and needs no API key. The <code>brief</code>
+command, which does call a model, stays on the command line.</p>
+<p><strong>This checks a voice against its own rules. It does not identify
+authorship.</strong> A measurement against 15 machine-written documents
+retired that claim: the phrase rules did not fire on generated prose at all.
+What the score tells you is how far a text sits from one writer's documented
+style guide.</p>
 </footer>`;
 }
 
 export function renderHome(options: PageOptions): string {
   return layout(
     `<h1>voice-check</h1>
-<p class="sub">A style checker that grades prose against one writer's own rules,
-in Serbian and English. Paste something.</p>
+<p class="sub">A style guide, compiled into checks. It grades prose against one
+writer's documented rules, in Serbian and English — it does not identify
+authorship. Paste something.</p>
 ${form(options)}
 ${limits(options)}`,
   );
@@ -121,7 +131,7 @@ ${limits(options)}`,
 export function renderError(options: PageOptions, message: string, text = ''): string {
   return layout(
     `<h1>voice-check</h1>
-<p class="sub">A style checker that grades prose against one writer's own rules.</p>
+<p class="sub">A style guide, compiled into checks.</p>
 <div class="err"><p>${escapeHtml(message)}</p></div>
 ${form(options, text)}
 ${limits(options)}`,

@@ -1,6 +1,15 @@
 /**
  * `nije X, već Y` / `not just X but Y` / `it's not X, it's Y`.
  *
+ * MEASURED, 2026-08-26, AND IT DID NOT HOLD. Across 15 machine-written English
+ * blog posts (18,612 words, `claude-opus-5`, no style instruction) this rule
+ * fired on 15 of 15 documents at a median of 0.00 per 1000 words, with a
+ * maximum of 0.86. The claim that it identifies generated prose is
+ * withdrawn
+ * for this model — see ADR 014. It stays because the style guide's FIRST half
+ * still objects to the construction whoever wrote it: this rule checks a
+ * voice, not an author.
+ *
  * The guide calls this the single strongest tell, and the reason is that the
  * construction does no work. It sets up a negation the reader never held in
  * order to deliver a claim that would have read the same on its own: "it's not

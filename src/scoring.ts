@@ -30,11 +30,14 @@ import type { UncalibratedConstant } from './types.js';
 /**
  * The default band for a phrase rule, in matches per 1000 words.
  *
- * What would justify these: run the rules over 30-50 published pieces the
- * author considers good, take the distribution of each rule's density, and put
- * the floor at something like its 75th percentile and the ceiling where the
- * examples he considers machine-written actually sit. That corpus does not
- * exist yet, so these came from reading a handful of texts.
+ * What would justify the FLOOR: run the rules over 30-50 published pieces the
+ * author considers good and take the 90th percentile of each rule's density.
+ * `npm run calibrate` does exactly that; the corpus does not exist yet.
+ *
+ * What would justify the CEILING is no longer "where machine-written text
+ * sits", because it was measured and machine-written text does not contain
+ * these phrases (ADR 014). It needs a corpus of prose the author rejects,
+ * whoever wrote it, which is a harder thing to assemble.
  */
 export const PHRASE_FLOOR = guess(
   'density.phrase-floor',
@@ -44,11 +47,21 @@ export const PHRASE_FLOOR = guess(
     'a corpus that does not exist yet',
 );
 
+/**
+ * MEASURED AND NOT ADOPTED, 2026-08-26. The generated corpus says this ceiling
+ * cannot be calibrated at all for most phrase rules: five of them never fired
+ * on any of 15 machine-written documents, so there is no distribution to put a
+ * ceiling against (ADR 014). The number below is still the day-one guess, and
+ * it is now a guess about where PROSE THE AUTHOR WOULD REJECT sits — a
+ * judgement about his own standard — rather than about where machine text
+ * sits, which is a claim the data withdrew.
+ */
 export const PHRASE_CEILING = guess(
   'density.phrase-ceiling',
   6.0,
-  'matches per 1000 words at which a phrase rule scores 0; should be where ' +
-    'known machine-written text actually sits, measured rather than assumed',
+  'matches per 1000 words at which a phrase rule scores 0; unmeasurable ' +
+    'against machine-written text, which does not contain these phrases, so ' +
+    'it needs a corpus of prose the author himself rejects',
 );
 
 /**

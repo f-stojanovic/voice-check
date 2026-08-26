@@ -19,7 +19,9 @@
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { detectLanguage } from '../detect.js';
+import { lexiconIdentity, loadLexicon } from '../lexicon.js';
 import { check } from '../report.js';
+import { rulesFor } from '../rules/index.js';
 import { renderError, renderHome, renderReport, type PageOptions } from './page.js';
 import type { Language } from '../types.js';
 
@@ -66,6 +68,35 @@ export function createRateLimiter(perMinute: number, windowMs = 60_000) {
 export function createApp(options: PageOptions = DEFAULT_OPTIONS): Hono {
   const app = new Hono();
   const allow = createRateLimiter(options.rateLimitPerMinute);
+
+  /**
+   * Health, and the lexicon identity a score is only comparable within.
+   *
+   * ADR 003 says a score means nothing without the lexicon that produced it,
+   * and until now that identity existed only inside a report. A deployed
+   * instance has to be able to answer "which lexicon are you running?" from
+   * outside, or the version recorded in a report cannot be checked against the
+   * thing that produced it.
+   *
+   * Loaded once at startup rather than per request: it cannot change without a
+   * redeploy, and a health check that reads two files off disk on every probe
+   * is a health check that fails when the disk is busy.
+   */
+  const lexicons = {
+    sr: lexiconIdentity(loadLexicon('sr')),
+    en: lexiconIdentity(loadLexicon('en')),
+  };
+  const startedAt = Date.now();
+
+  app.get('/healthz', (c) =>
+    c.json({
+      status: 'ok',
+      lexicons,
+      rules: { sr: rulesFor('sr').length, en: rulesFor('en').length },
+      uptimeSeconds: Math.round((Date.now() - startedAt) / 1000),
+      node: process.version,
+    }),
+  );
 
   app.get('/', (c) => c.html(renderHome(options)));
 
@@ -128,8 +159,9 @@ export function createApp(options: PageOptions = DEFAULT_OPTIONS): Hono {
 const invokedDirectly = process.argv[1] !== undefined && process.argv[1].includes('web/server');
 
 if (invokedDirectly) {
+  // Render assigns the port and expects the process to bind it on 0.0.0.0.
   const port = Number(process.env['PORT'] ?? 8787);
-  serve({ fetch: createApp().fetch, port }, (info) => {
+  serve({ fetch: createApp().fetch, port, hostname: '0.0.0.0' }, (info) => {
     process.stdout.write(
       `voice-check is on http://localhost:${info.port}\n` +
         `  check only — deterministic, no model calls, no key needed\n` +

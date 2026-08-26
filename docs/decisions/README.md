@@ -19,6 +19,7 @@ is "nothing yet".
 - [011. Calibration recommends; a human moves the constant](011-calibration-recommends.md)
 - [012. The negative corpus is generated, and the provenance is the label](012-the-negative-corpus-is-generated.md)
 - [013. The public surface is `check` only, and the split is marginal cost](013-the-public-surface-splits-on-marginal-cost.md)
+- [014. The catalogue was adopted on authority, and the first measurement retired half of it](014-the-catalogue-was-adopted-on-authority.md)
 
 ## A note on the dates
 

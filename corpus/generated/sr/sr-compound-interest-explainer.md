@@ -5,141 +5,172 @@ format: explainer
 language: sr
 model: claude-opus-5
 generated: 2026-08-26
-words: 895
-prompt: Napiši blog post koji objašnjava kako radi složena kamata.
+words: 959
+prompt: Napiši blog post koji objašnjava kako radi složena kamata. Piši na
+  srpskom jeziku, ekavicom.
 ---
 
-# Složena kamata: osmo svjetsko čudo ili najskuplja lekcija koju možete platiti
+# Složena kamata: osmo svetsko čudo ili samo matematika koju smo prespavali?
 
-Postoji stara dosjetka koja se (vjerojatno neopravdano) pripisuje Einsteinu: složena kamata je osmo svjetsko čudo. Onaj koji je razumije — zarađuje. Onaj koji je ne razumije — plaća.
+Postoji čuvena izreka koja se pripisuje Ajnštajnu: „Složena kamata je osmo svetsko čudo. Ko je razume — zarađuje je. Ko je ne razume — plaća je.“ Verovatno je Ajnštajn nikada nije izgovorio, ali poenta je toliko tačna da citat živi decenijama.
 
-Bez obzira na to je li Einstein to zaista rekao, poanta stoji. Složena kamata je jedan od najvažnijih financijskih koncepata koje možete naučiti, a matematika iza njega je iznenađujuće jednostavna. Idemo od početka.
+Složena kamata je verovatno najmoćniji finansijski koncept koji možete naučiti za petnaest minuta. Hajde da vidimo kako zapravo funkcioniše.
 
 ---
 
 ## Prosta vs. složena kamata
 
-**Prosta kamata** se svake godine obračunava samo na početni ulog (glavnicu).
+**Prosta kamata** se obračunava samo na početni iznos (glavnicu). Uložite 100.000 dinara po stopi od 5% godišnje i svake godine dobijate tačno 5.000 dinara. Ni dinar više.
 
-**Složena kamata** se obračunava na glavnicu **i na sve prethodno zarađene kamate**. Kamata počinje zarađivati vlastitu kamatu — i tu se stvari počinju zanimljivo odvijati.
+**Složena kamata** se obračunava na glavnicu *plus* na svu kamatu koja se do tada nakupila. Drugim rečima — vaša kamata počinje da zarađuje svoju kamatu.
 
-Primjer: uložite 1.000 € uz 5 % godišnje kamate na 10 godina.
+Evo kako to izgleda na istom primeru (100.000 dinara, 5% godišnje):
 
-| | Prosta kamata | Složena kamata |
+| Godina | Prosta kamata | Složena kamata |
 |---|---|---|
-| Godina 1 | 1.050 € | 1.050 € |
-| Godina 5 | 1.250 € | 1.276 € |
-| Godina 10 | **1.500 €** | **1.628,89 €** |
+| 1 | 105.000 | 105.000 |
+| 5 | 125.000 | 127.628 |
+| 10 | 150.000 | 162.889 |
+| 20 | 200.000 | 265.330 |
+| 30 | 250.000 | **432.194** |
 
-Razlika nakon 10 godina je oko 129 €. Nije spektakularno. Ali pogledajte što se događa nakon 40 godina: prosta kamata daje 3.000 €, složena 7.040 €. Nakon 50 godina: 3.500 € vs. 11.467 €.
+Prve godine razlike nema. Posle pet godina razlika je zanemarljiva — nešto preko dve i po hiljade dinara. Ali posle trideset godina, složena kamata donosi **73% više novca** nego prosta.
 
-To je ključna stvar koju treba razumjeti o složenoj kamati — **ona ne raste linearno, nego eksponencijalno**. U početku je razlika gotovo neprimjetna, a onda krivulja krene naglo gore.
+To je suština priče: složena kamata je u početku dosadna, a onda postane neverovatna.
 
 ---
 
 ## Formula (bezbolno, obećavam)
 
-$$FV = P \times \left(1 + \frac{r}{n}\right)^{n \times t}$$
+$$A = P \times (1 + r)^n$$
 
-- **FV** = buduća vrijednost (koliko ćete imati)
-- **P** = glavnica (koliko ulažete danas)
-- **r** = godišnja kamatna stopa (kao decimala: 5 % = 0,05)
-- **n** = broj ukamaćivanja godišnje
-- **t** = broj godina
+- **A** — konačan iznos
+- **P** — početni ulog (glavnica)
+- **r** — kamatna stopa po periodu, izražena kao decimala (5% = 0,05)
+- **n** — broj perioda
 
-Za naš primjer: 1.000 × (1 + 0,05/1)^(1×10) = 1.000 × 1,6289 = **1.628,89 €**
+Ključni deo je eksponent **n**. Nije množenje — stepenovanje. Zato krivulja rasta nije prava linija, već se u nekom trenutku naglo savija naviše.
 
-Ako vam se ne da računati, u svakoj tablici (Excel, Google Sheets) postoji funkcija `FV`, a na internetu ima stotine kalkulatora složene kamate.
+Ako se kamata pripisuje više puta godišnje, formula se malo proširuje:
+
+$$A = P \times \left(1 + \frac{r}{m}\right)^{m \times t}$$
+
+gde je **m** broj obračuna godišnje, a **t** broj godina.
 
 ---
 
-## Tri stvari koje pokreću složenu kamatu
+## Vreme je važnije od iznosa
 
-### 1. Vrijeme — najvažniji sastojak
+Ovo je deo koji većina ljudi otkrije prekasno. Pogledajte priču o Ani i Marku.
 
-Ovo je najvažniji odjeljak u cijelom tekstu, pa evo najuvjerljivijeg primjera koji postoji.
+**Ana** počinje da štedi sa 25 godina. Ulaže 100.000 dinara godišnje tokom **deset godina**, do svoje 35. godine. Onda prestaje i više nikada ne uloži ni dinar. Ukupno uloženo: **1.000.000 dinara**.
 
-Dvije osobe ulažu 200 € mjesečno uz prosječni godišnji povrat od 7 %:
+**Marko** počinje sa 35 godina. Ulaže istih 100.000 dinara godišnje, ali **trideset godina**, sve do 65. Ukupno uloženo: **3.000.000 dinara**.
 
-- **Ana** počinje s 25 godina i ulaže do 65. Uložila je ukupno **96.000 €**. Na kraju ima **~525.000 €**.
-- **Boris** počinje s 35 godina i ulaže do 65. Uložio je ukupno **72.000 €**. Na kraju ima **~244.000 €**.
+Oboje ostvaruju prinos od 7% godišnje. Ko ima više novca sa 65 godina?
 
-Ana je uložila 24.000 € više od Borisa, a na kraju ima **281.000 € više**. Tih deset "izgubljenih" godina na početku Borisa je koštalo više od dvostrukog iznosa.
+- **Ana: ~10.520.000 dinara**
+- **Marko: ~9.450.000 dinara**
 
-Zašto? Jer novac uložen u dvadesetima ima 40 godina da se udvostručuje. Novac uložen u pedesetima ima jedan, možda dva ciklusa. **Najvrjedniji euro koji ćete uložiti je onaj koji ste uložili najranije.**
+Ana je uložila **tri puta manje novca**, prestala je da štedi kada je Marko tek počeo — i ipak je završila sa više. Jedina njena prednost bilo je deset dodatnih godina na početku.
 
-### 2. Kamatna stopa — mali brojevi, velike razlike
+Zapamtite: najvredniji sastojak složene kamate nije stopa prinosa. To je **vreme**.
 
-1 % razlike u povratu zvuči trivijalno. Nije.
+---
 
-10.000 € kroz 30 godina:
-- uz 5 % → 43.219 €
-- uz 6 % → 57.435 €
-- uz 7 % → 76.123 €
+## Pravilo 72: računica iz glave
 
-Jedan postotni poen razlike u povratu ovdje znači razliku od 14.000–19.000 €. Zato su naknade fondova (koje se često čine sitne, npr. "samo 1,5 % godišnje") toliko važne — one se odbijaju od vašeg povrata i također se "ukamaćuju", samo protiv vas.
+Želite da znate za koliko godina se vaš novac udvostručuje? Podelite 72 sa kamatnom stopom.
 
-### 3. Frekvencija ukamaćivanja
+- Pri 3% → 72 ÷ 3 = **24 godine**
+- Pri 6% → 72 ÷ 6 = **12 godina**
+- Pri 9% → 72 ÷ 9 = **8 godina**
+- Pri 12% → 72 ÷ 12 = **6 godina**
 
-Što se češće kamata pripisuje glavnici, to bolje. 1.000 € uz 10 % godišnje kroz jednu godinu:
+Aproksimacija nije savršena, ali je dovoljno precizna za brzu procenu i odlično pokazuje koliko razlika od par procentnih poena menja sve. Pri 3% novac se udvostruči jednom u radnom veku. Pri 9% — četiri puta.
 
-| Ukamaćivanje | Rezultat |
+---
+
+## Koliko često se kamata pripisuje?
+
+Što se češće obračunava, to bolje. Evo šta se desi sa 1.000.000 dinara pri 10% godišnje, nakon jedne godine:
+
+| Period obračuna | Konačan iznos |
 |---|---|
-| Godišnje | 1.100,00 € |
-| Polugodišnje | 1.102,50 € |
-| Kvartalno | 1.103,81 € |
-| Mjesečno | 1.104,71 € |
-| Dnevno | 1.105,16 € |
+| Godišnje | 1.100.000 |
+| Polugodišnje | 1.102.500 |
+| Kvartalno | 1.103.813 |
+| Mesečno | 1.104.713 |
+| Dnevno | 1.105.156 |
 
-Razlike su male, ali postoje. Zato uvijek gledajte **efektivnu kamatnu stopu (EKS)**, a ne nominalnu — ona uključuje učinak frekvencije ukamaćivanja i omogućuje pravednu usporedbu ponuda.
+Razlike postoje, ali su daleko manje dramatične nego kod broja godina. Zato — ne opterećujte se previše učestalošću obračuna. Fokusirajte se na to da počnete što ranije i da ne prekidate.
+
+Kada poredite ponude banaka, tražite **efektivnu kamatnu stopu (EKS)**, a ne nominalnu. EKS već uključuje učestalost obračuna i troškove, pa je jedini pošten način da uporedite jabuke sa jabukama.
 
 ---
 
-## Pravilo 72: mentalna matematika u tri sekunde
+## Redovne uplate: gde se stvara ozbiljan novac
 
-Želite znati za koliko će se vaš novac udvostručiti? Podijelite 72 s kamatnom stopom.
+Malo ko ima veliku sumu za jednokratno ulaganje. Prava snaga se pokazuje kod redovnih mesečnih uplata.
 
-- Uz 3 % → 72 / 3 = **24 godine**
-- Uz 6 % → 72 / 6 = **12 godina**
-- Uz 9 % → 72 / 9 = **8 godina**
-- Uz 12 % → 72 / 12 = **6 godina**
+Zamislite da odvajate **10.000 dinara mesečno**, uz prosečan prinos od **6% godišnje**, tokom **30 godina**:
 
-Aproksimacija je iznenađujuće precizna za stope između 4 % i 15 %. Iskoristite je i obrnuto: ako vam netko obećava udvostručenje novca u dvije godine, to implicira povrat od ~36 % godišnje. Takvo što gotovo uvijek znači ili ogroman rizik ili prijevaru.
+- Ukupno uplaćeno iz vašeg džepa: **3.600.000 dinara**
+- Konačna vrednost: **~10.045.000 dinara**
+- Zarađeno na kamatu: **~6.445.000 dinara**
+
+Skoro dve trećine krajnjeg iznosa nije vaš novac — to je novac koji je vaš novac zaradio.
 
 ---
 
 ## Druga strana medalje: kada složena kamata radi protiv vas
 
-Ista matematika koja gradi bogatstvo može izgraditi i dužničku rupu. Kod dugova ste vi ti koji plaćate kamatu na kamatu.
+Ista matematika koja vas može obogatiti može vas i potopiti. Kod dugova, složena kamata je na strani poverioca.
 
-**Prekoračenje i kreditne kartice.** Efektivna kamatna stopa na revolving kredite često prelazi 15–20 % godišnje. Po pravilu 72, dug uz 20 % udvostručuje se u nešto manje od četiri godine ako ga ne plaćate. Ako imate dug na kartici uz 18 % i istovremeno razmišljate o ulaganju s očekivanim povratom od 7 % — otplata duga je matematički **bolja** investicija. Zagarantiranih 18 % "povrata" bez rizika.
+Kreditna kartica sa 24% godišnje kamate znači 2% mesečno. Ako imate 100.000 dinara duga i ne otplaćujete ništa:
 
-**Minimalne rate.** Plaćanje samo minimalne rate je dizajnirano tako da glavnica ostaje visoka, a vi godinama plaćate uglavnom kamatu. Svaka dodatna kuna uplaćena na glavnicu skida budući teret kamata.
+- Posle godinu dana: ~127.000 dinara
+- Posle dve godine: ~161.000 dinara
+- Posle tri godine: **~204.000 dinara** — dug se udvostručio
 
-**Inflacija.** Inflacija je složena kamata u obratnom smjeru. Uz 3 % inflacije godišnje, 100 € danas ima kupovnu moć od oko 55 € za 20 godina. Novac na tekućem računu ne stoji na mjestu — on tiho gubi vrijednost. Zato je bitan **realni povrat** (nominalni povrat minus inflacija), a ne samo broj na izvatku.
-
----
-
-## Kako ovo primijeniti u praksi
-
-1. **Počnite danas, ne kad "budete imali više".** 50 € mjesečno od danas gotovo uvijek pobjeđuje 200 € mjesečno od "za pet godina".
-2. **Automatizirajte.** Trajni nalog na dan primanja plaće. Ono što ne vidite, ne potrošite.
-3. **Reinvestirajte prihode.** Dividende, kamate, kupone — ako ih trošite, ubili ste ukamaćivanje. Cijela poanta je da kamata ostane unutra i radi.
-4. **Ne dirajte glavnicu.** Svaka isplata resetira dio krivulje. Najveći rast dolazi u zadnjim godinama, pa nemojte izaći prije toga.
-5. **Minimizirajte naknade i poreze.** Oni izjedaju vaš efektivni povrat, a to se višestruko umnožava kroz desetljeća.
-6. **Prvo očistite skupe dugove.** Nema investicije koja pobjeđuje otplatu kredita uz 20 % kamate.
-7. **Budite realni s pretpostavkama.** 7 % godišnje je razumna dugoročna povijesna pretpostavka za diverzificirano ulaganje u dionice, ali nije zagarantirana i nije ni linearna — bit će godina s minusom od 30 %.
+Otuda i uobičajen savet: pre nego što počnete da ulažete, oslobodite se skupih dugova. Otplata duga sa 20% kamate je „prinos“ od 20% bez ikakvog rizika. Takvu ponudu nećete naći nigde na tržištu.
 
 ---
 
-## Zaključak
+## Zamka koju svi zaboravljaju: inflacija
 
-Složena kamata nije trik i nije prečac. Ona je **dosadna**. Radi tiho, u pozadini, godinama, i dugo se čini kao da se ništa ne događa. Onda odjednom brojevi počnu izgledati nestvarno.
+Složena kamata ima svog mračnog blizanca. Inflacija takođe deluje složeno — samo u suprotnom smeru.
 
-Tri poluge koje imate na raspolaganju su: **koliko ulažete, uz koji povrat i — najvažnije — koliko dugo**. Prve dvije su ograničene vašim prihodima i tržištem. Treća ovisi isključivo o tome kada ćete početi.
+Ako vaša štednja donosi 4% godišnje, a inflacija je 6%, vi **gubite** oko 2% kupovne moći svake godine. Nominalno imate više dinara. Realno možete kupiti manje.
 
-Najbolji dan za početak bio je onaj davno. Drugi najbolji je danas.
+Realni prinos se računa ovako:
+
+$$\text{realni prinos} = \frac{1 + r}{1 + i} - 1$$
+
+Zato uvek posmatrajte prinose **iznad inflacije**, a ne apsolutne brojke.
 
 ---
 
-*Ovaj tekst je edukativnog karaktera i ne predstavlja investicijski savjet. Svaka investicija nosi rizik, uključujući rizik gubitka glavnice.*
+## Šta konkretno da radite
+
+1. **Počnite danas, a ne kad budete imali „dovoljno“.** Deset godina prednosti vredi više od trostruko većih uplata kasnije.
+2. **Automatizujte uplate.** Trajni nalog koji se izvršava na dan plate uklanja pitanje discipline iz jednačine.
+3. **Ne dirajte kapital.** Svako povlačenje resetuje eksponent. Ovo je igra u kojoj se pobeđuje dosadom.
+4. **Reinvestirajte prinose.** Kamata, dividenda, kupon — sve se vraća unutra. Bez toga nema složenog rasta, samo prostog.
+5. **Pratite realni, a ne nominalni prinos.** Inflacija je tihi partner u svakoj kalkulaciji.
+6. **Prvo pogasite skupe dugove.** Nema smisla zarađivati 5% dok plaćate 20%.
+7. **Poredite EKS, ne nominalne stope.** I obratite pažnju na naknade — 1,5% godišnje provizije preko 30 godina pojede ogroman deo prinosa.
+
+---
+
+## Za kraj
+
+Složena kamata nije trik, prečica ni šema za brzo bogaćenje. Ona je spora, predvidiva i u prvih nekoliko godina razočaravajuće dosadna. Ljudi odustaju upravo zato — jer u trećoj godini gledaju brojke i pomisle da se ne isplati.
+
+Ali kriva rasta ne raste ravnomerno. Ona čeka. A onda, negde u drugoj ili trećoj deceniji, kreće naviše brzinom koja izgleda gotovo nestvarno.
+
+Najbolje vreme da počnete bilo je pre dvadeset godina. Drugo najbolje vreme je danas.
+
+---
+
+*Napomena: tekst je informativnog karaktera i ne predstavlja investicioni savet. Svi prinosi navedeni u primerima su ilustrativni — stvarni prinosi variraju, a ulaganja nose rizik. Za odluke koje se tiču vašeg novca konsultujte licenciranog finansijskog savetnika.*

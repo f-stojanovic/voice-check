@@ -5,171 +5,193 @@ format: explainer
 language: sr
 model: claude-opus-5
 generated: 2026-08-26
-words: 1210
-prompt: Napiši blog post o tome šta treba proveriti pre potpisivanja ugovora o zakupu.
+words: 1285
+prompt: Napiši blog post o tome šta treba proveriti pre potpisivanja ugovora o
+  zakupu. Piši na srpskom jeziku, ekavicom.
 ---
 
 # Šta proveriti pre potpisivanja ugovora o zakupu: vodič koji će vam uštedeti novac i živce
 
-Pronašli ste stan koji vam se sviđa, cena je u okviru budžeta, komšiluk deluje mirno — i sad vam vlasnik gura papir preko stola sa rečima „standardni ugovor, svi ga potpisuju". Upravo tu većina ljudi napravi grešku.
+Pronašli ste stan iz snova, cena vam odgovara, vlasnik deluje simpatično i sve što još treba jeste – potpis. Upravo taj trenutak je onaj u kome najviše ljudi napravi grešku koja ih kasnije košta stotine, pa i hiljade evra.
 
-Ugovor o zakupu je dokument koji reguliše narednih godinu ili više dana vašeg života i nekoliko hiljada evra vašeg novca. Deset minuta pažljivog čitanja može vas spasiti od meseci nervoze. Evo šta konkretno treba proveriti.
+Ugovor o zakupu nije formalnost. To je dokument koji, u slučaju spora, govori umesto vas. Zato je pametno odvojiti sat vremena i proći kroz sve tačke pre nego što stavite potpis.
 
 ---
 
-## 1. Da li osoba sa kojom pregovarate uopšte može da izda stan?
+## 1. Da li je zakupodavac zaista vlasnik?
 
 Ovo je prva i najvažnija provera, a najčešće se preskače.
 
-**Tražite na uvid:**
-- **Dokaz o vlasništvu** — list nepokretnosti (izvod iz katastra), ugovor o kupoprodaji ili rešenje o nasleđivanju.
-- **Ličnu kartu vlasnika** — i uporedite ime sa imenom u vlasničkom listu.
-- **Punomoćje**, ako pregovarate sa rođakom, agentom ili prijateljem vlasnika. Punomoćje treba da bude overeno i da izričito pominje davanje u zakup.
+**Tražite na uvid list nepokretnosti** (izvod iz katastra) ili kupoprodajni ugovor, i uporedite ime sa ličnom kartom osobe koja vam izdaje stan. List nepokretnosti možete i sami proveriti preko sajta Republičkog geodetskog zavoda – potreban vam je samo broj parcele ili adresa.
 
-**Ako je više suvlasnika** (npr. nasleđeni stan podeljen između braće i sestara), ugovor treba da potpišu svi ili jedan uz punomoćje ostalih. U suprotnom, drugi suvlasnik može kasnije osporiti zakup.
+Na šta obratiti pažnju:
 
-**Ako podzakupljujete** od nekog ko je i sam zakupac, proverite da mu njegov ugovor to izričito dozvoljava. Bez toga, vlasnik vas može izbaciti u bilo kom trenutku.
+- **Ima li više suvlasnika?** Ako stan ima dvoje ili više vlasnika, svi treba da potpišu ugovor ili da jedan ima punomoćje ostalih.
+- **Postoji li hipoteka ili zabeležba?** Hipoteka sama po sebi ne znači da ne smete da zakupite stan, ali ako dođe do prinudne prodaje, vaš položaj je nesiguran.
+- **Da li stan izdaje posrednik ili rođak vlasnika?** Tada tražite overeno punomoćje.
 
-> **Crvena zastavica:** vlasnik odbija da pokaže vlasnički list ili se pravda da su „papiri kod advokata". Nema legitimnog razloga za to.
-
----
-
-## 2. Da li su svi ključni elementi ugovora precizno napisani?
-
-Ugovor mora nedvosmisleno da sadrži:
-
-- **Tačne podatke o obe strane** — ime, JMBG, broj lične karte, adresa.
-- **Precizan opis nepokretnosti** — adresa, sprat, broj stana, kvadratura, broj katastarske parcele. Ako uz stan ide garažno mesto, ostava ili parking — mora biti navedeno.
-- **Iznos zakupnine** — u kojoj valuti, u kojoj protivvrednosti, do kog datuma u mesecu se plaća i na koji način (račun, gotovina uz potpisanu priznanicu).
-- **Trajanje zakupa** — datum početka i kraja.
-- **Šta ulazi u cenu, a šta ne.**
-
-Sve što je dogovoreno usmeno — a nije zapisano — praktično ne postoji.
+Prevare u kojima „vlasnik" izda isti stan trojici ljudi i nestane sa depozitima nisu urbana legenda – dešavaju se svake godine.
 
 ---
 
-## 3. Depozit: koliko, kada i pod kojim uslovima se vraća
+## 2. Da li je ugovor pisani i da li je overen?
 
-Depozit je najčešći izvor sukoba na kraju zakupa. Ugovor mora jasno da definiše:
+Usmeni dogovor je pravno moguć, ali praktično bezvredan kada dođe do spora. **Uvek insistirajte na pisanom ugovoru.**
 
-- **Iznos** (uobičajeno jedna do dve mesečne zakupnine).
-- **Rok za povraćaj** nakon iseljenja — npr. „u roku od 8 dana od predaje ključeva".
-- **Za šta se depozit može zadržati** — ograničite ga na štetu koja prevazilazi normalno habanje i na neizmirene račune. Napišite baš tako: *normalno habanje se ne smatra štetom*.
-- **Da li se depozit može iskoristiti kao poslednja kirija** — obično ne može, i bolje je da to bude eksplicitno rešeno.
+Overa kod javnog beležnika nije obavezna za punovažnost ugovora, ali vam donosi ozbiljne prednosti:
 
-Uvek tražite **pismenu potvrdu o uplaćenom depozitu**, čak i ako plaćate gotovinom.
+- Ugovor postaje **verodostojna isprava**, što znatno ubrzava naplatu potraživanja.
+- Potreban vam je ako želite da **prijavite prebivalište ili boravište** na toj adresi.
+- Neophodan je ako ostvarujete pravo na neku vrstu subvencije ili ako je stan potreban za registraciju firme.
+
+Ako zakupodavac odbija overu „da ne bi plaćao porez", to je jasan signal da će i u drugim situacijama birati prečice.
 
 ---
 
-## 4. Ko plaća koji trošak?
+## 3. Tačan opis nepokretnosti
 
-Napravite listu i prođite je stavku po stavku sa vlasnikom:
+Ugovor mora precizno da definiše šta zakupljujete:
 
-| Trošak | Ko plaća? |
+- puna adresa, sprat, broj stana
+- kvadratura
+- šta je uključeno (garažno mesto, ostava, terasa, podrum)
+- da li se izdaje ceo stan ili samo jedna soba
+
+Ako delite stan sa cimerima, mora biti jasno šta je vaš isključivi prostor, a šta zajednički.
+
+---
+
+## 4. Visina zakupnine i način plaćanja
+
+Delovi koje ugovor mora da sadrži:
+
+- **Iznos** i valuta (u dinarima ili u dinarskoj protivvrednosti evra po srednjem kursu NBS)
+- **Datum dospeća** – do kog dana u mesecu se plaća
+- **Način plaćanja** – gotovina uz priznanicu ili uplata na račun
+
+**Savet:** uvek plaćajte uplatom na račun ili tražite potpisanu priznanicu. Gotovina bez traga je vaš problem, ne njegov.
+
+Posebno obratite pažnju na **klauzulu o povećanju zakupnine**. Da li vlasnik može da podigne cenu tokom trajanja ugovora? Ako da – koliko unapred mora da vas obavesti i za koliki procenat? Bez ove odredbe možete se naći pred izborom „plati 30% više ili se seli za dve nedelje".
+
+---
+
+## 5. Šta ulazi u cenu, a šta ne
+
+Ovo je izvor najvećeg broja svađa. Ugovor treba jasno da razgraniči ko plaća:
+
+| Stavka | Ko plaća |
 |---|---|
-| Struja | |
-| Grejanje (daljinsko / gas / struja) | |
-| Voda i komunalije | |
-| Održavanje zgrade / lift | |
-| Internet i kablovska | |
-| Porez na imovinu | |
-| Rezervni fond / investiciono održavanje | |
+| Struja | obično zakupac |
+| Objedinjena naplata (Infostan i sl.) | dogovorno |
+| Grejanje | dogovorno |
+| Voda, smeće | obično uz objedinjenu naplatu |
+| Internet i kablovska | obično zakupac |
+| Porez na imovinu | **uvek vlasnik** |
+| Investiciono održavanje (fasada, krov, lift) | **uvek vlasnik** |
 
-Posebno obratite pažnju na **grejanje** — u starijim zgradama sa daljinskim grejanjem račun može drastično da poveća mesečne troškove tokom zime. Pitajte za konkretne iznose iz prošle sezone.
-
-Takođe: **da li postoje zaostali dugovi** na stanu? Tražite poslednje uplatnice za infostan/objedinjenu naplatu i struju. Dug prethodnog zakupca ume da postane vaš problem.
+Takođe proverite: **da li postoje neizmirena dugovanja** za komunalije? Tražite poslednje račune na uvid. Ako preuzmete stan sa dugom od 80.000 dinara za grejanje, isključenje neće pogoditi vlasnika – nego vas.
 
 ---
 
-## 5. Popis inventara i stanja stana
+## 6. Depozit – najosetljivija tačka
 
-Ovo je vaša najbolja zaštita depozita.
+Depozit je uobičajeno jedna mesečna zakupnina (ponekad dve). Ugovor mora da definiše:
 
-Pre useljenja napravite **zapisnik o primopredaji** koji sadrži:
-- spisak nameštaja i uređaja, sa napomenom o stanju („frižider — ispravan, ogrebotina na vratima");
-- stanje zidova, podova, stolarije, sanitarija;
-- **stanja svih brojila** (struja, voda, gas) na dan useljenja;
-- broj predatih ključeva.
+- **tačan iznos** depozita
+- **svrhu** – pokriće štete i neplaćenih računa, ne i poslednji mesec zakupa (osim ako se izričito dogovori)
+- **rok za povraćaj** nakon iseljenja (npr. 15 dana)
+- **uslove pod kojima vlasnik može da ga zadrži**
 
-Uz to napravite **fotografije i video snimak** celog stana sa vidljivim datumom. Pošaljite ih vlasniku mejlom ili porukom da postoji trag da ih je primio. Zapisnik potpišite u dva primerka.
+Bez precizne formulacije, „stan nije ostavljen u istom stanju" postaje elastičan pojam koji obuhvata i normalno habanje.
 
----
-
-## 6. Popravke i održavanje
-
-Ugovor treba da razgraniči:
-
-- **Sitne popravke i tekuće održavanje** — obično na zakupcu (zamena sijalice, čišćenje odvoda, sitna potrošna roba).
-- **Krupne popravke i kvarovi** — na vlasniku (bojler, kotao, instalacije, krov, stolarija, veći kućni aparati koji su deo stana).
-
-Korisno je uneti klauzulu: *ako vlasnik ne otkloni kvar koji onemogućava normalno korišćenje stana u roku od X dana od pisane prijave, zakupac ima pravo da ga otkloni o svom trošku i taj iznos odbije od naredne zakupnine.* Ovo vas štiti od situacije da tri nedelje ostanete bez tople vode.
+**Ključna zaštita:** napravite **zapisnik o primopredaji** sa fotografijama. Slikajte sve – ogrebotine na parketu, fleku na plafonu, stanje bele tehnike, stanje brojila (struja, voda, gas) sa datumom. Zapisnik potpišite obojica i priložite uz ugovor. Ovo je najjeftinije osiguranje koje postoji.
 
 ---
 
-## 7. Otkazni rok i uslovi raskida
+## 7. Trajanje ugovora i otkazni rok
 
-Proverite:
-- **Otkazni rok** za obe strane — treba da bude isti ili barem razuman (uobičajeno 30–60 dana, u pisanoj formi).
-- **Šta se dešava ako se iselite ranije** — da li gubite depozit, da li plaćate penal?
-- **Da li se ugovor automatski produžava** ako niko ne otkaže?
-- **Pod kojim uslovima vlasnik može raskinuti ugovor** — treba da bude ograničeno na jasne razloge (neplaćanje, oštećenje, kršenje ugovora), a ne „po svom nahođenju".
+- **Na koliko vremena** se ugovor zaključuje? Ugovori na određeno vreme obično traju 12 meseci.
+- **Šta se dešava po isteku?** Da li se automatski produžava?
+- **Otkazni rok** – standard je 30 do 60 dana, i mora važiti za obe strane podjednako.
+- **Da li postoji penal** za raniji raskid? Ako da, koliki?
 
----
-
-## 8. Povećanje zakupnine
-
-Ako je ugovor na godinu dana, cena bi trebalo da bude **fiksna tokom trajanja ugovora**. Ako postoji klauzula o usklađivanju, ona mora biti precizna: vezana za konkretan indeks (npr. zvanična stopa inflacije), sa maksimalnim procentom i unapred određenim rokom najave.
-
-Izbegavajte formulacije tipa „zakupodavac zadržava pravo da koriguje zakupninu".
+Pazite na asimetrične odredbe tipa: „Zakupodavac može raskinuti ugovor u svakom trenutku, a zakupac uz otkazni rok od 90 dana i gubitak depozita." To nije ugovor, to je zamka.
 
 ---
 
-## 9. Pravila korišćenja: sitna slova koja umeju da zabole
+## 8. Popravke i održavanje
 
-Pročitajte šta ugovor kaže o:
-- **kućnim ljubimcima** (ako ih imate ili planirate);
-- **broju ukućana** i da li smete da primite cimera ili partnera;
-- **prijavi prebivališta/boravišta** — mnogima je ovo potrebno za posao, školu, dokumente, a neki vlasnici to odbijaju. Rešite pre potpisivanja.
-- **pušenju**;
-- **preuređenju** — bušenje zidova, krečenje, montaža klime;
-- **podzakupu i kratkoročnom izdavanju**;
-- **pravu vlasnika na ulazak u stan** — treba da bude uz najavu (npr. 24–48 sati unapred) i uz vaš pristanak, osim u hitnim slučajevima. Vlasnik nema pravo da ulazi kad mu se prohte.
+Zakon razlikuje **tekuće** i **investiciono** održavanje.
+
+- **Zakupac** obično snosi sitne popravke nastale upotrebom: zamena sijalice, dihtunga na slavini, čišćenje odvoda.
+- **Zakupodavac** je dužan da održava stan u stanju podobnom za upotrebu: kvar na bojleru, curenje instalacija, zamena dotrajale stolarije, kvar na sistemu grejanja.
+
+Ugovorite **prag** – npr. popravke do 5.000 dinara plaća zakupac, iznad toga zakupodavac. I definišite **rok** u kome je vlasnik dužan da reaguje na prijavljeni kvar. Bez toga, čekanje na majstora može da traje mesecima.
 
 ---
 
-## 10. Forma ugovora: overa i prijava
+## 9. „Sitna slova" na koja treba obratiti pažnju
 
-- **Pisana forma je obavezna** — nikada ne zaključujte zakup „na reč".
-- **Overa kod javnog beležnika** nije uvek uslov punovažnosti, ali daje ugovoru mnogo veću dokaznu snagu. Ako je ugovor overen kao izvršna isprava, obe strane imaju bržu pravnu zaštitu.
-- **Prijava ugovora poreskoj upravi** je obaveza zakupodavca (prihod od zakupa se oporezuje). Ako vam treba potvrda o adresi ili zakup koristite kao trošak firme, insistirajte na tome.
-- Ponesite **dva primerka** — po jedan za svaku stranu, oba potpisana i parafirana na svakoj strani.
+- **Zabrana držanja kućnih ljubimaca** – ako imate mačku, ovo mora biti rešeno unapred, pisano.
+- **Zabrana podzakupa** – standardna je, ali proverite da li obuhvata i to da vam neko privremeno boravi u stanu.
+- **Pravo vlasnika na ulazak u stan** – mora biti uslovljeno prethodnom najavom (npr. 24 sata unapred), osim u slučaju hitne intervencije. Vlasnik nema pravo da svrati kad mu se prohte.
+- **Broj ukućana** – ako planirate da živite sa partnerom, navedite to.
+- **Prijava prebivališta** – da li vam vlasnik to dozvoljava? Neki odbijaju, a vama to može biti potrebno za posao, lekara ili dete u vrtiću.
+- **Nameštaj i inventar** – priložite **spisak** stvari koje ostaju u stanu, sa opisom stanja.
+
+---
+
+## 10. Provere koje se tiču samog stana
+
+Pre potpisa, obiđite stan još jednom, ali ovog puta kao inspektor:
+
+- Otvorite sve slavine – proverite pritisak i toplu vodu
+- Uključite bojler, klimu, šporet, veš-mašinu
+- Proverite ima li vlage, buđi ili tragova prekrečavanja fleka
+- Otvorite i zatvorite sve prozore i vrata
+- Testirajte utičnice
+- Proverite šta se čuje kroz zidove i sa ulice
+- Pitajte za komšije, kućni red i visinu troškova grejanja zimi
+- Proverite mobilni signal i pitajte koji internet provajderi pokrivaju zgradu
+
+Idealno je stan pogledati i danju i uveče – nekad se popodne ispostavi da je „mirna ulica" pravac za kafić koji radi do tri ujutru.
+
+---
+
+## 11. Ako radite preko agencije
+
+- Proverite da li je agencija **upisana u Registar posrednika** koji vodi Ministarstvo trgovine.
+- Tražite **ugovor o posredovanju** – provizija mora biti jasno navedena.
+- Nikada ne plaćajte proviziju **pre** nego što je ugovor o zakupu potpisan.
+- Nemojte plaćati „rezervaciju" za stan koji niste videli.
 
 ---
 
 ## Brza čeklista pre potpisa
 
-- [ ] Video sam vlasnički list i ličnu kartu vlasnika
-- [ ] Svi suvlasnici su saglasni / postoji punomoćje
-- [ ] Zakupnina, valuta, datum plaćanja i način plaćanja su upisani
-- [ ] Depozit: iznos, rok povraćaja i uslovi zadržavanja su definisani
-- [ ] Jasno je ko plaća koji režijski trošak
-- [ ] Proverio sam da nema zaostalih dugova na stanu
-- [ ] Napravljen je zapisnik o primopredaji + fotografije + stanja brojila
-- [ ] Definisano je ko snosi troškove popravki
-- [ ] Otkazni rok je jasan i simetričan
-- [ ] Zakupnina je fiksna ili je usklađivanje precizno regulisano
-- [ ] Rešena su pitanja ljubimaca, cimera, prijave boravka, klime
-- [ ] Pravo vlasnika na ulazak zahteva prethodnu najavu
-- [ ] Imam potpisan primerak ugovora u rukama pre nego što uplatim novac
+- [ ] Video sam list nepokretnosti i ličnu kartu vlasnika
+- [ ] Ugovor je pisani, u dva primerka, sa svim stranama parafiranim
+- [ ] Zakupnina, datum plaćanja i način plaćanja su precizni
+- [ ] Jasno je ko plaća koje račune
+- [ ] Proverio sam da nema zaostalih dugovanja
+- [ ] Depozit, uslovi zadržavanja i rok povraćaja su definisani
+- [ ] Napravljen je zapisnik o primopredaji sa fotografijama i stanjem brojila
+- [ ] Otkazni rok je isti za obe strane
+- [ ] Podela troškova popravki je jasna
+- [ ] Rešeno je pitanje ljubimaca, prijave prebivališta i broja ukućana
+- [ ] Priložen je spisak inventara
+- [ ] Imam kopiju potpisanog ugovora kod sebe
 
 ---
 
-## Poslednji savet
+## Zaključak
 
-Nikada ne uplaćujte depozit ili „kaparu za rezervaciju" pre nego što vidite stan uživo i pročitate ugovor. To je najčešća šema prevare — atraktivan oglas, cena ispod tržišne, vlasnik „trenutno u inostranstvu" i molba da uplatite avans kako neko drugi ne bi uzeo stan.
+Dobar ugovor o zakupu ne štiti samo zakupca – štiti obe strane. Ozbiljan zakupodavac neće imati problem sa vašim pitanjima; naprotiv, prepoznaće da ima posla sa nekim ko je odgovoran.
 
-I zapamtite: ugovor **nije** dokument koji je nemoguće menjati. Potpuno je legitimno reći „ova stavka mi ne odgovara, hajde da je preformulišemo". Vlasnik koji odbija bilo kakav razgovor o uslovima verovatno neće biti ni saradljiv tokom zakupa.
+Ako neko požuruje potpis, izbegava pisani ugovor, ne želi da pokaže vlasnički list ili traži depozit „odmah, jer ima još troje zainteresovanih" – to su crvene zastavice. Bolje je izgubiti jedan stan nego dobiti mesece problema.
+
+I najvažnije: **sve što je dogovoreno usmeno, mora se naći u ugovoru.** Reč „dogovorićemo se" nema pravnu snagu.
 
 ---
 
-*Napomena: tekst predstavlja opšte informacije, a ne pravni savet. Propisi se razlikuju od zemlje do zemlje i menjaju se tokom vremena. Za konkretnu situaciju — naročito kod većih iznosa ili dugoročnih ugovora — konsultujte advokata.*
+*Napomena: Tekst je informativnog karaktera i ne predstavlja pravni savet. Za konkretne situacije obratite se advokatu ili javnom beležniku.*

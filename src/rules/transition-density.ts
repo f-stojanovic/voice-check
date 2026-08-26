@@ -1,6 +1,14 @@
 /**
  * "međutim", "štaviše", "moreover", "on the other hand".
  *
+ * MEASURED, 2026-08-26, AND IT DID NOT HOLD. Across 15 machine-written English
+ * blog posts (18,612 words, `claude-opus-5`, no style instruction) this rule
+ * fired not once — not one `however` in 18,612 words. The claim that it
+ * identifies generated prose is withdrawn
+ * for this model — see ADR 014. It stays because the style guide's FIRST half
+ * still objects to the construction whoever wrote it: this rule checks a
+ * voice, not an author.
+ *
  * DENSITY IN ITS PUREST FORM, and the clearest case for why this tool scores
  * continuously. Every word on this list is a good word. A transition marks a
  * turn in an argument, and prose without any reads as a list of assertions.

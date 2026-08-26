@@ -108,6 +108,49 @@ describe('the page', () => {
   });
 });
 
+describe('the health endpoint', () => {
+  it('answers ok', async () => {
+    const body = (await (await app.request('/healthz')).json()) as Record<string, unknown>;
+    expect(body['status']).toBe('ok');
+  });
+
+  it('says which lexicon it is running', async () => {
+    // ADR 003: a score is only comparable within a lexicon version. Until this
+    // endpoint existed that identity lived only inside a report, so a deployed
+    // instance could not be asked which one produced it.
+    const body = (await (await app.request('/healthz')).json()) as {
+      lexicons: Record<string, string>;
+    };
+    expect(body.lexicons['sr']).toMatch(/^\d+\.\d+\.\d+\+[0-9a-f]{12}$/);
+    expect(body.lexicons['en']).toMatch(/^\d+\.\d+\.\d+\+[0-9a-f]{12}$/);
+  });
+
+  it('reports the same identity a report carries', async () => {
+    const health = (await (await app.request('/healthz')).json()) as {
+      lexicons: Record<string, string>;
+    };
+    const html = await (await post(LONG_SR, 'sr')).text();
+    expect(html).toContain(health.lexicons['sr'] ?? 'missing');
+  });
+});
+
+describe('the page copy', () => {
+  it('does not claim to identify authorship', async () => {
+    // ADR 014. The measurement retired that claim, and the page is where it
+    // would do the most damage if it survived.
+    const html = await (await app.request('/')).text();
+    expect(html).toContain('does not identify');
+    expect(html).toContain('authorship');
+    expect(html.toLowerCase()).not.toContain('detects ai');
+  });
+
+  it('warns about the cold start', async () => {
+    // A visitor who waits forty seconds without being told why leaves.
+    const html = await (await app.request('/')).text();
+    expect(html).toContain('30–50 seconds');
+  });
+});
+
 describe('the rate limiter', () => {
   it('allows up to the limit inside a window', () => {
     const allow = createRateLimiter(3);

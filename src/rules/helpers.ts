@@ -99,9 +99,20 @@ export function withoutExceptions(
  * it can say anything, which is a property of the rule rather than a fact
  * about texts, and one number for all of them was hiding that.
  *
- * `gateOn` lets a rule opt out. `bold-ratio` does, because its denominator is
- * characters rather than words and a character ratio is measurable at almost
- * any length.
+ * THE GATE ALSO LOOKS AT THE COUNT, not only the length, and that is a day-five
+ * correction. The gate exists because one occurrence in a short text can land
+ * above a ceiling on its own, so a single ordinary use would score 0. That
+ * argument covers exactly one occurrence. It does not cover two, and it
+ * certainly does not cover three: `samples/machine-sr.md` has three
+ * `nije … već` constructions in 274 words and the length-only gate declined to
+ * score it, which is the rule refusing to report the pattern it exists for.
+ *
+ * From two upward the rate is not dominated by a single accident, so it is
+ * scored whatever the length.
+ *
+ * `gateOnWordCount: false` lets a rule opt out entirely. `bold-ratio` does,
+ * because its denominator is characters rather than words and a character
+ * ratio is measurable at almost any length.
  */
 export function densityResult(args: {
   rule: string;
@@ -116,17 +127,19 @@ export function densityResult(args: {
   gateOnWordCount?: boolean;
 }): RuleResult {
   const minWords = minWordsFor(args.ceiling.value);
-  if (args.gateOnWordCount !== false && args.ctx.wordCount < minWords) {
+  const tooShort = args.gateOnWordCount !== false && args.ctx.wordCount < minWords;
+  if (tooShort && args.findings.length <= 1) {
     return abstained({
       rule: args.rule,
       kind: 'density',
       findings: args.findings,
       minWords,
       reason:
-        `not scored: ${args.ctx.wordCount} words. One occurrence here is ` +
-        `${perThousand(1, args.ctx.wordCount).toFixed(2)} per 1000, at or above this ` +
-        `rule's ceiling of ${args.ceiling.value}, so a single ordinary use would ` +
-        `score 0. Needs ${minWords} words (1000 / ${args.ceiling.value})`,
+        `not scored: ${args.findings.length} found in ${args.ctx.wordCount} words. ` +
+        `One occurrence here is ${perThousand(1, args.ctx.wordCount).toFixed(2)} per 1000, ` +
+        `at or above this rule's ceiling of ${args.ceiling.value}, so a single ordinary ` +
+        `use would score 0. Needs ${minWords} words (1000 / ${args.ceiling.value}), ` +
+        `or two occurrences`,
     });
   }
 

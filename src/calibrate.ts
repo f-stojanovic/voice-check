@@ -15,6 +15,9 @@ const USAGE = `voice-check calibrate — compares the density distributions of t
 
   <accepted-dir>      texts you consider good. Gives the FLOOR.
   --generated <dir>   machine-written texts. Gives the CEILING.
+  --lang sr|en        treat EVERY document as this language, overriding
+                      detection. On a mixed corpus that mislabels half of it;
+                      leave it off unless detection is getting one wrong.
 
 Without --generated only floors are reported: a corpus of good writing carries
 no information about where bad writing sits.

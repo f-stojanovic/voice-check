@@ -6,6 +6,7 @@ import {
   formatReport,
   observe,
   percentile,
+  isDegenerate,
   readCorpus,
   stripFrontmatter,
   verdictFor,
@@ -152,6 +153,38 @@ describe('two-corpus separation', () => {
     );
     expect(v.status).toBe('separates');
     expect(v.extremesOverlap).toBe(true);
+  });
+
+  it('reports NO SIGNAL when the rule never fired on the generated corpus', () => {
+    // Different finding from OVERLAPS, and the first version displayed them
+    // identically: both show a margin of 0.00. Overlapping means the rule
+    // fires on both and cannot tell them apart; no signal means the tell is
+    // absent from what the model writes.
+    const v = verdictFor(band([0, 1, 2], Array.from({ length: 15 }, () => 0)), 10);
+    expect(v.status).toBe('no-signal');
+    // No margin: an arithmetic gap computed against an all-zero distribution
+    // reads as a measurement of separation and measures nothing.
+    expect(v.margin).toBeNull();
+  });
+
+  it('reports NO SIGNAL even when the accepted corpus is too small', () => {
+    // "This rule never fired on fifteen machine-written documents" does not
+    // depend on the accepted corpus, which is just as well: that is the one
+    // that does not exist yet.
+    const v = verdictFor(band([], Array.from({ length: 15 }, () => 0)), 10);
+    expect(v.status).toBe('no-signal');
+  });
+
+  it('does not call a rule no-signal on one zero', () => {
+    expect(verdictFor(band([0], [0]), 10).status).toBe('insufficient');
+  });
+
+  it('distinguishes no-signal from a genuine overlap', () => {
+    const same = Array.from({ length: 12 }, (_, i) => i);
+    expect(verdictFor(band(same, same), 10).status).toBe('overlaps');
+    expect(isDegenerate(same)).toBe(false);
+    expect(isDegenerate([0, 0, 0])).toBe(true);
+    expect(isDegenerate([])).toBe(false);
   });
 
   it('refuses a verdict when either corpus is too small', () => {

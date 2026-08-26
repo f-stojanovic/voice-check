@@ -5,89 +5,81 @@ format: experience
 language: sr
 model: claude-opus-5
 generated: 2026-08-26
-words: 884
-prompt: Napiši blog post o tome kako si trčao prvi maraton.
+words: 1009
+prompt: Napiši blog post o tome kako si trčao prvi maraton. Piši na srpskom
+  jeziku, ekavicom.
 ---
 
-*Mala napomena: kao AI nemam noge ni maraton u nogama, pa je ovo izmišljena priča napisana iz perspektive trkača-amatera. Slobodno je koristi kao predložak i ubaci svoje brojke, mjesta i osjećaje.*
+# 42 kilometra i jedna izgubljena iluzija o sebi
 
----
+Postoji trenutak u životu svakog trkača rekreativca kada mu se u glavi pojavi misao: *„A šta ako bih probao maraton?"* Kod mene je ta misao došla u novembru, u kafiću, uz treću rakiju, dok sam ubeđivao prijatelja da je polumaraton „ustvari ništa strašno". Prijatelj me je pogledao i rekao: „Pa dobro, ako je polumaraton ništa, onda ti je maraton dva ništa." 
 
-# 42 kilometra i jedna izgubljena nokat: kako sam otrčao prvi maraton
+Logika bez greške. Prijava je poslata sutradan, dok mi je još bilo neprijatno da se predomislim.
 
-Prije osam mjeseci nisam mogao otrčati pet kilometara bez zastajkivanja kod one klupe na Bundeku. Prošle subote sam prošao ciljem svog prvog maratona u 4:11:48, plakao pred nepoznatim volonterom i pojeo tri banane u dvije minute.
+## Trening, ili kako sam naučio da ustajem u pola šest
 
-Evo kako je to izgledalo.
+Šesnaest nedelja. Toliko je trajao plan koji sam našao na internetu i koji sam, kao i svi, prvo modifikovao („ovo mi ne treba"), pa se onda vratio originalu („izvinjavam se, treba mi").
 
-## Kako je počelo (glupo, kao i sve dobre stvari)
+Prve nedelje su bile lake i pomalo dosadne. Trčao sam po četrdeset minuta i osećao se kao prevarant — kakav sam ja to maratonac ako se ne mučim? Onda su počeli dugi trčanja. Petnaest kilometara. Dvadeset. Dvadeset osam. Tada sam otkrio nekoliko stvari koje mi niko nije rekao:
 
-Prijavio sam se u prosincu, na kauču, u tri sata poslije podne, nakon druge kave i jedne rečenice prijatelja: "Ionako ne bi izdržao." Kliknuo sam "plati" prije nego što se logika probudila. Startnina je bila 40 eura — najjeftinija terapija za ego u mom životu.
+**Prvo**, dugo trčanje nije samo trening tela, to je trening dosade. Naučiš da ti tri sata ne budu neprijatelj. Naučiš da posmatraš reku, da slušaš podkaste o stvarima koje te ne zanimaju, da razmišljaš o razgovorima koje si vodio 2014. godine.
 
-Nisam imao trener, plan, ni pametni sat. Imao sam samo tenisice od prošlog ljeta i internet.
+**Drugo**, žuljevi i trenje na mestima o kojima se ne govori u pristojnom društvu — to je realnost. Vazelin nije preporuka, to je oprema.
 
-## Trening: šesnaest tjedana dosade
+**Treće**, ishrana postaje tema. Iznenadio sam se koliko vremena čovek može da provede razmišljajući o tome koliko gelova da stavi u pojas i da li mu banana pola sata pre trčanja pomaže ili odmaže. (Odgovor: zavisi, i saznaćeš na najgori mogući način.)
 
-Ovo je dio koji nitko ne stavlja na Instagram, jer nema što. Maraton se ne trči na dan maratona. Maraton se trči u utorak u 6:40 ujutro, kad pada kiša, kad ti se ne ide, i kad si napravio 8 od 10 planiranih kilometara pa se svađaš sam sa sobom je li to dovoljno.
+Bilo je i loših dana. Jedan trening od 30 kilometara sam prekinuo na 19. jer mi je jednostavno nestala volja — ne snaga, volja. Sedeo sam na klupi i ozbiljno razmišljao da otkažem sve. Sledeće nedelje sam istih 30 istrčao bez problema. Nikada nisam shvatio zašto.
 
-Ono što sam naučio:
+## Noć pre
 
-**Lagano znači *stvarno* lagano.** Prvih mjesec dana svaki sam trening trčao kao da me netko goni. Rezultat: dvije upale i tri tjedna pauze. Kad sam se vratio i počeo trčati toliko sporo da mi je bilo neugodno, sve je krenulo.
+Nisam spavao. Naravno da nisam spavao. Ležao sam i mentalno trčao trasu, proveravao telefon, brojao koliko mi je sati ostalo, pa računao koliko sam sati sna izgubio, pa se zbog toga nervirao, pa izgubio još jedan sat.
 
-**Duga nedjelja je sveta.** 16 km, 22 km, 28 km, 32 km. Onaj prvi put kad sam prešao 30 bio je psihološki važniji od cijelog ostatka priprema. Shvatiš da tijelo, ako mu daš vremena, prosto — ide dalje.
+Oprema je bila spremljena na stolici kao dečja uniforma prvog dana škole: majica, šorc, čarape, startni broj sa četiri iglice, gelovi, kapa. Slikao sam to. Ne znam zašto. Svi to slikaju.
 
-**Vazelin nije opcionalno.** Ovo je jedini savjet koji ćeš dobiti od mene bez ikakve ironije. Nakon 30 kilometara, tvoja koža ima svoje mišljenje.
+## Start: euforija koja je opasna
 
-## Noć prije
+Startna linija je najlepše i najgluplje mesto na svetu. Dve i po hiljade ljudi skače u mestu, muzika treska, neko pored mene pita „kolika ti je ciljana satnica?", a ti izgovoriš broj koji si do juče govorio samo šapatom.
 
-Nisam spavao. Nula. Ležao sam i mentalno trčao rutu, provjeravao vremensku prognozu svakih dvadeset minuta i tri puta zabadao sigurnosne igle u startni broj jer nije bio ravno.
+Moj plan je bio 4:15. Prvih pet kilometara istrčao sam u tempu za 3:50.
 
-U 4:50 sam ustao. Zobena kaša, banana, kava, WC, kava, WC. Vani je bilo 9 stupnjeva i magla — savršeno, iako mi je na startu bilo hladno kao da čekam autobus u siječnju.
+Znam. Znam. Svi kažu da ne treba. Svaki tekst, svaki video, svaki iskusniji trkač. I svako od nas to ipak uradi, jer na startu se osećaš besmrtno, jer te nose ljudi oko tebe, jer neka gospođa sa trotoara viče „bravo, majstore!" i ti pomisliš — pa jesam majstor.
 
-## Kilometri 0–10: "ovo je prelagano"
+Do dvadesetog kilometra sam bio zaljubljen u sopstveni život. Sve je radilo. Noge lake, disanje mirno, sunce blago. Prošao sam polovinu i pomislio: *ovo je bilo prelako, ja sam možda talentovan.*
 
-Najopasniji dio maratona. Adrenalin te nosi, publika viče, uz tebe trči čovjek u kostimu banane (i pobijedit će te, spoiler). Pogledam sat: 20 sekundi po kilometru brže od plana. Pogledam ponovno: opet brže.
+## Trideset drugi kilometar
 
-Uspio sam se smiriti negdje oko sedmog kilometra, uglavnom zato što me starija gospođa u ružičastoj majici pretekla s takvom mirnoćom da sam se posramio.
+Onda dođe „zid". I to nije metafora, to je tehnička specifikacija.
 
-## Kilometri 10–25: najbolji sat mog života
+Kod mene je udario oko 32. kilometra, na uzbrdici koju sam na treningu prelazio bez razmišljanja. Odjednom su mi butine postale kamene, korak se skratio sam od sebe, a u glavi mi se uključio glas koji je bio veoma, veoma razuman: *„Slušaj, dovoljno si dokazao. Hodaj. Nema sramote. Ljudi hodaju. Ustvari, zašto uopšte ne bi seo?"*
 
-Ovo je razlog zašto ljudi ovo rade. Ritam se pronašao sam. Disanje, koraci, gelovi na svakih 40 minuta, voda na svakoj postaji. Rijeka lijevo, sunce se probijalo kroz maglu, a ja sam se u jednom trenutku uhvatio kako se smiješim bez razloga.
+Sledećih šest kilometara bili su najduži deo mog života. Kilometarske oznake su prestale da imaju smisao — svaka je bila na po deset minuta hoda. Gel mi je bio odvratan, voda mlaka, a jedan momak u kostimu banane me je prestigao i to mi je, priznajem, pogodilo dušu.
 
-Zapamtio sam si: *ovo je to. Zbog ovih trideset minuta sve ono u utorak ujutro ima smisla.*
+Ono što me je izvuklo nije bila motivacija. Motivacija je odavno otišla kući. Izvukla me je navika. Šesnaest nedelja ustajanja u pola šest napravile su od mene mašinu koja, kad se pokrene, ne zna kako da se ugasi. Samo sam gledao u asfalt tri metra ispred sebe i ponavljao: *do sledeće ćuprije. Samo do sledeće ćuprije.*
 
-## Kilometar 32: zid
+## Poslednja dva kilometra
 
-Nisam vjerovao u zid. Mislio sam da je to nešto što se događa ljudima koji su loše planirali.
+A onda se nešto čudno dogodilo. Na 40. kilometru, kada bi po svakoj logici trebalo da mi bude najgore, bol je postao nekako... nevažan. Čuo sam publiku, prepoznao sam ulicu, shvatio sam da ovo *stvarno* neće da se ne završi.
 
-Zid je stvaran. Zid je konkretan. Zid je osjećaj da su ti netko preko noći zamijenio noge nogama nekog drugog, težeg čovjeka, i da svaki korak zahtijeva svjesnu odluku. Tempo mi je pao skoro minutu. Počeo sam računati — koliko još, u kojem tempu, mogu li uopće — i to je bila greška, jer matematika na 32. kilometru je oružje protiv tebe.
+Poslednji kilometar sam trčao smejući se kao idiot. Nisam mogao da prestanem. Video sam ženu i ćerku na ogradi, ćerka je držala natpis koji je sama napisala i na kome je pisalo „TATA TRČI (ali može i brže)". 
 
-Ono što je pomoglo: prestao sam misliti o cilju i počeo brojati do sto. Sto koraka. Onda opet sto. Onda do onog stupa. Onda do žene s trubom.
+Ušao sam u cilj u **4 sata, 22 minuta i 11 sekundi**. Sedam minuta iznad plana. I to me apsolutno, ni sekundu, nije zabolelo.
 
-## Kilometar 38: mama
+## Šta sam naučio
 
-Znao sam da su tu negdje, ali kad sam ih vidio — sestru s natpisom "TRČI, TATA TI PLAĆA PIVO" i mamu koja je vikala tako glasno da su se ljudi okretali — dobio sam nešto što nijedan gel ne može dati.
+Očekivao sam da ću na cilju osetiti da sam „postao neko drugi". Nisam. Osetio sam da sam potpuno isti čovek, samo mi je bilo mnogo jasnije od čega je taj čovek napravljen.
 
-Zadnja četiri kilometra prošla su u nekakvoj izmaglici. Sjećam se da mi je lice bilo prekriveno soli. Sjećam se da sam pretekao trojicu ljudi i da mi je to u tom trenutku značilo više nego bilo koji uspjeh na poslu.
+Maraton mi nije dao samopouzdanje. Dao mi je dokaz. Razlika je velika: samopouzdanje ti se izjutra menja, a dokaz ostaje. Sada, kada mi je nešto teško — na poslu, kod kuće, bilo gde — imam jedan konkretan podatak o sebi kojim mogu da se poslužim: *bio sam na 35. kilometru i nisam stao.*
 
-## Cilj
+Nekoliko praktičnih stvari, ako i vas ova ideja svrbi:
 
-Zvuk kad uđeš u zadnjih 200 metara i publika je s obje strane — to je nešto što ne mogu opisati bez da zvučim patetično, pa ću i zvučati: osjećaš se kao da si nekome važan.
+- **Poštuj plan, a još više poštuj dane odmora.** Povrede dolaze od entuzijazma, ne od lenjosti.
+- **Ništa novo na dan trke.** Ni patike, ni gel, ni majica, ni doručak. Ništa.
+- **Prvih deset kilometara treba da ti bude neprijatno lako.** Ako ne izgleda kao da si prespavao start, verovatno si prebrz.
+- **Nađi svoju mantru.** Bilo kakvu. Biće ti potrebna oko 33. kilometra.
+- **Zapamti lica ljudi sa trotoara.** Oni ne dobijaju medalju, a dosta te nose.
 
-Prošao sam ciljem, uzeo medalju, i onda me uhvatilo. Neki volonter, dečko od možda dvadeset godina, prebacio mi je onu foliju preko ramena i rekao "bravo, čovječe", a ja sam mu se rasplakao. Izvini, dečko. Nisi to zaslužio.
+Dva dana nisam mogao normalno da silazim stepenicama. Trećeg dana sam otvorio kalendar i počeo da gledam datume za jesen.
 
-**4:11:48.** Cilj mi je bio "manje od 4:30, a idealno preživjeti".
+Toliko o „ovo je bilo jednom u životu".
 
-## Što bih napravio drugačije
-
-- **Tempo na startu.** Onih 20 sekundi/km viška u prvih 10 kilometara vratilo mi se s kamatama na 32.
-- **Više soli/elektrolita.** Sve na gelovima nije dovoljno.
-- **Trenirao bih *spuštanja*.** Kvadricepsi su mi bili uništeni tri dana. Silazak stepenicama je bio komičan.
-- **Ne bih rezao noge na nogama dan prije.** Izgubio sam jedan nokat. Nema veze, izrast će.
-
-## Bi li opet?
-
-Prijavio sam se za sljedeći tri dana kasnije.
-
-Ako razmišljaš o tome: ne treba ti talent, ne treba ti sat od 500 eura, ne treba ti prošlost u sportu. Treba ti šesnaest tjedana u kojima ćeš se otprilike četrdeset puta ustati kad ti se ne ustaje. To je cijela tajna. Zaista.
-
-Vidimo se na Bundeku. Ja sam onaj koji trči presporo i smiješi se bez razloga.
+**A vi? Ima li neko da mi preporuči trku sa manje uzbrdica i manje ljudi u kostimu banane?**

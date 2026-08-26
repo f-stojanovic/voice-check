@@ -1,0 +1,27 @@
+# Render blueprint. `check` only — see docs/decisions/013.
+#
+# No database, because nothing is stored. That is not a deferred feature: the
+# page says nothing is kept, and adding a store would make that untrue.
+services:
+  - type: web
+    name: voice-check
+    runtime: node
+    plan: free
+    region: frankfurt
+    branch: main
+    # `lexicons/` is read at runtime relative to the compiled module, so it has
+    # to survive the build. It does: tsc emits to dist/ and leaves the rest of
+    # the tree alone.
+    # --include=dev because the build needs TypeScript, and Render sets
+    # NODE_ENV=production, under which npm ci skips devDependencies. Without
+    # the flag the build fails with "tsc: not found" — which typechecks
+    # locally and dies on the first deploy.
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: node dist/web/server.js
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      # Deliberately absent: ANTHROPIC_API_KEY. The deployed surface is `check`,
+      # which calls no model. If a key ever appears here, something has been
+      # deployed that should not have been.

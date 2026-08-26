@@ -1,6 +1,15 @@
 /**
  * "zaroniti", "delve", "landscape", "leverage", "robust", "tapestry".
  *
+ * MEASURED, 2026-08-26, AND IT DID NOT HOLD. Across 15 machine-written English
+ * blog posts (18,612 words, `claude-opus-5`, no style instruction) this rule
+ * fired twice in 18,612 words, both `leverage`; `delve`, `synergy`, `robust`,
+ * `seamless` and `tapestry` appeared zero times. The claim that it
+ * identifies generated prose is withdrawn
+ * for this model — see ADR 014. It stays because the style guide's FIRST half
+ * still objects to the construction whoever wrote it: this rule checks a
+ * voice, not an author.
+ *
  * The long word standing where a short one would have done. Each entry has a
  * plain equivalent that costs nothing to substitute, and the reason a model
  * prefers the long one is that the long one is over-represented in the kind of

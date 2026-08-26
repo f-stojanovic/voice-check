@@ -238,18 +238,54 @@ export function bandsFor(
  * as agent-evals discovering that its semantic threshold could not classify
  * its own labelled pairs, and recording the negative result instead of
  * inventing a number to close the ticket.
+ *
+ * `no-signal` IS A DIFFERENT FINDING FROM `overlaps` and gets its own verdict,
+ * because the first run displayed them identically and they are opposites. A
+ * rule overlaps when both corpora produce densities and the ranges cross: the
+ * rule fires on both kinds of text and cannot tell them apart. A rule has no
+ * signal when the generated distribution is DEGENERATE — min, median and max
+ * all zero, meaning it never fired on any machine-written document at all.
+ *
+ * Both come out as a margin of 0.00. One says "this rule cannot separate";
+ * the other says "there is nothing here to separate from", and only the second
+ * means the tell being looked for is absent from what the model writes.
  */
 export interface Verdict {
   readonly floor: number | null;
   readonly ceiling: number | null;
-  /** ceiling − floor. Positive means a usable band exists. */
+  /**
+   * ceiling − floor. Positive means a usable band exists.
+   *
+   * Null for `no-signal`, because there is no band to describe: an arithmetic
+   * margin computed against a distribution that is entirely zero reads as a
+   * measurement of separation and is a measurement of nothing.
+   */
   readonly margin: number | null;
   /** The strictest test: does any generated value fall at or below every accepted one? */
   readonly extremesOverlap: boolean | null;
-  readonly status: 'separates' | 'overlaps' | 'insufficient';
+  readonly status: 'separates' | 'overlaps' | 'no-signal' | 'insufficient';
+}
+
+/** True when a rule never fired on any document of the corpus. */
+export function isDegenerate(values: readonly number[]): boolean {
+  return values.length > 0 && values.every((v) => v === 0);
 }
 
 export function verdictFor(band: Band, minDocs: number): Verdict {
+  // Checked first, and deliberately before anything that needs the accepted
+  // corpus. "This rule never fired on fifteen machine-written documents" is a
+  // finding on its own, and it has to survive the accepted corpus being empty
+  // — which is the situation this project is actually in.
+  if (band.generated.length >= minDocs && isDegenerate(band.generated)) {
+    return {
+      floor: band.accepted.length > 0 ? percentile(band.accepted, 0.9) : null,
+      ceiling: 0,
+      margin: null,
+      extremesOverlap: null,
+      status: 'no-signal',
+    };
+  }
+
   if (band.accepted.length === 0 || band.generated.length === 0) {
     return { floor: null, ceiling: null, margin: null, extremesOverlap: null, status: 'insufficient' };
   }
@@ -260,15 +296,17 @@ export function verdictFor(band: Band, minDocs: number): Verdict {
   const maxAccepted = band.accepted[band.accepted.length - 1] ?? 0;
   const minGenerated = band.generated[0] ?? 0;
 
+  const extremesOverlap = minGenerated <= maxAccepted;
+
   if (band.accepted.length < minDocs || band.generated.length < minDocs) {
-    return { floor, ceiling, margin, extremesOverlap: minGenerated <= maxAccepted, status: 'insufficient' };
+    return { floor, ceiling, margin, extremesOverlap, status: 'insufficient' };
   }
 
   return {
     floor,
     ceiling,
     margin,
-    extremesOverlap: minGenerated <= maxAccepted,
+    extremesOverlap,
     status: margin > 0 ? 'separates' : 'overlaps',
   };
 }
@@ -370,16 +408,43 @@ export function formatReport(
     for (const band of bands) {
       const v = verdictFor(band, MIN_DOCS.value);
       const verdict =
-        v.status === 'insufficient'
-          ? `too few (${band.accepted.length}/${band.generated.length})`
-          : v.status === 'separates'
-            ? 'separates'
-            : '**OVERLAPS**';
+        v.status === 'no-signal'
+          ? `**NO SIGNAL** (0/${band.generated.length} generated)`
+          : v.status === 'insufficient'
+            ? `too few (${band.accepted.length}/${band.generated.length})`
+            : v.status === 'separates'
+              ? 'separates'
+              : '**OVERLAPS**';
       out.push(
         `| ${band.rule} | ${fmt(v.floor)} | ${fmt(v.ceiling)} | ${fmt(v.margin)} | ${verdict} |`,
       );
     }
     out.push('');
+
+    const noSignal = bands.filter((b) => verdictFor(b, MIN_DOCS.value).status === 'no-signal');
+    if (noSignal.length > 0) {
+      out.push('### Rules that never fired on machine-written text');
+      out.push('');
+      out.push(
+        'These rules found nothing in any generated document — the distribution ' +
+          'is min 0, median 0, max 0. They cannot be calibrated against this ' +
+          'corpus, and no threshold makes them detect machine writing, because ' +
+          'the thing they look for is not in it.',
+      );
+      out.push('');
+      out.push(
+        'That is not the same as overlapping. An overlapping rule fires on both ' +
+          'kinds of text and cannot tell them apart; these did not fire at all.',
+      );
+      out.push('');
+      for (const band of noSignal) {
+        out.push(
+          `- \`${band.rule}\` — 0 of ${band.generated.length} generated documents ` +
+            `(accepted: n=${band.accepted.length})`,
+        );
+      }
+      out.push('');
+    }
 
     const overlapping = bands.filter((b) => verdictFor(b, MIN_DOCS.value).status === 'overlaps');
     if (overlapping.length > 0) {
@@ -440,6 +505,14 @@ export function formatReport(
     '**A margin at or below zero means the rule cannot separate the two corpora ' +
       'at any threshold.** Not that the calibration failed — that the rule does not ' +
       'carry the signal it was assumed to carry. Report it, do not tune around it.',
+  );
+  out.push('');
+  out.push(
+    '**`NO SIGNAL` is a different finding from `OVERLAPS`.** Overlapping means ' +
+      'the rule fires on both corpora and cannot tell them apart. No signal means ' +
+      'it never fired on the generated corpus at all: min, median and max are ' +
+      'zero. Both show a margin of 0.00, which is why they are labelled ' +
+      'separately — the second says the tell is absent from what the model writes.',
   );
   out.push('');
   out.push(

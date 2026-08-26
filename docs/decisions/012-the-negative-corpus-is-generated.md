@@ -113,7 +113,17 @@ distribution of long machine text against short human text risks measuring
 length rather than register, since some rules' densities vary with length.
 Nothing here controls for that.
 
-**The Serbian corpus came back in the wrong standard.** Prompted in Serbian
+**The Serbian corpus came back in the wrong standard, and naming the variant
+fixed the morphology but not the syntax.** Regenerated on 2026-08-26 with
+`Piši na srpskom jeziku, ekavicom.` appended to each prompt, the ijekavian
+forms went from **72 occurrences to 0** — that was the disqualifying defect and
+it is gone. The `što`/`šta` ratio barely moved (roughly six non-subordinating
+`što` per document before and after), so Croatian-leaning relative-pronoun
+syntax survives. A variant instruction reaches the morphology and not the
+register. The corpus is usable for the Serbian rules, which are ekavica-
+specific; it is not a clean sample of the author's dialect.
+
+**The original failure, recorded because it is the finding.** Prompted in Serbian
 with no other instruction, the model produced text with Croatian syntax and
 ijekavian morphology in every document. That is a true fact about the default
 register — it is what the model does when asked in Serbian — and it makes the

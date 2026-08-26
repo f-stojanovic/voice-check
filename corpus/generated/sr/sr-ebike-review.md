@@ -5,79 +5,130 @@ format: review
 language: sr
 model: claude-opus-5
 generated: 2026-08-26
-words: 967
-prompt: Napiši blog post o električnom biciklu koji voziš godinu dana.
+words: 1326
+prompt: Napiši blog post o električnom biciklu koji voziš godinu dana. Piši na
+  srpskom jeziku, ekavicom.
 ---
 
-# Godinu dana na električnom biciklu: 4.200 km, jedna probušena guma i puno neugodnih pogleda
+# Godinu dana sa električnim biciklom: iskreno o svemu što niko ne piše u recenzijama
 
-Prošlog travnja sam s računa skinuo 1.900 eura i dovezao kući električni bicikl. Susjed je odmah imao komentar: *"To je za lijene."* Godinu dana i 4.200 kilometara kasnije, mislim da je bio u pravu — ali ne na način na koji je mislio.
+Pre tačno godinu dana kupio sam električni bicikl. Sećam se da sam tada rekao prijatelju: „Probaću mesec-dva, ako mi se ne svidi, prodaću ga." Prijatelj se smejao, jer me zna. Ja sam bio onaj koji je godinama ponavljao da je e-bicikl „bicikl za lenje ljude" i da čovek koji ne može sam da izgura Vračar ne zaslužuje dva točka.
 
-Ovo nije recenzija napisana nakon tri vožnje oko bloka. Ovo je ono što nitko ne stavi u opis proizvoda.
+Danas imam 3.240 kilometara na brojaču i mnogo skromniji stav prema sopstvenim mišljenjima.
 
-## Zašto sam ga uopće kupio
+## Šta sam kupio i zašto baš to
 
-Do posla imam 11 kilometara. Autom 25 minuta u gužvi, tramvajem i autobusom 45 s presjedanjem, klasičnim biciklom 40 minuta i majica za bacanje. Postoji brdo u sredini. Nije Alpe, ali dovoljno je da čovjek svaki dan iznova odabere auto.
+Uzeo sam trekking model sa motorom u zadnjoj glavčini od 250 W i baterijom od 36 V / 14 Ah, dakle nešto preko 500 Wh. Nije to ni najjeftinija ni najskuplja varijanta — negde u sredini, oko 1.100 evra sa svime.
 
-E-bike je bio kompromis: da stignem na posao bez tuširanja u wc-u firme.
+Dvoumio sam se između srednjeg motora (onaj kod pedala) i motora u točku. Srednji je bolji, to je jasno svakome ko je vozio oba — prirodnije se ponaša, bolje raspoređuje težinu, manje troši u brdu. Ali razlika u ceni je bila skoro 500 evra, a ja sam još uvek bio u fazi „probaću mesec-dva". Danas mi je pomalo žao, ali ne toliko da bih menjao.
 
-## Prvi mjesec: euforija koja graniči s nezdravim
+Bitno mi je bilo:
+- **da ima nosač i blatobrane iz fabrike** (jer sam znao da ću voziti po kiši, hteo ne hteo),
+- **da se baterija skida** (stan na trećem spratu, bez lifta — ovo je ispalo ključno),
+- **da ima obična, dostupna komponenta** — Shimano menjač, standardne gume 700x40, ništa egzotično.
 
-Prvih tjedan dana sam se vozio bez razloga. Trebaš kruh? Idem biciklom. U drugi kvart? Biciklom. Ima nešto duboko zadovoljavajuće u tome kada dođeš do uspona koji si godinama izbjegavao i on... jednostavno prestane biti problem. Ne nestane napor — samo prestane biti *odluka*.
+## Prvih nedelju dana: euforija i blaga glupost
 
-Najveće otkriće nije bila brzina. Bio je to **radijus**. Grad koji je prije imao promjer od 4 kilometra odjednom je imao 15. Kafići u koje sam išao autom postali su "ono usput". To je jedina stvar koju bih rekao svakome ko razmišlja o kupnji: ne kupujete brzinu, kupujete veći grad.
+Prvih par vožnji su smešne. Uključiš najjači nivo pomoći, kreneš, i imaš osećaj da te neko gura u leđa. Smeješ se sam sebi na semaforu. Pretičeš ljude uzbrdo bez znoja na čelu i osećaš se kao varalica.
 
-## Onda je došao studeni
+Prve nedelje sam vozio isključivo u najjačem režimu i praznio bateriju za dva dana. Napravio sam i klasičnu grešku početnika — jurio sam 25 km/h non-stop, jer motor pomaže do te granice, pa sam mislio da to znači da tako i *treba* da se vozi.
 
-Ovdje počinje pravi dio recenzije.
+Onda se to slegne. Posle mesec dana sam prešao na drugi od pet nivoa pomoći i tu ostao. Motor je tu za brda, vetar i dane kada nemam snage — a ne da bih ja bio putnik na sopstvenom biciklu.
 
-**Baterija zimi laže.** Ljeti sam s jednim punjenjem realno vozio 70-80 km. U prosincu, na minus dva, isti bicikl je davao 45-50. Nitko me nije prevario — litij-ionske baterije jednostavno tako rade. Ali ako računate domet po ljetnim brojevima i planirate zimske rute, doživjet ćete ono što ja zovem "pedaliranje 22-kilogramskog bicikla bez pomoći", a to je iskustvo koje ne preporučam nikome.
+## Kako mi je promenio svakodnevicu
 
-Rješenje: bateriju sam počeo skidati i držati u stanu, a stavljati je na bicikl tek pred izlazak. Domet se popravio za dobrih 15%.
+Ovo je deo koji nisam očekivao.
 
-**Hladno je drugačije hladno.** Na običnom biciklu se grijete radeći. Na e-biciklu u trećem stupnju pomoći vi ste u suštini nepokretan predmet koji se kreće 25 km/h kroz zrak od nula stupnjeva. Zimske rukavice koje su mi bile dovoljne za šetnju bile su beskorisne. Investirao sam u prave rukavice, buff za lice i vjetrovku — i to je bilo skuplje od svih dijelova koje sam zamijenio na biciklu.
+Do posla imam 11 kilometara u jednom smeru. Običnim biciklom sam to vozio možda dva puta nedeljno, po lepom vremenu, i stizao znojav toliko da mi je majica bila za bacanje. Autobusom mi je trebalo 45 minuta ako je dobar dan, sat i po ako nije.
 
-**Mrak i mokro.** Tvornička svjetla su bila legalna, ali ne i korisna. Kupio sam pravi prednji far. Kupio sam i blatobrane s dužim produžecima jer sam se umorio od pruge na leđima.
+E-biciklom mi treba **28 minuta**. Svaki dan. Bez izuzetka. Ne zavisi od gužve, ne zavisi od toga da li je neko negde stao na Brankovom.
 
-## Brojevi, jer svi to pitaju
+Ali stvar nije samo u vremenu do posla. Stvar je u tome što sam prestao da računam da li mi se *isplati* da idem biciklom. Treba mi nešto iz prodavnice tri kilometra dalje? Bicikl. Idem kod sestre na drugi kraj grada? Bicikl. Ranije bih pomislio „ma daleko je, uzeću auto", i ta misao se prosto — ugasila.
 
-Vodio sam evidenciju, priznajem, malo iz čiste pedanterije:
+Za godinu dana sam autom prešao oko 4.000 kilometara manje nego prethodne godine. To nisam planirao. To se samo desilo.
 
-- **Prijeđeno:** 4.213 km
-- **Struja:** oko 55 kWh ukupno, uključujući gubitke punjenja → **nekih 9 eura godišnje**
-- **Servisi:** 2 × redovni servis, ukupno 85 eura
-- **Zamijenjeno:** zadnja guma (uništena nakon 3.000 km — motor troši gume brže nego što očekujete), lančanik, kočione pločice sprijeda, jedna probušena guma
-- **Ukupno dijelovi + servis:** oko 190 eura
-- **Automobil koji nije vozio te kilometre:** procjenjujem 380-420 eura goriva, plus ono što nikad ne izračunamo — gume, servisi, parking
+## Domet: realni brojevi, ne fabrički
 
-Bicikl se, dakle, nije "isplatio" u godinu dana. S ovim tempom, negdje u trećoj godini. Ali gorivo nije bilo glavna stvar. Glavna je stvar da sam ove godine bio vani otprilike 120 sati više nego prošle, i to me se vidi.
+Proizvođač je pisao „do 120 km". Naravno da piše.
 
-## Ono što nitko ne spominje
+Evo šta ja stvarno dobijam sa svojih 500 Wh:
 
-**Održavanje je *više*, ne manje.** E-bike je teži i brži, što znači da se lanac, gume i kočnice troše osjetno brže nego na običnom biciklu. Ako mislite da ćete godišnje samo napumpati gume — ne.
+| Uslovi | Domet |
+|---|---|
+| Nivo 1, ravno, leto, ja vozim ozbiljno | 100–110 km |
+| Nivo 2, mešovito, moj svakodnevni režim | 70–80 km |
+| Nivo 4–5, brda, vozim se kao gospodin | 40–45 km |
+| Zima, minus 5, nivo 2 | 50–55 km |
 
-**Težina je stvarna.** 22 kilograma. Uz stepenice, u stan na drugom katu, kroz uska vrata. Ako živite u zgradi bez lifta i bez spremišta, jako ozbiljno razmislite prije kupnje. To je bio najveći svakodnevni izvor frustracije, veći od bilo koje tehničke stvari.
+Zaključak: punim bateriju otprilike **dva puta nedeljno**. To je četiri punjenja mesečno više nego što sam očekivao, i pola od onoga čega sam se plašio.
 
-**Paranoja oko krađe je nova emocija.** Sa starim biciklom bih ostavio bravu od 15 eura i otišao. S ovim sam prvih mjeseci gledao kroz izlog kafića. Kupio sam ozbiljnu bravu (90 eura), AirTag skriven ispod sjedala i naviku da ga nikad ne ostavljam preko noći vani. Nije ukraden. Ali svaki put kad ga ostavim, dio mozga ostane s njim.
+Važno: hladnoća stvarno pojede domet, ali ne trajno. U martu se sve vratilo na staro.
 
-**Prilagodba stila vožnje.** Prve tjedne sam nekoliko puta ušao u krivinu prebrzo jer mi mozak nije registrirao da idem 27 km/h, a ne 18. Kočnice trebaju duži put. Pješaci vas ne čuju i ne procjenjuju vašu brzinu točno — pretpostavljajte da vas nisu vidjeli. Jedan mi je čovjek bez upozorenja izletio na stazu iz zaklonjenih vrata i to je bila najbliža stvar nesreći cijele godine.
+## Zima. Da, vozio sam i zimi.
 
-**I da — pogledi.** Postoji određena vrsta biciklista u lycri koja te odmjeri na usponu. Prvo mi je bilo neugodno. Sada im mahnem. Većina ih mahne natrag.
+Ovo je bio pravi test. Novembar i decembar su prošli glatko — treba samo rukavice, kapa ispod kacige i jakna koja ne propušta vetar. Januar je bio teži. Bilo je dana kada sam odustao, priznajem, uglavnom zbog leda a ne zbog hladnoće.
 
-## Bi li opet kupio isti?
+Dve stvari koje su mi spasile zimu:
+1. **Skidiva baterija.** Nikada je nisam ostavljao napolju preko noći. Uđe u stan sa mnom, prenoći na sobnoj temperaturi. Verujem da je to razlog što mi je kapacitet i dalje dobar.
+2. **Zimske gume sa čekinjama** (one sa metalnim ekserčićima). Kupio sam ih u decembru posle jednog neprijatnog proklizavanja. Bučne su, sporije su, ali na zaleđenoj stazi pored Save su razlika između vožnje i šetnje.
 
-Da, ali s tri promjene:
+## Koliko me stvarno košta
 
-1. **Uzeo bih veću bateriju.** Nadoplata je bila oko 200 eura i mislio sam da mi ne treba. Treba mi. Barem svaki treći dan mislim o dometu, a nikad nisam požalio što nosim malo veću bateriju.
-2. **Provjerio bih dostupnost dijelova prije marke.** Motor je pouzdan, ali čekao sam tri tjedna na jedan plastični dio jer u zemlji nema uvoznika. Kupujte ono što vaš lokalni serviser zna popraviti.
-3. **Odmah bih kupio bravu i svjetla.** Ne "kasnije". Uračunajte dodatnih 200-250 eura u budžet na dan kupnje: brava, svjetla, blatobrani, nosač, rukavice. Bicikl bez toga nije gotov proizvod.
+Ovo ljudi najviše pitaju.
 
-## Iskrena rečenica za kraj
+**Struja:** Jedno punjenje je oko 0,5 kWh. Po trenutnim cenama to je nekih 6–7 dinara. Za godinu dana, sa oko 110 punjenja — **manje od 800 dinara**. To je manje nego što sam ranije mesečno trošio na gorivo za odlazak na posao.
 
-Susjed je bio u pravu — e-bike *jest* za lijene. Ja sam lijen. Zato sam pet godina vozio auto na 11 kilometara, i zato sada te kilometre vozim biciklom. E-bike nije alat za ljude koji obožavaju sport. To je alat koji ljudima poput mene, koji bi radije ostali unutra, čini izlazak dovoljno lakim da ga ipak odaberu.
+**Održavanje za godinu dana:**
+- Nova zadnja guma (istrošena na 2.500 km) — 4.500 din
+- Lanac (menja se češće nego na običnom biciklu, motor ga tuče) — 2.200 din
+- Pločice za kočnice, prednje i zadnje — 1.800 din
+- Zimske gume — 11.000 din (jednokratno)
+- Redovan servis kod majstora, dva puta — 5.000 din
 
-Četiri tisuće dvjesto kilometara lijenosti. Preporučam.
+Ukupno oko **24.500 dinara**, od čega su gume za zimu jednokratna investicija.
+
+**Baterija:** i dalje daje oko 92–94% originalnog kapaciteta, prema aplikaciji. Realno merenje kroz domet se poklapa. Zamena košta oko 350 evra i to je najveći skriveni trošak e-bicikla — ali očekujem da će trajati još bar tri-četiri godine.
+
+## Šta me nervira
+
+Da ne ispadne da je sve savršeno.
+
+**Težina.** Bicikl ima 24 kilograma. Kada ostane bez baterije, ne voziš bicikl — vučeš mrtvog konja. Iznošenje uz stepenice je vežba, a ako morate da ga ubacite u kola, treba vam dobar dan i dobra leđa.
+
+**Krađa.** Ovo mi je najveći stres. Ne parkiram ga nigde na duže od pola sata a da nije zaključan za nešto fiksno, sa dve brave, i da ga ne vidim. Skidam bateriju i displej kad god mogu. Za godinu dana ništa se nije desilo, ali paranoja je stalna.
+
+**Zavisnost.** Kada sam u martu na dve nedelje ostao bez bicikla (čekao deo), vratio sam se na običan. Osećao sam se kao da sam neko nizbrdo pustio ručnu. Prošlo je, ali istina je da vas e-bicikl malo razmazi.
+
+**Granica od 25 km/h.** Kada dođete do nje, motor prestane i osetite kao da ste udarili u zid od vazduha. Prvih meseci me je iritiralo. Sada sam se navikao i vozim malo ispod nje.
+
+**Kiša i elektronika.** Sve je navodno vodootporno, i jeste — ali posle jednog pljuska mi je displej dva dana pokazivao gluposti dok se nije osušio. Sada nosim najlonsku kesu u torbi, bez ikakvog stida.
+
+## Da li je to „varanje"?
+
+Vraćam se na svoju staru rečenicu.
+
+Merio sam. Sa nivoom pomoći 2, na svojoj svakodnevnoj ruti, prosečan puls mi je oko 118. Na običnom biciklu, na istoj ruti, bio je oko 138. Dakle, jeste manji napor — ali nije nikakav napor.
+
+A ono što je važnije: **na e-biciklu vozim pet puta nedeljno, na običnom sam vozio dva puta.** Ukupno se krećem znatno više nego ranije. Slabiji trening pomnožen sa mnogo više dana daje veći zbir. To je cela matematika.
+
+Nije e-bicikl zamena za sport. E-bicikl je zamena za auto i autobus. Kad se tako postavi, pitanje „da li je to varanje" prosto nestane.
+
+## Kome bih ga preporučio
+
+**Da, uzmi:** ako ti je put do posla između 5 i 20 km, ako živiš u brdovitom gradu, ako imaš preko 45 godina i kolena koja se javljaju, ako voziš decu ili teret, ako si odustao od bicikla jer si se umarao.
+
+**Razmisli:** ako živiš u zgradi bez lifta i bez mesta u prizemlju. Ako ti je put do posla kraći od 3 km (ne isplati se). Ako nemaš gde bezbedno da ga ostaviš.
+
+**Ne:** ako ti treba trening. Uzmi običan bicikl, biće ti bolji i jeftiniji.
+
+## Zaključak posle 3.240 kilometara
+
+Najbolji kompliment koji mogu da mu dam je da sam prestao da razmišljam o njemu.
+
+Prvih meseci sam stalno gledao displej, računao potrošnju, pričao svima o dometu. Sada ga jednostavno uzmem i odem gde treba. Postao je alat, kao veš mašina — primetiš ga tek kada se pokvari.
+
+Onaj prijatelj koji mi se smejao? Kupio je svoj u maju. Uzeo je srednji motor. Podnosim to dostojanstveno.
 
 ---
 
-*Napomena: brojevi, kilometraža i model su tu kao primjer i okvir — zamijeni ih svojim podacima (potrošnja, cijena struje u tvojoj sredini, konkretan model i kvarovi) i tekst će odmah zvučati vjerodostojnije. Ako mi kažeš koji bicikl stvarno voziš i u kojem gradu, mogu prilagoditi cijeli post tvom iskustvu.*
+*Ako imate konkretna pitanja o modelu, servisu ili vožnji zimi — pišite u komentarima, odgovaram na sve.*
