@@ -1,5 +1,12 @@
 # voice-check
 
+### → [voice-check-m8b7.onrender.com](https://voice-check-m8b7.onrender.com)
+
+> **It may take 30–50 seconds to load.** The free tier sleeps after fifteen
+> minutes with no traffic, and the first visitor after a quiet spell pays for
+> the restart. Nothing is wrong and there is no queue — the page is served by
+> a process that has to start first.
+
 A style guide, compiled into checks. It grades prose against one writer's own
 documented rules, in Serbian and English.
 
@@ -229,10 +236,11 @@ deployed instance has to be able to say which one it has:
  "rules":{"sr":15,"en":13},"uptimeSeconds":1,"node":"v22.22.1"}
 ```
 
-**Not deployed yet.** [`render.yaml`](render.yaml) and the workflows are
-written, and there is no service behind them: the deploy step fails loudly
-rather than passing green when the hook secret is absent. Creating the service
-takes a Render account and a `RENDER_DEPLOY_HOOK` repository secret.
+Deployed from [`render.yaml`](render.yaml) through Render's Blueprint flow, so
+the file in this repository is the configuration that is running rather than a
+document beside it. `autoDeployTrigger: checksPass` means a push deploys **only
+after CI passes** — the default is `commit`, which deploys whether the tests
+passed or not, and a deploy that can outrun its own tests is not a gate.
 
 ---
 

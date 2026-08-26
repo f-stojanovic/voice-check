@@ -1,16 +1,30 @@
 # 013. The public surface is `check` only, and the split is marginal cost
 
 Date: 2026-08-26
-Status: Accepted. The page exists and runs locally; it is not deployed.
-Evidence: Direct but narrow. The page serves, checks, highlights findings at
-          the offsets recorded on day one, and passes 21 tests including one
-          asserting the rendered HTML contains no `<script>` tag at all.
-          The cost argument is arithmetic rather than an observation:
+Status: Accepted and deployed — https://voice-check-m8b7.onrender.com,
+        Render free tier, Frankfurt.
+Evidence: Direct. The page serves, checks, highlights findings at the offsets
+          recorded on day one, and passes 28 tests including one asserting the
+          rendered HTML contains no `<script>` tag at all.
+          MEASURED AGAINST THE DEPLOYED INSTANCE, 2026-08-26: `/healthz`
+          answers in 0.17s warm and reports `sr 0.3.0+a1e590743b64`,
+          `en 0.3.0+0126033ab30f` — the same lexicon hashes as the local
+          checkout. `POST /` on `samples/machine-sr.md` returns 0.257, which
+          is byte-identical to what the CLI prints for the same file.
+          THAT IS THE ANSWER TO A QUESTION ADR 003 ASKED AND COULD NOT ANSWER.
+          A score is only comparable within a lexicon version, and until this
+          endpoint existed that identity lived only inside a report — so a
+          report could carry a hash and nobody could check it against the
+          thing that produced it. It is now answerable from outside the
+          machine, which is the only place the question matters: the person
+          holding the report is not the person holding the server.
+          The cost argument remains arithmetic rather than an observation:
           `check` calls no model and its marginal cost is zero; `brief` costs
           $0.10–$0.12 per run, measured across three live runs.
-          Unobserved: everything about running this in public. No deployment,
-          no traffic, no abuse, and therefore no evidence that a
-          20-per-minute limit is anywhere near right.
+          Still unobserved: no traffic, no abuse, and therefore no evidence
+          that a 20-per-minute limit or a 40,000-character cap is anywhere
+          near right. The cold start is quoted at 30–50 seconds from Render's
+          own documentation and has not been timed here.
 
 ## Context
 
@@ -60,6 +74,52 @@ nobody reads and a highlighted block that hangs a browser.
 twenty lines of decision and it means the page works in a text browser, on a
 locked-down machine, and on a bad connection. A test asserts the page contains
 no `<script>` tag, so the day somebody adds one is a day the build says so.
+
+## The blueprint is the configuration, not a document beside it
+
+The service was created from `render.yaml` through Render's Blueprint flow
+rather than through the manual one. That is worth recording, because the manual
+path autofills four defaults and all four are wrong for this service: a
+different region, a different build command, a different start command, and a
+**paid** plan.
+
+A `render.yaml` sitting in a repository next to a service configured by hand is
+a document that describes something. Created through the Blueprint flow, it is
+the thing itself — editing the file is how the service changes, and the file
+cannot drift from the deployment because there is nothing for it to drift from.
+
+That is the same claim this repository makes everywhere else, arriving one
+layer down. A style rule in a document is a suggestion and compiled into a
+check it is a constraint. A lexicon beside a score is a note; hashed into the
+report it is an identity. A deployment configuration beside a service is
+documentation; applied as a blueprint it is the service.
+
+## The deploy gate
+
+`autoDeployTrigger: checksPass`, verified against Render's blueprint spec on
+2026-08-26: the field takes `commit` | `checksPass` | `off`, defaults to
+`commit` for a new service, and replaces the deprecated `autoDeploy`.
+
+The default is what this service did for its first hours: **deploy on every
+push regardless of whether the tests passed**. A deploy that can outrun its own
+tests is not a gate, and nothing about having written a test suite prevents
+that on its own.
+
+`.github/workflows/deploy.yml` is deleted. It was correct — it waited for `ci`
+to conclude and exited 1 with an explanation when its hook secret was absent,
+rather than reporting success against nothing. It goes anyway, for reasons that
+have nothing to do with it being wrong:
+
+- One mechanism instead of two. A second mechanism that agrees with the first
+  is a second thing to keep in agreement, and the day they disagree is the day
+  somebody debugs a deploy that both of them think they own.
+- No deploy-hook token to store. A credential that does not exist cannot leak,
+  cannot expire, and cannot be rotated wrongly. The workflow needed a secret;
+  `checksPass` needs Render to read a status it can already see.
+
+The gate itself is unchanged, and that is the point: it was the test suite
+before and it is the test suite now. What changed is which system enforces it,
+and how many of them there are.
 
 ## Consequences
 

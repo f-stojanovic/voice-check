@@ -9,6 +9,23 @@ services:
     plan: free
     region: frankfurt
     branch: main
+    # `checksPass`, not the default `commit`.
+    #
+    # Verified against Render's blueprint spec on 2026-08-26: `autoDeployTrigger`
+    # takes `commit` | `checksPass` | `off`, defaults to `commit` for a new
+    # service, and replaces the deprecated `autoDeploy`.
+    #
+    # The default is what this service was doing until now: deploying on every
+    # push regardless of whether the tests passed. A deploy that can outrun its
+    # own tests is not a gate.
+    #
+    # This replaces `.github/workflows/deploy.yml`, which did the same job
+    # correctly — it waited for ci and failed loudly without its hook — and is
+    # deleted anyway. One mechanism instead of two, and no deploy-hook token to
+    # store: a credential that does not exist cannot leak, and a second
+    # mechanism that agrees with the first is a second thing to keep in
+    # agreement. The gate itself is unchanged: the test suite.
+    autoDeployTrigger: checksPass
     # `lexicons/` is read at runtime relative to the compiled module, so it has
     # to survive the build. It does: tsc emits to dist/ and leaves the rest of
     # the tree alone.
