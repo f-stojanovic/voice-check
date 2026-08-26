@@ -1,0 +1,36 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # Manual trigger, added as a diagnostic when the first pushes to this repo
+  # produced no workflow runs at all and kept as a convenience.
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+      # The tests cover the rules; this covers the thing the deploy actually
+      # runs. A build that typechecks and then fails to start is a build that
+      # passes CI and takes the site down.
+      - name: the built server starts and answers /healthz
+        run: |
+          node dist/web/server.js &
+          pid=$!
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8787/healthz && break || sleep 1
+          done
+          curl -sf http://localhost:8787/healthz | tee /dev/stderr | grep -q '"status":"ok"'
+          kill $pid
