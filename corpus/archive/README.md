@@ -25,13 +25,19 @@ difference between the two directories is the finding.
 
 Regenerated with `Piši na srpskom jeziku, ekavicom.` appended:
 
+Both corpora are fifteen documents.
+
 | marker | this archive | `corpus/generated/sr/` |
 | --- | --- | --- |
 | ijekavian forms | 72 | **0** |
-| `što` (non-subordinating), per document | ~6 | ~6 |
+| `što` | 108 | 86 |
+| `šta` | 37 | **55** |
+| ratio | 2.9 : 1 | 1.6 : 1 |
 
-The morphology is fixed and the syntax is not. A variant instruction reaches
-one and not the other, which is worth knowing before anybody assumes the
+The morphology is fixed outright. The pronoun ratio improves and does not
+normalise — Serbian uses `što` legitimately in subordinating position, so part
+of the residue is correct and part is Croatian-leaning relative-pronoun syntax,
+and nothing here separates the two. Worth knowing before anybody assumes the
 regenerated corpus is a clean sample of the author's dialect.
 
 See [ADR 012](../../docs/decisions/012-the-negative-corpus-is-generated.md).

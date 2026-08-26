@@ -156,10 +156,12 @@ calibrate them. It is kept in [`corpus/archive/`](corpus/archive/) as the
 evidence that made the constraint visible; the current corpus names the variant
 in the prompt. A language variant is not a style instruction.
 
-Naming it fixed the morphology and not the syntax: ijekavian forms went from
-**72 to 0**, and the `što`/`šta` ratio barely moved. The regenerated corpus is
-usable for rules that are ekavica-specific. It is not a clean sample of the
-author's dialect.
+Naming it fixed the morphology outright — ijekavian forms **72 → 0** — and
+improved the pronoun ratio without normalising it: `što`/`šta` went from 108:37
+to 86:55. Serbian uses `što` legitimately in subordinating position, so part of
+that residue is correct and nothing here separates it from the Croatian-leaning
+part. The regenerated corpus is usable for rules that are ekavica-specific. It
+is not a clean sample of the author's dialect.
 
 **The traceability gate has never fired in production.** `brief` fails the run
 if the analyst quotes text that is not in the source. Across three live runs it
@@ -276,12 +278,16 @@ them separately as `NO SIGNAL`:
 | bold-ratio          |           21.08 | separates                      |
 ```
 
-Serbian differs, and that is worth recording: there the phrase rules fire a
-little (`inflated-vocabulary` median 0.77, `promotional-tone` max 1.05,
-`editorializing` max 0.97), and only `weasel-words` and `summary-close` come
-back with no signal at all. The catalogue is more wrong about English than
-about Serbian, which nobody predicted and which one corpus is not enough to
-explain.
+Serbian differs, and that is worth recording. Across its own 15 documents only
+`weasel-words` and `summary-close` come back with no signal at all; the rest
+fire at a low but non-zero rate — `promotional-tone` max 1.05,
+`inflated-vocabulary` max 1.05, `editorializing` max 0.97,
+`negative-parallelism` max 2.26 per 1000 words. Five rules return nothing in
+English; two in Serbian.
+
+The catalogue is more wrong about English than about Serbian. Whether that is
+about the languages, about how much of each the model saw, or about the two
+lexicons being different lists, one corpus cannot say.
 
 ---
 

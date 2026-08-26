@@ -117,11 +117,17 @@ Nothing here controls for that.
 fixed the morphology but not the syntax.** Regenerated on 2026-08-26 with
 `Piši na srpskom jeziku, ekavicom.` appended to each prompt, the ijekavian
 forms went from **72 occurrences to 0** — that was the disqualifying defect and
-it is gone. The `što`/`šta` ratio barely moved (roughly six non-subordinating
-`što` per document before and after), so Croatian-leaning relative-pronoun
-syntax survives. A variant instruction reaches the morphology and not the
-register. The corpus is usable for the Serbian rules, which are ekavica-
-specific; it is not a clean sample of the author's dialect.
+it is gone. The `što`/`šta` ratio also improved, from 108:37 to **86:55**,
+which is a shift from 2.9:1 toward 1.6:1 rather than a correction: Serbian
+uses `što` legitimately in subordinating position, so the residue is partly
+correct and partly Croatian-leaning relative-pronoun syntax, and nothing here
+separates the two.
+An earlier version of this line said the ratio "barely moved". That was
+measured on four documents while the corpus was still generating and it was
+wrong; the figure above is from all fifteen. Reporting a partial sample as a
+result is the defect this repository keeps finding in itself.
+The corpus is usable for the Serbian rules, which are ekavica-specific. It is
+not a clean sample of the author's dialect.
 
 **The original failure, recorded because it is the finding.** Prompted in Serbian
 with no other instruction, the model produced text with Croatian syntax and
