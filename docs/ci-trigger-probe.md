@@ -1,0 +1,1 @@
+Temporary. Committed from the GitHub web UI to bisect why pushes to main produced no workflow runs while workflow_dispatch ran fine. If ci fires on this commit, the fault is on the path commits take to GitHub. If it does not, the fault is GitHub-side. Delete once the answer is recorded in ADR 013.
