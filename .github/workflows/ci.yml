@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
   pull_request:
+  # Manual trigger, added as a diagnostic when the first pushes to this repo
+  # produced no workflow runs at all and kept as a convenience.
+  workflow_dispatch:
 
 jobs:
   check:
