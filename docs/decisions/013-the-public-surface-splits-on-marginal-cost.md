@@ -144,11 +144,28 @@ does not survive a second instance. Both are fine for one process and both stop
 being true the moment this is deployed behind more than one, which is recorded
 in the code rather than discovered later.
 
-**No deployment, so no evidence.** 40,000 characters and 20 per minute are
-guesses, and unlike every other guess in this repository they are not in the
-uncalibrated registry — that registry is about the measurement, and these are
-about the service. They are stated on the page, which is a weaker form of the
-same discipline.
+**Deployed, but no traffic, so still no evidence.** 40,000 characters and 20
+per minute are guesses, and unlike every other guess in this repository they
+are not in the uncalibrated registry — that registry is about the measurement,
+and these are about the service. They are stated on the page, which is a weaker
+form of the same discipline. Deploying changed nothing about how well-founded
+they are; only visitors would.
+
+**`checksPass` is only a gate while something reports checks.** As of
+2026-08-26 pushes to this repository create no workflow runs at all — a manual
+`workflow_dispatch` runs and passes in 37s, four consecutive pushes produced
+zero. Render is configured to deploy only when the branch's checks pass, and a
+branch on which no checks are ever reported has none that can pass. Until the
+push trigger works, `checksPass` behaves closer to `off` than to a gate, and
+that is a worse failure than `commit` was: `commit` deployed untested code,
+this may deploy nothing at all and look like nothing is wrong.
+
+**The health endpoint cannot say which build it is running.** It reports the
+lexicon identity, which is the thing ADR 003 asked for, and not the commit. So
+"is the deployed instance running the code in this repository?" is unanswerable
+from outside — and on a free tier that sleeps, `uptimeSeconds` cannot
+distinguish a redeploy from a wake-up. The gap is the same shape as the one the
+lexicon hash closed, one layer up, and it is open.
 
 **A page with no JavaScript reloads on every check.** For a form somebody uses
 every few minutes that is not a cost. For someone iterating on a paragraph it
