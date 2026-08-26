@@ -162,8 +162,14 @@ MEASURED, 2026-08-26, commit time against run-creation time, both UTC:
 | `909543d` | 15:54:10 | 16:13:41 | 19.5 min | success |
 | `5d09669` | 15:55:14 | 16:15:04 | 19.8 min | success |
 | `bdb79f0` | 15:56:51 | 16:17:50 | 21.0 min | success |
+| `bed4388` (web UI) | 16:00:39 | 16:20:28 | 19.8 min | success |
 
-n=4, mean **20.2 minutes**, range 19.5–21.0. The backlog drained in push order,
+The last row is the bisect commit — the one made in the GitHub web interface to
+rule out every local cause. It ruled them out correctly and it also produced a
+run, twenty minutes after the conclusion had been drawn from its silence. The
+probe was right; it answered slower than the question was asked.
+
+n=5, mean **20.2 minutes**, range 19.5–21.0. The backlog drained in push order,
 and every run then completed in about 40 seconds, including the step that
 starts the built server and probes `/healthz`.
 
@@ -197,28 +203,35 @@ looked like before the corpus, and what a p90 from four documents looks like in
 a table. Repetition is not independence. Nine measurements inside one latency
 window are one measurement.
 
-**This repository's CI has still never gated anything.** Every green result to
-date was produced by a manual dispatch or arrived twenty minutes after the push
-it describes. That is a weaker claim than "CI runs on push" and it is the true
-one.
+**CI has never gated a deploy here yet.** Every green result to date was either
+a manual dispatch or arrived twenty minutes after the push it describes. The
+gate is configured and has not yet been the thing that stopped something, which
+is a weaker claim than "CI protects the deploy" and it is the true one.
 
-**The deploy path is manual on both halves, and both halves exist**: dispatch
-`build`, watch it go green, deploy from the Render dashboard.
-`autoDeployTrigger` is `"off"` — quoted, because `off` is a boolean in YAML 1.1
-and a string in YAML 1.2 and Render publishes no example showing which parser
-is on the other end.
+**The gate is `autoDeployTrigger: "checksPass"`.** A push deploys only after
+the branch's checks pass, so a deploy trails its push by the queue delay above
+— about twenty minutes. **That is expected and is not a fault**, and it is
+documented as a number in the README so the next person does not spend an
+afternoon rediscovering it.
 
-`off` was chosen when the checks appeared never to arrive. They do arrive, so
-`checksPass` is available again — at the cost of every deploy trailing its push
-by at least twenty minutes, and of an outage in GitHub's queue presenting as a
-deployment that silently stops. That is a live decision rather than a settled
-one, and it is recorded here unsettled on purpose.
+The latency costs this project nothing. Nobody is waiting on a deploy, and the
+thing being bought is that untested code cannot reach the service.
 
-It was `checksPass` for about an hour under the false belief that no check
-would ever arrive, which was the worst of the three: a gate waiting on a signal
-believed absent does not hold anything back, it stops the traffic entirely
-while looking like it is working. `commit` deploys untested code, which is bad
-and visible. This deployed nothing and looked fine.
+The value is quoted, and the quoting is about the syntax rather than this
+particular value: YAML 1.1 reads bare `off`, `on`, `yes` and `no` as booleans
+while YAML 1.2 reads them as strings — the trap that makes GitHub Actions' `on:`
+key parse as `true`. `checksPass` is safe unquoted; it is quoted anyway so that
+changing the value to `off` later cannot silently change its type.
+
+It was `"off"` for part of an afternoon, set on the belief that no check would
+ever arrive. That belief was wrong and the change was actively harmful while it
+stood: it disabled a gate because the gate appeared unable to receive a signal.
+The reasoning error has its own record in
+[ADR 015](015-an-observation-window-shorter-than-the-phenomenon.md).
+
+The rejected alternative remains `commit`, which is what this service did on
+its first day: deploy every push whether or not the tests passed. A deploy that
+can outrun its own tests is not a gate.
 
 **The health endpoint cannot say which build it is running.** It reports the
 lexicon identity, which is the thing ADR 003 asked for, and not the commit. So

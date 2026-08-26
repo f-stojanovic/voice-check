@@ -240,23 +240,27 @@ Deployed from [`render.yaml`](render.yaml) through Render's Blueprint flow, so
 the file in this repository is the configuration that is running rather than a
 document beside it.
 
-**Deploys are manual.** `autoDeployTrigger` is `"off"`. The deploy path is:
-dispatch `build`, watch it go green, deploy from Render. A manual gate is still
-a gate.
+`autoDeployTrigger: "checksPass"` — a push deploys **only after CI passes**.
+The default is `commit`, which deploys whether the tests passed or not, and a
+deploy that can outrun its own tests is not a gate.
 
-**CI runs on push, about twenty minutes later.** Measured: commit `40789d2`
-pushed 15:52:08 UTC, run created 16:12:47 — 20.6 minutes; commit `909543d`,
-19.5 minutes. Both then passed in about 40 seconds.
+> ### Expect a deploy to trail its push by about twenty minutes
+>
+> **This is normal here and is not a fault.** GitHub creates the workflow run
+> **19.5–21.0 minutes** after the push — n=5, mean **20.2 min**, measured
+> 2026-08-26 — and each run then passes in about **40 seconds** once started.
+> The deploy waits for the check, so it waits for the queue.
+>
+> If you push and nothing happens, wait twenty minutes before concluding
+> anything. That sentence is in this README because its absence cost an
+> afternoon: nine pushes produced zero runs, every local cause was excluded,
+> two standard remedies appeared to fail, and all of it was observed inside the
+> window. Nine measurements taken faster than the thing being measured are one
+> measurement ([ADR 015](docs/decisions/015-an-observation-window-shorter-than-the-phenomenon.md)).
 
-For several hours that lag was indistinguishable from a broken trigger. Nine
-pushes produced zero runs, every local cause was excluded, and two standard
-remedies appeared to fail — all of it observed inside a twenty-minute window.
-Nine measurements taken faster than the thing being measured are one
-measurement. The write-up, including the exclusion table that asked the wrong
-question, is in [ADR 013](docs/decisions/013-the-public-surface-splits-on-marginal-cost.md).
-
-**CI has still never gated anything here.** Every green result was either a
-manual dispatch or arrived twenty minutes after the push it describes.
+**CI has never gated a deploy here yet.** Every green result so far was either
+a manual dispatch or arrived twenty minutes after the push it describes. The
+gate is configured; it has not yet been the thing that stopped something.
 
 ---
 
@@ -319,9 +323,11 @@ lexicons being different lists, one corpus cannot say.
 
 The design decisions, each with a `Status:` and an `Evidence:` line saying what
 has actually been observed — including when the answer is "nothing yet" — are
-in [`docs/decisions/`](docs/decisions/). Fourteen of them, one of which
+in [`docs/decisions/`](docs/decisions/). Fifteen of them, one of which
 ([014](docs/decisions/014-the-catalogue-was-adopted-on-authority.md)) withdraws
-a claim the other thirteen were built around.
+a claim the other thirteen were built around, and one
+([015](docs/decisions/015-an-observation-window-shorter-than-the-phenomenon.md))
+is about a wrong conclusion reached twice in one afternoon.
 
 Worth reading if you only read one: how the lexicon carries the examples that
 prove each entry works ([006](docs/decisions/006-lexicon-entries-carry-their-examples.md)),

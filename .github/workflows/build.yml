@@ -26,7 +26,13 @@ jobs:
       # runs. A build that typechecks and then fails to start is a build that
       # passes CI and takes the site down.
       - name: the built server starts and answers /healthz
+        # `bash` rather than the default shell, because GitHub runs the default
+        # as `bash -e` and this step is a pipeline: without pipefail, a failing
+        # `curl` piped into `grep` reports grep's exit code and the step passes.
+        # `shell: bash` sets `-eo pipefail`.
+        shell: bash
         run: |
+          set -o pipefail
           node dist/web/server.js &
           pid=$!
           for i in $(seq 1 30); do

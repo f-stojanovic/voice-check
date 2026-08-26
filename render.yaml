@@ -9,36 +9,35 @@ services:
     plan: free
     region: frankfurt
     branch: main
-    # `off`. Read the next paragraph before changing it.
+    # `checksPass`: deploy only when the branch's CI checks pass.
     #
     # Verified against Render's blueprint spec on 2026-08-26: `autoDeployTrigger`
     # takes `commit` | `checksPass` | `off`, defaults to `commit` for a new
     # service, and replaces the deprecated `autoDeploy`.
     #
-    # This was `checksPass` for about an hour, which was worse than useless.
-    # GitHub creates no workflow runs for pushes to this repository — see
-    # ADR 013 — so there are no checks on the branch, and a gate waiting for a
-    # signal that never arrives does not hold anything back, it stops the
-    # traffic entirely while looking like it is working.
+    # EXPECT A DEPLOY TO TRAIL ITS PUSH BY ABOUT TWENTY MINUTES, AND DO NOT
+    # TREAT THAT AS A FAULT. Measured 2026-08-26: GitHub creates the workflow
+    # run 19.5–21.0 minutes after the push (n=5, mean 20.2), and each run then
+    # passes in about 40 seconds. The deploy waits for the check, so it waits
+    # for the queue. Full figures in ADR 013.
     #
-    # Not `commit` either. `commit` is what this service did on its first day:
-    # deploy every push whether or not the tests passed. A deploy that can
-    # outrun its own tests is not a gate.
+    # This was `"off"` for part of an afternoon, on the belief that no check
+    # would ever arrive. That belief came from nine observations of zero runs,
+    # every one taken inside the twenty-minute window — see ADR 015. Checks do
+    # arrive, the latency costs this project nothing, and the gate is worth
+    # having: untested code cannot reach the service.
     #
-    # `off` makes both halves manual and both halves real: dispatch `build`,
-    # watch it go green, deploy from the Render dashboard. A manual gate is
-    # still a gate. An automatic one waiting on a signal that never comes is
-    # not, and is harder to notice.
+    # Not `commit`, which is what this service did on its first day: deploy
+    # every push whether or not the tests passed. A deploy that can outrun its
+    # own tests is not a gate.
     #
-    # Restore `checksPass` the day a push creates a check run again.
-    #
-    # QUOTED DELIBERATELY. `off` is a boolean in YAML 1.1 and a string in
-    # YAML 1.2, so an unquoted `off` reaches a 1.1 parser as `false` — the same
-    # trap that makes GitHub Actions' `on:` key parse as `true`. Render's spec
-    # lists the value as `off` and shows no example of how to write it, so
-    # which parser is on the other end is unknown. `"off"` is the string under
-    # both.
-    autoDeployTrigger: "off"
+    # QUOTED DELIBERATELY, and the quoting is about the syntax rather than this
+    # particular value. YAML 1.1 reads bare `off`, `on`, `yes` and `no` as
+    # booleans while YAML 1.2 reads them as strings — the trap that makes
+    # GitHub Actions' `on:` key parse as `true`. `checksPass` is safe unquoted;
+    # it is quoted anyway so that changing the value to `off` later cannot
+    # silently change its type.
+    autoDeployTrigger: "checksPass"
     # `lexicons/` is read at runtime relative to the compiled module, so it has
     # to survive the build. It does: tsc emits to dist/ and leaves the rest of
     # the tree alone.
