@@ -20,5 +20,17 @@ posvećenost i jasnu viziju. Neki kritičari tvrde da je entuzijazam preteran,
 omogućavajući skepticima da odbace celu ideju. Vredi pomenuti da je i takav
 stav legitiman, otvarajući prostor za dijalog.
 
+Ne treba zaboraviti ni na ljude. Transformacija nije tehnički projekat, nego
+promena navika — a navike se ne menjaju dekretom. Potrebno je strpljenje,
+kontinuirana obuka i jasna komunikacija na svim nivoima organizacije. Štaviše,
+menadžment mora da bude prvi koji pokazuje spremnost da uči, otvarajući prostor
+i za greške i za eksperimentisanje.
+
+Praksa pokazuje da najbolje prolaze one kompanije koje su počele od malih,
+merljivih koraka. Umesto velike inicijative koja obećava sve odjednom, one biraju
+jedan proces, mere rezultat i tek onda šire pristup. Dodatno, takav pristup
+smanjuje rizik i olakšava argumentaciju pred upravnim odborom, koji retko voli
+spektakularna obećanja bez brojeva iza njih.
+
 Sve u svemu, budućnost je pred nama. U zaključku, organizacije koje ulažu u
 znanje, alate i ljude biće spremne za ono što dolazi.

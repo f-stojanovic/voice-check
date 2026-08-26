@@ -84,7 +84,36 @@ export interface UncalibratedConstant {
 }
 
 /**
- * One rule's verdict on one text.
+ * What happened when a rule met a text.
+ *
+ * WHY A THIRD OUTCOME EXISTS. Day one had two: a rule scored, or a rule
+ * failed. That was wrong, and the samples showed it. A density is a RATE, and
+ * a rate needs a denominator large enough for one occurrence not to dominate
+ * it. At a floor of 4 per 1000 words, a 40-word note containing a single
+ * perfectly good `međutim` scores 0 — not because the prose is bad but
+ * because the arithmetic has nothing to work with.
+ *
+ * Scoring that note is a lie. Passing it is a different lie: it records that
+ * the rule looked and approved, when the rule could not look. So a rule may
+ * ABSTAIN. An abstention is not scored, is not counted as passing, and is
+ * excluded from the mean. The report says how many rules abstained and why.
+ *
+ * This is a discriminated union rather than a nullable score because
+ * `score: number | null` puts the check at every call site and lets one
+ * forgotten `?? 0` turn an abstention back into a failing grade.
+ */
+export type RuleOutcome = 'scored' | 'abstained';
+
+interface RuleResultCommon {
+  readonly rule: string;
+  readonly kind: RuleKind;
+  readonly findings: readonly Finding[];
+  /** Why this outcome. On an abstention, what the rule could not measure. */
+  readonly reason: string;
+}
+
+/**
+ * A rule that measured something.
  *
  * WHY `score` and `passed` both exist, with `passed` explicitly derived: the
  * continuous value is the measurement and the boolean is a reporting
@@ -97,10 +126,8 @@ export interface UncalibratedConstant {
  * harder to act on than a red tick. The reason is what makes the number a
  * finding rather than a grade.
  */
-export interface RuleResult {
-  readonly rule: string;
-  readonly kind: RuleKind;
-  readonly findings: readonly Finding[];
+export interface ScoredRuleResult extends RuleResultCommon {
+  readonly outcome: 'scored';
   /**
    * Density rules only. Findings per 1000 words — except where a rule says
    * otherwise in its own comment (`bold-ratio` counts characters, and
@@ -108,12 +135,18 @@ export interface RuleResult {
    * Absent on hard rules, where a rate is meaningless: one is already too many.
    */
   readonly perThousand?: number;
-  /** 0..1, where 1 is clean. Never NaN: a rule with no denominator scores 1. */
+  /** 0..1, where 1 is clean. Never NaN: a rule with no denominator abstains. */
   readonly score: number;
   /** Derived from a threshold. Not the source of truth. */
   readonly passed: boolean;
-  readonly reason: string;
 }
+
+/** A rule that declined to measure. Carries no score, because it has none. */
+export interface AbstainedRuleResult extends RuleResultCommon {
+  readonly outcome: 'abstained';
+}
+
+export type RuleResult = ScoredRuleResult | AbstainedRuleResult;
 
 /**
  * The whole verdict on one text.
@@ -126,10 +159,27 @@ export interface Report {
   readonly language: Language;
   readonly wordCount: number;
   readonly rules: readonly RuleResult[];
-  /** Weighted mean over density rules. Hard rules never enter this number. */
-  readonly score: number;
+  /**
+   * Weighted mean over density rules that were SCORED. Hard rules never enter
+   * this number, and neither do abstentions.
+   *
+   * `null` when no density rule could be scored at all — a text short enough
+   * that the tool has nothing to say about its prose. Nullable rather than
+   * defaulted to 1.0 or 0, because both of those are claims and this is the
+   * absence of one.
+   */
+  readonly score: number | null;
   /** Rule names. Non-empty means the text fails, whatever `score` says. */
   readonly hardFailures: readonly string[];
+  /**
+   * Rules that declined to measure, with the reason each gave.
+   *
+   * Carried on the Report rather than left for the reader to derive from
+   * `rules`, because "eleven of sixteen rules abstained" is the single most
+   * important fact about a report of a short text, and a fact nobody computes
+   * is a fact nobody sees.
+   */
+  readonly abstentions: readonly { readonly rule: string; readonly reason: string }[];
   /**
    * `<version>+<content-hash>` of the lexicon that produced this report.
    *
@@ -192,12 +242,54 @@ export interface Rule {
 }
 
 /**
+ * One entry in a lexicon: a tell, plus the examples that prove it works.
+ *
+ * WHY EVERY ENTRY CARRIES ITS OWN EXAMPLES. Two entries shipped on day one
+ * matching nothing at all — `neverovatn*` and `spektakularn*`, both broken on
+ * the Serbian fleeting `a`, both sitting in a list that looked full. An entry
+ * that finds nothing is indistinguishable, in a report, from an entry that
+ * looked and approved. That is the same failure this whole project exists to
+ * catch, reproduced inside the tool's own data.
+ *
+ * `matches` is mandatory: a phrase the entry MUST fire on. A test runs every
+ * entry against its own example, so a dead entry fails the build with its own
+ * name in the message.
+ *
+ * `doesNotMatch` is optional and is where a known false positive goes. It
+ * turns "`ključ*` also catches `ključna reč`" from a paragraph in a README
+ * into an assertion that fails if somebody widens the stem.
+ *
+ * `except` is the mechanism that makes a `doesNotMatch` satisfiable: literal
+ * phrases inside which a match is suppressed. This is a suppression
+ * mechanism, deliberately withheld on day one until the false-positive survey
+ * said what shape it needed. It is narrow on purpose — a literal containing
+ * phrase, not a rule language.
+ */
+export interface LexiconEntry {
+  /** The phrase or regular expression, exactly as written in the YAML. */
+  readonly source: string;
+  readonly kind: 'phrase' | 'pattern';
+  /** A text this entry must fire on. Asserted by a test. */
+  readonly matches: string;
+  /** A text this entry must NOT fire on. Asserted by a test when present. */
+  readonly doesNotMatch?: string;
+  /** Literal phrases inside which a match is suppressed. */
+  readonly except: readonly string[];
+}
+
+/**
  * A loaded, validated lexicon.
  *
  * WHY phrases are data and not code: adding "spektakularno" to the promotional
  * list should be a one-line diff in a file a writer can read, not an edit to a
  * regular expression. The identity fields are next to the data because a
  * phrase list without its version is a number without its units.
+ *
+ * THIS COVERS EIGHT OF SIXTEEN RULES. The YAML separates `phrases:` (literal
+ * text a writer can add) from `patterns:` (regular expressions, which a writer
+ * realistically cannot), and four rules — `diacritics`, `formal-address`,
+ * `sentence-uniformity`, `bold-ratio` and the rest of the structural set —
+ * read no lexicon at all. See the README's rule table for which is which.
  */
 export interface Lexicon {
   readonly language: Language;
@@ -205,8 +297,11 @@ export interface Lexicon {
   readonly version: string;
   /** Computed over the file's canonical content. Catches the one they did not. */
   readonly contentHash: string;
-  /** Rule name -> literal phrases. A trailing `*` allows an inflected ending. */
-  readonly phrases: Readonly<Record<string, readonly string[]>>;
-  /** Rule name -> regular expression sources, validated at load. */
-  readonly patterns: Readonly<Record<string, readonly string[]>>;
+  /**
+   * Rule name -> its entries, phrases and patterns merged.
+   *
+   * Merged here and separate in the YAML: the file is organised for the person
+   * editing it, and a rule does not care which syntax a tell was written in.
+   */
+  readonly entries: Readonly<Record<string, readonly LexiconEntry[]>>;
 }

@@ -52,6 +52,31 @@ export const PHRASE_CEILING = guess(
 );
 
 /**
+ * The word count below which a density rule ABSTAINS rather than scoring.
+ *
+ * WHY THIS IS A DIFFERENT KIND OF GUESS from the floors and ceilings above,
+ * and the ADR says so at length: a floor is a guess about what counts as good
+ * prose, which is a judgement somebody could reasonably disagree with. This is
+ * a guess about whether a measurement is POSSIBLE at all — whether the text is
+ * long enough for a rate to carry information. Being wrong about a floor means
+ * disagreeing with a writer. Being wrong about this means reporting a number
+ * that describes arithmetic rather than prose.
+ *
+ * The principled version is per-rule: a rule cannot say anything until one
+ * occurrence lands at or below its own ceiling, which is `1000 / ceiling`
+ * words — 167 for a default phrase rule, 333 for `negative-parallelism`. A
+ * single number is the day-two simplification, and 200 sits inside that range
+ * rather than at either end of it.
+ */
+export const DENSITY_MIN_WORDS = guess(
+  'density.min-words',
+  200,
+  'words below which a density rule abstains instead of scoring; a guess ' +
+    'about whether a rate is measurable at all, not about what counts as good ' +
+    'prose — the principled replacement is per-rule, at 1000/ceiling words',
+);
+
+/**
  * The threshold `RuleResult.passed` is derived from.
  *
  * It is a reporting convenience and nothing persists without the score that

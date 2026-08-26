@@ -20,6 +20,7 @@
 
 import { densityResult } from './helpers.js';
 import { findMatches } from '../text.js';
+import { DENSITY_MIN_WORDS } from '../scoring.js';
 import { guess } from '../uncalibrated.js';
 import type { Rule, RuleContext, RuleResult } from '../types.js';
 
@@ -41,8 +42,8 @@ export const boldRatio: Rule = {
   name: 'bold-ratio',
   kind: 'density',
   languages: ['sr', 'en'],
-  uncalibrated: [FLOOR, CEILING],
-  check(text: string, _ctx: RuleContext): RuleResult {
+  uncalibrated: [FLOOR, CEILING, DENSITY_MIN_WORDS],
+  check(text: string, ctx: RuleContext): RuleResult {
     // Two alternations because `**`/`__` cannot share one named group; the
     // underscore form is rare enough that the second pass is cheaper than a
     // cleverer pattern nobody could read.
@@ -54,6 +55,7 @@ export const boldRatio: Rule = {
     const density = text.length === 0 ? 0 : (boldChars * 1000) / text.length;
 
     return densityResult({
+      ctx,
       rule: 'bold-ratio',
       findings,
       density,

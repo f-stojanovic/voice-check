@@ -1,54 +1,97 @@
-# English lexicon for voice-check. See lexicons/sr.yaml for the conventions;
-# the `*` inflection suffix is available here too but is rarely needed, because
+# English lexicon for voice-check. See lexicons/sr.yaml for the conventions and
+# for why every entry carries its own `matches:` example.
+#
+# The `*` inflection suffix is available here too but is rarely needed, because
 # English inflection mostly is not a suffix problem.
-version: "0.1.0"
+version: "0.2.0"
 language: en
 
 phrases:
   weasel-words:
-    - experts say
-    - many believe
-    - reports suggest
-    - critics argue
-    - it is widely
+    - phrase: experts say
+      matches: "Experts say otherwise."
+    - phrase: many believe
+      matches: "Many believe the opposite."
+    - phrase: reports suggest
+      matches: "Reports suggest a rise."
+    - phrase: critics argue
+      matches: "Critics argue the point."
+    - phrase: it is widely
+      matches: "It is widely known."
 
   editorializing:
-    - it's important to note
-    - it's worth mentioning
-    - in this article we
+    - phrase: it's important to note
+      matches: "It's important to note this."
+    - phrase: it's worth mentioning
+      matches: "It’s worth mentioning that."
+    - phrase: in this article we
+      matches: "In this article we explore the idea."
 
   promotional-tone:
-    - incredible
-    - stunning
-    - breathtaking
-    - must-try
+    - phrase: incredible
+      matches: "An incredible result."
+    - phrase: stunning
+      matches: "A stunning result."
+    - phrase: breathtaking
+      matches: "A breathtaking result."
+    - phrase: must-try
+      matches: "A must-try feature."
 
   inflated-vocabulary:
-    - delve
-    - landscape
-    - synergy
-    - empower
-    - leverage
-    - robust
-    - seamless
-    - tapestry
+    - phrase: delve
+      matches: "We delve into the material."
+    # `landscape` is a tell in "the evolving landscape of AI" and an ordinary
+    # noun everywhere else. The exceptions cover the two usages that actually
+    # turn up in technical writing.
+    - phrase: landscape
+      matches: "The evolving landscape of AI."
+      doesNotMatch: "We switched the chart to landscape orientation."
+      except:
+        - landscape orientation
+        - landscape mode
+        - landscape photography
+    - phrase: synergy
+      matches: "The synergy between them."
+    - phrase: empower
+      matches: "It will empower the team."
+    - phrase: leverage
+      matches: "We leverage the data."
+    - phrase: robust
+      matches: "A robust system."
+    - phrase: seamless
+      matches: "A seamless transformation."
+    - phrase: tapestry
+      matches: "A rich tapestry of ideas."
 
   summary-close:
-    - in conclusion
-    - all in all
-    - to summarize
+    - phrase: in conclusion
+      matches: "In conclusion, we are done."
+    - phrase: all in all
+      matches: "All in all, it worked."
+    - phrase: to summarize
+      matches: "To summarize, it worked."
 
   transition-density:
-    - moreover
-    - furthermore
-    - additionally
-    - however
-    - on the other hand
+    - phrase: moreover
+      matches: "Moreover, it works."
+    - phrase: furthermore
+      matches: "Furthermore, it is fast."
+    - phrase: additionally
+      matches: "Additionally, it is cheap."
+    - phrase: however
+      matches: "However, it costs more."
+    - phrase: on the other hand
+      matches: "On the other hand, it costs."
 
 patterns:
   negative-parallelism:
-    - (?<![\p{L}])not\s+just(?![\p{L}])[^.!?\n]{0,80}?(?<![\p{L}])but(?![\p{L}])
-    - (?<![\p{L}])it[’']?s\s+not(?![\p{L}])[^.!?\n]{0,60}?,\s*it[’']?s(?![\p{L}])
+    - pattern: (?<![\p{L}])not\s+just(?![\p{L}])[^.!?\n]{0,80}?(?<![\p{L}])but(?![\p{L}])
+      matches: "This is not just a tool but a philosophy."
+      doesNotMatch: "This is not a tool."
+    - pattern: (?<![\p{L}])it[’']?s\s+not(?![\p{L}])[^.!?\n]{0,60}?,\s*it[’']?s(?![\p{L}])
+      matches: "It's not a product, it's a practice."
 
   rule-of-three:
-    - (?<![\p{L}])\p{L}{3,}(?:[ \t]+\p{L}+){0,2},\s+\p{L}{3,}(?:[ \t]+\p{L}+){0,2},?\s+and\s+\p{L}{3,}(?![\p{L}])
+    - pattern: (?<![\p{L}])\p{L}{3,}(?:[ \t]+\p{L}+){0,2},\s+\p{L}{3,}(?:[ \t]+\p{L}+){0,2},?\s+and\s+\p{L}{3,}(?![\p{L}])
+      matches: "Knowledge, tools, and people."
+      doesNotMatch: "Two settings where one should have done."

@@ -13,7 +13,15 @@ import { rulesFor } from './rules/index.js';
 import { REPORT_CONSTANTS } from './scoring.js';
 import { countWords } from './text.js';
 import { collectUncalibrated, formatUncalibratedReport } from './uncalibrated.js';
-import type { Language, Lexicon, Report, Rule, RuleResult, UncalibratedConstant } from './types.js';
+import type {
+  Language,
+  Lexicon,
+  Report,
+  Rule,
+  RuleResult,
+  ScoredRuleResult,
+  UncalibratedConstant,
+} from './types.js';
 
 export interface CheckOptions {
   readonly language: Language;
@@ -59,15 +67,17 @@ function buildReport(
 ): Report {
   const weightOf = new Map(rules.map((r) => [r.name, r.weight ?? 1]));
 
-  const density = results.filter((r) => r.kind === 'density');
+  const density = results.filter(
+    (r): r is ScoredRuleResult => r.kind === 'density' && r.outcome === 'scored',
+  );
   const totalWeight = density.reduce((acc, r) => acc + (weightOf.get(r.rule) ?? 1), 0);
 
-  // A run with no density rules would divide by zero. It scores 1 rather than
-  // NaN: a NaN passes every naive range guard and poisons every mean it
-  // reaches (agent-evals ADR 001 pays for this lesson at length).
+  // Null rather than 1 or 0 when nothing could be scored. Both of those are
+  // claims about the prose; this is the absence of one. Returning 1 would also
+  // mean a two-sentence note scored better than anything ever written.
   const score =
     totalWeight === 0
-      ? 1
+      ? null
       : density.reduce((acc, r) => acc + r.score * (weightOf.get(r.rule) ?? 1), 0) / totalWeight;
 
   return {
@@ -75,7 +85,12 @@ function buildReport(
     wordCount,
     rules: results,
     score,
-    hardFailures: results.filter((r) => r.kind === 'hard' && !r.passed).map((r) => r.rule),
+    hardFailures: results
+      .filter((r) => r.kind === 'hard' && r.outcome === 'scored' && !r.passed)
+      .map((r) => r.rule),
+    abstentions: results
+      .filter((r) => r.outcome === 'abstained')
+      .map((r) => ({ rule: r.rule, reason: r.reason })),
     lexiconVersion: lexiconIdentity(lexicon),
   };
 }
@@ -91,11 +106,16 @@ export function formatMarkdown(
   const { report } = outcome;
   const out: string[] = [];
 
+  const scoredDensity = report.rules.filter(
+    (r) => r.kind === 'density' && r.outcome === 'scored',
+  );
+
   out.push(`# voice-check: ${source}`);
   out.push('');
   out.push(
-    `**${report.score.toFixed(3)}** over ${report.rules.filter((r) => r.kind === 'density').length} ` +
-      `density rules · ${report.wordCount} words · \`${report.language}\` · ` +
+    `**${report.score === null ? 'not scored' : report.score.toFixed(3)}** over ` +
+      `${scoredDensity.length} density rule${scoredDensity.length === 1 ? '' : 's'} · ` +
+      `${report.wordCount} words · \`${report.language}\` · ` +
       `lexicon \`${report.lexiconVersion}\``,
   );
   out.push('');
@@ -105,7 +125,7 @@ export function formatMarkdown(
   }
 
   const hard = report.rules.filter((r) => r.kind === 'hard');
-  const failed = hard.filter((r) => !r.passed);
+  const failed = hard.filter((r) => r.outcome === 'scored' && !r.passed);
 
   if (failed.length > 0) {
     out.push('## Hard failures');
@@ -120,29 +140,56 @@ export function formatMarkdown(
       out.push(...quote(result));
     }
   } else {
-    out.push(`Hard rules: ${hard.length === 0 ? 'none apply' : `${hard.length} passed`}.`);
+    const passedHard = hard.filter((r) => r.outcome === 'scored').length;
+    out.push(`Hard rules: ${passedHard === 0 ? 'none measured' : `${passedHard} passed`}.`);
     out.push('');
   }
 
-  out.push('## Density rules');
-  out.push('');
-  out.push('| rule | score | measured | findings |');
-  out.push('| --- | --- | --- | --- |');
-  for (const result of report.rules.filter((r) => r.kind === 'density')) {
-    const measured = result.perThousand === undefined ? '—' : result.perThousand.toFixed(2);
+  // Abstentions come BEFORE the score table, because on a short text they are
+  // the most important fact in the report: they say the tool declined rather
+  // than approved, and a reader who skips them will read a partial mean as a
+  // verdict on the whole text.
+  if (report.abstentions.length > 0) {
+    out.push(`## Not measured (${report.abstentions.length})`);
+    out.push('');
     out.push(
-      `| ${result.rule} | ${result.score.toFixed(2)} | ${measured} | ${result.findings.length} |`,
+      report.score === null
+        ? 'No density rule could measure this text. The score above is absent, ' +
+          'not zero — the text is too short for a rate to carry information.'
+        : 'These rules declined to measure. They are excluded from the score — ' +
+          'an abstention is not a pass.',
     );
+    out.push('');
+    for (const abstention of report.abstentions) {
+      out.push(`- \`${abstention.rule}\` — ${abstention.reason}`);
+    }
+    out.push('');
   }
-  out.push('');
 
-  for (const result of report.rules.filter((r) => r.kind === 'density')) {
-    if (result.findings.length === 0 && result.score === 1) continue;
-    out.push(`### ${result.rule} — ${result.score.toFixed(2)}`);
+  if (scoredDensity.length > 0) {
+    out.push('## Density rules');
     out.push('');
-    out.push(result.reason);
+    out.push('| rule | score | measured | findings |');
+    out.push('| --- | --- | --- | --- |');
+    for (const result of scoredDensity) {
+      const measured =
+        result.outcome === 'scored' && result.perThousand !== undefined
+          ? result.perThousand.toFixed(2)
+          : '—';
+      const score = result.outcome === 'scored' ? result.score.toFixed(2) : '—';
+      out.push(`| ${result.rule} | ${score} | ${measured} | ${result.findings.length} |`);
+    }
     out.push('');
-    out.push(...quote(result));
+
+    for (const result of scoredDensity) {
+      if (result.outcome !== 'scored') continue;
+      if (result.findings.length === 0 && result.score === 1) continue;
+      out.push(`### ${result.rule} — ${result.score.toFixed(2)}`);
+      out.push('');
+      out.push(result.reason);
+      out.push('');
+      out.push(...quote(result));
+    }
   }
 
   out.push('---');

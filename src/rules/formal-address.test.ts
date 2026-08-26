@@ -1,19 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { formalAddress } from './formal-address.js';
-import { positions, runRule } from './rules.test-kit.js';
+import { positions, runRule, scored } from './rules.test-kit.js';
 
 describe('formal-address', () => {
   it('passes text that addresses the reader as "ti"', () => {
     const result = runRule(formalAddress, 'Molim te da pošalješ izveštaj.', 'sr');
-    expect(result.passed).toBe(true);
-    expect(result.score).toBe(1);
+    expect(scored(result).passed).toBe(true);
+    expect(scored(result).score).toBe(1);
   });
 
   it('fails on a single mid-sentence formal pronoun', () => {
     const result = runRule(formalAddress, 'Molim Vas da pošaljete izveštaj.', 'sr');
     expect(result.findings.length).toBe(1);
-    expect(result.passed).toBe(false);
-    expect(result.score).toBe(0);
+    expect(scored(result).passed).toBe(false);
+    expect(scored(result).score).toBe(0);
   });
 
   it('reports the exact position of the pronoun', () => {

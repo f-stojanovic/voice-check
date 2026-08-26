@@ -20,7 +20,8 @@
  * out of arithmetic.
  */
 
-import { derivePassed } from '../scoring.js';
+import { abstained } from './helpers.js';
+import { DENSITY_MIN_WORDS, derivePassed } from '../scoring.js';
 import { sentences, standardDeviation } from '../text.js';
 import { guess } from '../uncalibrated.js';
 import type { Rule, RuleContext, RuleResult } from '../types.js';
@@ -44,23 +45,31 @@ export const sentenceUniformity: Rule = {
   name: 'sentence-uniformity',
   kind: 'density',
   languages: ['sr', 'en'],
-  uncalibrated: [TARGET_SD, MIN_SENTENCES],
-  check(text: string, _ctx: RuleContext): RuleResult {
+  uncalibrated: [TARGET_SD, MIN_SENTENCES, DENSITY_MIN_WORDS],
+  check(text: string, ctx: RuleContext): RuleResult {
     const lengths = sentences(text).map((s) => s.words);
 
-    if (lengths.length < MIN_SENTENCES.value) {
-      // Not a pass — an abstention. Reported as 1.0 so it cannot drag the mean
-      // down, with a reason that says the rule declined rather than approved.
-      return {
+    // Two gates, because this rule can fail to be measurable in two ways: too
+    // few words for any rate (the shared gate), or enough words spread over
+    // too few sentences for a deviation to mean anything (its own).
+    if (ctx.wordCount < DENSITY_MIN_WORDS.value) {
+      return abstained({
         rule: 'sentence-uniformity',
         kind: 'density',
-        findings: [],
-        score: 1,
-        passed: true,
+        reason:
+          `not measured: ${ctx.wordCount} words, below the ${DENSITY_MIN_WORDS.value} ` +
+          `at which a rate carries information`,
+      });
+    }
+
+    if (lengths.length < MIN_SENTENCES.value) {
+      return abstained({
+        rule: 'sentence-uniformity',
+        kind: 'density',
         reason:
           `not measured: ${lengths.length} sentence${lengths.length === 1 ? '' : 's'}, ` +
           `below the ${MIN_SENTENCES.value} needed for a meaningful deviation`,
-      };
+      });
     }
 
     const sd = standardDeviation(lengths);
@@ -70,6 +79,7 @@ export const sentenceUniformity: Rule = {
     return {
       rule: 'sentence-uniformity',
       kind: 'density',
+      outcome: 'scored',
       // No findings: the defect is the distribution, not any one sentence.
       // Pointing at "the most average sentence" would be an accusation the
       // measurement does not support.

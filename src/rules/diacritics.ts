@@ -24,7 +24,7 @@
  * rather than passing, and the reason says which it did.
  */
 
-import { hardResult } from './helpers.js';
+import { abstained, hardResult } from './helpers.js';
 import { guess } from '../uncalibrated.js';
 import type { Rule, RuleContext, RuleResult } from '../types.js';
 
@@ -54,10 +54,12 @@ export const diacritics: Rule = {
   uncalibrated: [MIN_WORDS],
   check(text: string, ctx: RuleContext): RuleResult {
     if (ctx.wordCount < MIN_WORDS.value) {
-      return hardResult({
+      // An abstention, not a pass. Day one reported this as `clean: true`,
+      // which recorded that the rule had looked at a short note and approved
+      // it. It had not looked; it could not.
+      return abstained({
         rule: 'diacritics',
-        findings: [],
-        clean: true,
+        kind: 'hard',
         reason:
           `not measured: ${ctx.wordCount} words, below the ${MIN_WORDS.value} at ` +
           `which a diacritic-free text stops being plausible`,

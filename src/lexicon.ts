@@ -24,7 +24,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { parse as parseYaml } from 'yaml';
 import { z } from 'zod';
-import type { Language, Lexicon } from './types.js';
+import type { Language, Lexicon, LexiconEntry } from './types.js';
 
 /**
  * WHY Zod at this boundary rather than a cast: a YAML file is somebody typing.
@@ -32,11 +32,25 @@ import type { Language, Lexicon } from './types.js';
  * list scores every text a clean 1.0 — the failure mode where the tool reports
  * that everything is fine because it stopped looking.
  */
+const EntrySchema = z.object({
+  matches: z.string().min(1, 'matches must be a text this entry fires on'),
+  doesNotMatch: z.string().min(1).optional(),
+  except: z.array(z.string().min(1)).default([]),
+});
+
+const PhraseEntrySchema = EntrySchema.extend({
+  phrase: z.string().min(1, 'phrase must be the literal text to look for'),
+});
+
+const PatternEntrySchema = EntrySchema.extend({
+  pattern: z.string().min(1, 'pattern must be a regular expression source'),
+});
+
 const LexiconSchema = z.object({
   version: z.string().min(1, 'version must be a non-empty string, e.g. "0.1.0"'),
   language: z.enum(['sr', 'en']),
-  phrases: z.record(z.string(), z.array(z.string().min(1)).min(1)).default({}),
-  patterns: z.record(z.string(), z.array(z.string().min(1)).min(1)).default({}),
+  phrases: z.record(z.string(), z.array(PhraseEntrySchema).min(1)).default({}),
+  patterns: z.record(z.string(), z.array(PatternEntrySchema).min(1)).default({}),
 });
 
 /** Thrown with the file name and the exact path into the document. */
@@ -77,25 +91,51 @@ export function parseLexicon(source: string, origin: string): Lexicon {
   // Compile every pattern now rather than at first use. A regex that only
   // fails on the one text that would have matched it is a rule that quietly
   // never fires, which reads as a clean score.
-  for (const [rule, sources] of Object.entries(data.patterns)) {
-    sources.forEach((src, i) => {
+  for (const [rule, entries] of Object.entries(data.patterns)) {
+    entries.forEach((entry, i) => {
       try {
-        new RegExp(src, 'giu');
+        new RegExp(entry.pattern, 'giu');
       } catch (cause) {
         throw new LexiconError(
           `${origin}: patterns.${rule}[${i}] is not a valid regular expression — ` +
-            `${(cause as Error).message}\n  source: ${src}`,
+            `${(cause as Error).message}\n  source: ${entry.pattern}`,
         );
       }
     });
+  }
+
+  const entries: Record<string, LexiconEntry[]> = {};
+  const push = (rule: string, entry: LexiconEntry): void => {
+    (entries[rule] ??= []).push(entry);
+  };
+  for (const [rule, list] of Object.entries(data.phrases)) {
+    for (const e of list) {
+      push(rule, {
+        source: e.phrase,
+        kind: 'phrase',
+        matches: e.matches,
+        except: e.except,
+        ...(e.doesNotMatch === undefined ? {} : { doesNotMatch: e.doesNotMatch }),
+      });
+    }
+  }
+  for (const [rule, list] of Object.entries(data.patterns)) {
+    for (const e of list) {
+      push(rule, {
+        source: e.pattern,
+        kind: 'pattern',
+        matches: e.matches,
+        except: e.except,
+        ...(e.doesNotMatch === undefined ? {} : { doesNotMatch: e.doesNotMatch }),
+      });
+    }
   }
 
   return {
     language: data.language,
     version: data.version,
     contentHash: contentHash(data),
-    phrases: data.phrases,
-    patterns: data.patterns,
+    entries,
   };
 }
 
@@ -110,8 +150,8 @@ export function parseLexicon(source: string, origin: string): Lexicon {
 function contentHash(data: {
   version: string;
   language: string;
-  phrases: Record<string, readonly string[]>;
-  patterns: Record<string, readonly string[]>;
+  phrases: Record<string, readonly unknown[]>;
+  patterns: Record<string, readonly unknown[]>;
 }): string {
   const canonical = JSON.stringify({
     version: data.version,
@@ -123,8 +163,8 @@ function contentHash(data: {
 }
 
 function sortKeys(
-  record: Record<string, readonly string[]>,
-): Array<[string, readonly string[]]> {
+  record: Record<string, readonly unknown[]>,
+): Array<[string, readonly unknown[]]> {
   return Object.entries(record).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
 }
 

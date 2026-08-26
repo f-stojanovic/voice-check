@@ -126,12 +126,6 @@ function escapeChar(ch: string): string {
   return ch.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-/** One regex that matches any of the given literal phrases, case-insensitively. */
-export function phrasesRegex(phrases: readonly string[]): RegExp | null {
-  if (phrases.length === 0) return null;
-  return new RegExp(phrases.map(phraseSource).join('|'), 'giu');
-}
-
 /** A sentence, with the offset it starts at so findings inside it stay locatable. */
 export interface Sentence {
   readonly text: string;

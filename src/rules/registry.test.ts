@@ -2,7 +2,7 @@ import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { ALL_RULES, rulesFor } from './index.js';
-import { runRule } from './rules.test-kit.js';
+import { pad, runRule } from './rules.test-kit.js';
 
 const HERE = fileURLToPath(new URL('.', import.meta.url));
 
@@ -34,10 +34,14 @@ describe('the rule registry', () => {
     expect(rulesFor('sr').map((r) => r.name)).not.toContain('participial-close');
   });
 
-  it('scores an empty text without producing NaN', () => {
+  it('abstains or scores finitely on an empty text — never NaN', () => {
+    // A NaN passes every naive range guard and poisons every mean it reaches.
+    // On an empty text every density rule should abstain; if one ever scores,
+    // the score still has to be a real number in range.
     for (const language of ['sr', 'en'] as const) {
       for (const rule of rulesFor(language)) {
         const result = runRule(rule, '', language);
+        if (result.outcome === 'abstained') continue;
         expect(Number.isFinite(result.score), `${rule.name} on empty text`).toBe(true);
         expect(result.score).toBeGreaterThanOrEqual(0);
         expect(result.score).toBeLessThanOrEqual(1);
@@ -45,8 +49,21 @@ describe('the rule registry', () => {
     }
   });
 
+  it('abstains rather than scoring every density rule on an empty text', () => {
+    for (const language of ['sr', 'en'] as const) {
+      for (const rule of rulesFor(language).filter((r) => r.kind === 'density')) {
+        expect(runRule(rule, '', language).outcome, rule.name).toBe('abstained');
+      }
+    }
+  });
+
   it('keeps every finding inside the text it was found in', () => {
-    const text = ['# Naslov', '', 'Stručnjaci kažu da je ovo — neverovatno.', '', '- **Ključ:** Radi.'].join('\n');
+    const text = pad(
+      ['# Naslov', '', 'Stručnjaci kažu da je ovo — neverovatno.', '', '- **Ključ:** Radi.'].join(
+        '\n',
+      ),
+      'sr',
+    );
     for (const rule of rulesFor('sr')) {
       for (const finding of runRule(rule, text, 'sr').findings) {
         expect(text.slice(finding.offset, finding.offset + finding.text.length)).toBe(finding.text);

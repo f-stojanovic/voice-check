@@ -59,6 +59,37 @@ Key order does not change the hash, so reordering the YAML for readability is
 not a content change. Array order does, because a phrase list is meaningfully a
 sequence.
 
+## Which rules this actually covers
+
+**Eight of sixteen.** Stated here because the promise "a writer can extend the
+tool without touching code" is true of half the rule set and the README used
+to imply more.
+
+Lexicon-driven, and of those, writer-editable:
+
+| rule | how the tells are written | can a writer add one? |
+| --- | --- | --- |
+| `weasel-words` | phrase list | yes |
+| `editorializing` | phrase list | yes |
+| `promotional-tone` | phrase list | yes |
+| `inflated-vocabulary` | phrase list | yes |
+| `summary-close` | phrase list | yes |
+| `transition-density` | phrase list | yes |
+| `negative-parallelism` | regular expression | not realistically |
+| `rule-of-three` | regular expression | not realistically |
+
+The other eight read no lexicon at all: `diacritics`, `formal-address`,
+`verbal-adverb-close` and `participial-close` are morphology, and
+`bullet-bold-shape`, `em-dash-density`, `bold-ratio` and `sentence-uniformity`
+are structure or statistics. None of them has a list to extend. Changing them
+means changing code, and no version or hash records that they changed —
+which is the gap the uncalibrated-constants report only partly covers, since
+it counts numbers and not regular expressions.
+
+So the current counts are: 30 Serbian entries and 31 English, of which 27 and
+28 are phrases; three patterns each; one exception list each; three
+counter-examples each ([ADR 006](006-lexicon-entries-carry-their-examples.md)).
+
 ## Consequences
 
 Every score travels with the identity of the data that produced it. A report

@@ -24,7 +24,7 @@ import { transitionDensity } from './transition-density.js';
 import { ruleOfThree } from './rule-of-three.js';
 import { emDashDensity } from './em-dash-density.js';
 import { boldRatio } from './bold-ratio.js';
-import { bulletBoldRestate } from './bullet-bold-restate.js';
+import { bulletBoldShape } from './bullet-bold-shape.js';
 import { sentenceUniformity } from './sentence-uniformity.js';
 import { diacritics } from './diacritics.js';
 import { formalAddress } from './formal-address.js';
@@ -45,7 +45,7 @@ export const ALL_RULES: readonly Rule[] = [
   summaryClose,
   transitionDensity,
   ruleOfThree,
-  bulletBoldRestate,
+  bulletBoldShape,
 
   // Rhythm, then typography.
   verbalAdverbClose,
@@ -73,7 +73,7 @@ export {
   ruleOfThree,
   emDashDensity,
   boldRatio,
-  bulletBoldRestate,
+  bulletBoldShape,
   sentenceUniformity,
   diacritics,
   formalAddress,

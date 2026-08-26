@@ -22,7 +22,7 @@
  */
 
 import { densityResult } from './helpers.js';
-import { perThousand } from '../scoring.js';
+import { DENSITY_MIN_WORDS, perThousand } from '../scoring.js';
 import { findMatches } from '../text.js';
 import { guess } from '../uncalibrated.js';
 import type { Rule, RuleContext, RuleResult } from '../types.js';
@@ -49,10 +49,11 @@ export const participialClose: Rule = {
   name: 'participial-close',
   kind: 'density',
   languages: ['en'],
-  uncalibrated: [FLOOR, CEILING],
+  uncalibrated: [FLOOR, CEILING, DENSITY_MIN_WORDS],
   check(text: string, ctx: RuleContext): RuleResult {
     const findings = findMatches(text, CLOSING);
     return densityResult({
+      ctx,
       rule: 'participial-close',
       findings,
       density: perThousand(findings.length, ctx.wordCount),
