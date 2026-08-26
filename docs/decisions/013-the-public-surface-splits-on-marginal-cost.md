@@ -151,14 +151,74 @@ and these are about the service. They are stated on the page, which is a weaker
 form of the same discipline. Deploying changed nothing about how well-founded
 they are; only visitors would.
 
-**`checksPass` is only a gate while something reports checks.** As of
-2026-08-26 pushes to this repository create no workflow runs at all — a manual
-`workflow_dispatch` runs and passes in 37s, four consecutive pushes produced
-zero. Render is configured to deploy only when the branch's checks pass, and a
-branch on which no checks are ever reported has none that can pass. Until the
-push trigger works, `checksPass` behaves closer to `off` than to a gate, and
-that is a worse failure than `commit` was: `commit` deployed untested code,
-this may deploy nothing at all and look like nothing is wrong.
+**GitHub Actions run creation on this repository lags a push by about twenty
+minutes, and for several hours that was indistinguishable from never.**
+
+MEASURED, 2026-08-26, commit time against run-creation time, both UTC:
+
+| commit | pushed | run created | delay | result |
+| --- | --- | --- | --- | --- |
+| `40789d2` | 15:52:08 | 16:12:47 | 20.6 min | success |
+| `909543d` | 15:54:10 | 16:13:41 | 19.5 min | success |
+| `5d09669` | 15:55:14 | 16:15:04 | 19.8 min | success |
+| `bdb79f0` | 15:56:51 | 16:17:50 | 21.0 min | success |
+
+n=4, mean **20.2 minutes**, range 19.5–21.0. The backlog drained in push order,
+and every run then completed in about 40 seconds, including the step that
+starts the built server and probes `/healthz`.
+
+Four observations of one queue on one afternoon. Whether twenty minutes is this
+repository's steady state, an incident that day, or a property of a new
+repository, four points cannot say — and the figure should be re-measured
+before anyone depends on it.
+
+**What was concluded before that, and why it was wrong.** Nine pushes produced
+zero runs. Every local cause was excluded — a commit made in the GitHub web UI
+straight to `main` also produced nothing, which excludes the git client, the
+credential helper, token scopes and the committer identity; Actions was enabled
+(`{"enabled": true, "allowed_actions": "all"}`), the workflow was `active`, the
+trigger parsed correctly, the file was on the default branch, and the same
+account had 17 successful runs on `agent-evals`. Two standard remedies were
+tried and appeared to fail: renaming `ci.yml` to `build.yml` (which did
+re-register the workflow under a new id, 343030651 → 343063754) and deleting
+the workflow and restoring it in a second push.
+
+**Neither remedy can be credited, and neither can be blamed.** Every
+observation was taken inside a twenty-minute window and the delay explains all
+of them without needing either. An exclusion table that rules out ten causes
+and never considers *latency* is a table that was asking the wrong question:
+it tested whether the mechanism was configured, and the mechanism was
+configured and slow.
+
+The error has a shape this repository should recognise. Nine consecutive
+observations of zero, all taken faster than the thing being observed, read
+exactly like a settled negative result — which is what the phrase catalogue
+looked like before the corpus, and what a p90 from four documents looks like in
+a table. Repetition is not independence. Nine measurements inside one latency
+window are one measurement.
+
+**This repository's CI has still never gated anything.** Every green result to
+date was produced by a manual dispatch or arrived twenty minutes after the push
+it describes. That is a weaker claim than "CI runs on push" and it is the true
+one.
+
+**The deploy path is manual on both halves, and both halves exist**: dispatch
+`build`, watch it go green, deploy from the Render dashboard.
+`autoDeployTrigger` is `"off"` — quoted, because `off` is a boolean in YAML 1.1
+and a string in YAML 1.2 and Render publishes no example showing which parser
+is on the other end.
+
+`off` was chosen when the checks appeared never to arrive. They do arrive, so
+`checksPass` is available again — at the cost of every deploy trailing its push
+by at least twenty minutes, and of an outage in GitHub's queue presenting as a
+deployment that silently stops. That is a live decision rather than a settled
+one, and it is recorded here unsettled on purpose.
+
+It was `checksPass` for about an hour under the false belief that no check
+would ever arrive, which was the worst of the three: a gate waiting on a signal
+believed absent does not hold anything back, it stops the traffic entirely
+while looking like it is working. `commit` deploys untested code, which is bad
+and visible. This deployed nothing and looked fine.
 
 **The health endpoint cannot say which build it is running.** It reports the
 lexicon identity, which is the thing ADR 003 asked for, and not the commit. So

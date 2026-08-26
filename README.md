@@ -238,9 +238,25 @@ deployed instance has to be able to say which one it has:
 
 Deployed from [`render.yaml`](render.yaml) through Render's Blueprint flow, so
 the file in this repository is the configuration that is running rather than a
-document beside it. `autoDeployTrigger: checksPass` means a push deploys **only
-after CI passes** — the default is `commit`, which deploys whether the tests
-passed or not, and a deploy that can outrun its own tests is not a gate.
+document beside it.
+
+**Deploys are manual.** `autoDeployTrigger` is `"off"`. The deploy path is:
+dispatch `build`, watch it go green, deploy from Render. A manual gate is still
+a gate.
+
+**CI runs on push, about twenty minutes later.** Measured: commit `40789d2`
+pushed 15:52:08 UTC, run created 16:12:47 — 20.6 minutes; commit `909543d`,
+19.5 minutes. Both then passed in about 40 seconds.
+
+For several hours that lag was indistinguishable from a broken trigger. Nine
+pushes produced zero runs, every local cause was excluded, and two standard
+remedies appeared to fail — all of it observed inside a twenty-minute window.
+Nine measurements taken faster than the thing being measured are one
+measurement. The write-up, including the exclusion table that asked the wrong
+question, is in [ADR 013](docs/decisions/013-the-public-surface-splits-on-marginal-cost.md).
+
+**CI has still never gated anything here.** Every green result was either a
+manual dispatch or arrived twenty minutes after the push it describes.
 
 ---
 
