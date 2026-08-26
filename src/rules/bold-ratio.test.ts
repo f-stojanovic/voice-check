@@ -32,8 +32,11 @@ describe('bold-ratio', () => {
     expect(result.reason).toContain('per 1000 characters');
   });
 
-  it('abstains on a text too short to have a ratio worth reading', () => {
+  it('does not gate on word count, because its denominator is characters', () => {
+    // The derived gate answers "how long before one OCCURRENCE stops
+    // dominating the rate". A bolded run is not a unit of that kind, and a
+    // ratio of characters to characters is measurable at almost any length.
     const result = runRule(boldRatio, 'Ovo je **bold** tekst.', 'sr');
-    expect(result.outcome).toBe('abstained');
+    expect(result.outcome).toBe('scored');
   });
 });

@@ -11,7 +11,7 @@
  * is a pipeline nobody can decide to run twice.
  */
 
-import { analyse, verifyQuotes, EmptySourceError } from './agents/analyst.js';
+import { analyse, EmptySourceError, UntraceableQuoteError } from './agents/analyst.js';
 import { findAngles, DEFAULT_AUDIENCE } from './agents/angles.js';
 import {
   anthropicClient,
@@ -98,7 +98,7 @@ async function main(): Promise<number> {
     // version swapped it and produced a profile that described Serbian
     // beginners while instructing the model to answer in English.
     const angles = await findAngles(client, analysis.value, DEFAULT_AUDIENCE);
-    const quotes = verifyQuotes(analysis.value, source.text);
+    const quotes = analysis.traceability;
 
     if (args.json) {
       process.stdout.write(
@@ -153,6 +153,17 @@ function reportFailure(cause: unknown): number {
   if (cause instanceof ModelUnavailableError) {
     process.stderr.write(`brief: ${cause.message}\n`);
     return 5;
+  }
+  if (cause instanceof UntraceableQuoteError) {
+    // Distinct from a malformed tool call: the shape was fine, the content was
+    // invented. Retrying may well produce the same fabrication.
+    process.stderr.write(
+      `brief: traceability gate failed.\n${cause.message}\n\n` +
+        `The analysis was discarded. Every statement the analyst makes has to be ` +
+        `traceable to the source; a quote that is not in it is a fact about the ` +
+        `model, not a judgement call.\n`,
+    );
+    return 7;
   }
   if (cause instanceof MalformedToolCallError) {
     process.stderr.write(
@@ -262,21 +273,20 @@ function renderBrief(input: {
     out.push('');
   }
 
-  // Traceability is a measured figure, printed whether it is good or bad. A
-  // quote the model paraphrased is a statement traced to nothing, and the
-  // reader is entitled to know which statements those are.
-  const found = input.quotes.filter((q) => q.found).length;
+  // Traceability passed — an absent quote would have failed the run before
+  // reaching here. What is printed is the breakdown, because "12 exact" and
+  // "8 exact, 4 normalised" are different facts about how the model handled
+  // the source, and only one of them is worth noticing.
+  const exact = input.quotes.filter((q) => q.match === 'exact').length;
+  const normalized = input.quotes.filter((q) => q.match === 'normalized').length;
   out.push('---');
   out.push('');
   out.push(
-    `**Traceability:** ${found} of ${input.quotes.length} quotes found verbatim in the source.`,
+    `**Traceability:** ${input.quotes.length} of ${input.quotes.length} quotes found in ` +
+      `the source — ${exact} exact` +
+      `${normalized > 0 ? `, ${normalized} matching only after whitespace and case were normalised` : ''}. ` +
+      `A quote that was not there at all would have failed this run.`,
   );
-  const missing = input.quotes.filter((q) => !q.found);
-  if (missing.length > 0) {
-    out.push('');
-    out.push('Not found — these statements are traced to text that is not in the source:');
-    for (const q of missing) out.push(`- \`${q.field}\` — ${JSON.stringify(q.quote.slice(0, 80))}`);
-  }
   out.push('');
 
   const cost = summariseCost([analysis, angles]);

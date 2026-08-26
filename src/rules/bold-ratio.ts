@@ -20,7 +20,6 @@
 
 import { densityResult } from './helpers.js';
 import { findMatches } from '../text.js';
-import { DENSITY_MIN_WORDS } from '../scoring.js';
 import { guess } from '../uncalibrated.js';
 import type { Rule, RuleContext, RuleResult } from '../types.js';
 
@@ -42,7 +41,7 @@ export const boldRatio: Rule = {
   name: 'bold-ratio',
   kind: 'density',
   languages: ['sr', 'en'],
-  uncalibrated: [FLOOR, CEILING, DENSITY_MIN_WORDS],
+  uncalibrated: [FLOOR, CEILING],
   check(text: string, ctx: RuleContext): RuleResult {
     // Two alternations because `**`/`__` cannot share one named group; the
     // underscore form is rare enough that the second pass is cheaper than a
@@ -62,6 +61,11 @@ export const boldRatio: Rule = {
       floor: FLOOR,
       ceiling: CEILING,
       unit: 'bolded characters per 1000 characters',
+      // No word-count gate: the denominator here is characters, and a ratio of
+      // characters to characters is measurable at almost any length. The
+      // derived gate answers "how long before one OCCURRENCE stops dominating",
+      // and a bolded run is not a unit of the same kind.
+      gateOnWordCount: false,
     });
   },
 };

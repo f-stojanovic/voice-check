@@ -40,8 +40,12 @@ describe('the report', () => {
 
   it('scores null when no density rule could measure', () => {
     // Not 1.0 and not 0. Both of those are claims about the prose; this is the
-    // absence of one.
-    const { report } = check('Kratka beleška.', { language: 'sr' });
+    // absence of one. `bold-ratio` has no word gate, so it is excluded here —
+    // it is the one rule that can still score a two-word note.
+    const { report } = check('Kratka beleška.', {
+      language: 'sr',
+      rules: rulesFor('sr').filter((r) => r.name !== 'bold-ratio'),
+    });
     expect(report.score).toBeNull();
     expect(report.abstentions.length).toBeGreaterThan(0);
   });
@@ -52,7 +56,7 @@ describe('the report', () => {
     expect(names).toContain('transition-density');
     expect(names).toContain('diacritics');
     for (const abstention of report.abstentions) {
-      expect(abstention.reason).toContain('not measured');
+      expect(abstention.reason).toMatch(/^not (measured|scored):/);
     }
   });
 
@@ -84,7 +88,9 @@ describe('the report', () => {
     const ids = uncalibrated.map((c) => c.id);
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids).toContain('density.phrase-floor');
-    expect(ids).toContain('density.min-words');
+    // `density.min-words` is gone: the gate is now derived from each rule's
+    // own ceiling, so it inherits that guess rather than adding one.
+    expect(ids).not.toContain('density.min-words');
   });
 
   it('declares an uncalibrated constant for every rule that guesses one', () => {
@@ -106,7 +112,13 @@ describe('the report', () => {
     const outcome = check(`Sve u svemu, gotovi smo. ${CLEAN_SR}`, { language: 'sr' });
     const markdown = formatMarkdown(outcome, 'test.md');
     expect(markdown).toContain('## Density rules');
-    const short = formatMarkdown(check('Kratka beleška.', { language: 'sr' }), 'test.md');
+    const short = formatMarkdown(
+      check('Kratka beleška.', {
+        language: 'sr',
+        rules: rulesFor('sr').filter((r) => r.name !== 'bold-ratio'),
+      }),
+      'test.md',
+    );
     expect(short).toContain('No density rule could measure this text');
     expect(short).toContain('**not scored**');
   });

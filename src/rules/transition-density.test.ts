@@ -41,6 +41,6 @@ describe('transition-density', () => {
     // no denominator to work with.
     const short = runRule(transitionDensity, 'Međutim, planer to nije mogao da zna.', 'sr');
     expect(short.outcome).toBe('abstained');
-    expect(short.reason).toContain('below the 200');
+    expect(short.reason).toContain('Needs 51 words');
   });
 });

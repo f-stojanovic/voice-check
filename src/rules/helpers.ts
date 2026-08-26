@@ -3,16 +3,16 @@
  * that rule and not a copy of the same twelve lines of arithmetic.
  */
 
-import { compileEntry, matchEntry } from '../matcher.js';
+import { compileEntry, matchEntry, overlapsWholly } from '../matcher.js';
 import {
   densityScore,
   derivePassed,
-  DENSITY_MIN_WORDS,
+  minWordsFor,
   perThousand,
   PHRASE_CEILING,
   PHRASE_FLOOR,
 } from '../scoring.js';
-import { lineStarts } from '../text.js';
+import { findMatches, lineStarts, phraseSource } from '../text.js';
 import type {
   Finding,
   Language,
@@ -28,28 +28,80 @@ function show(n: number): string {
 }
 
 /**
- * A rule declining to measure.
+ * A rule declining to SCORE — while still reporting what it saw.
  *
  * Not a pass. A pass records that the rule looked and approved; this records
- * that it could not look. The distinction is invisible in a boolean and is the
- * entire point of the third outcome.
+ * that it looked and cannot put a number on it.
+ *
+ * WHY AN ABSTENTION STILL CARRIES FINDINGS. Day two returned an empty array
+ * here, and the result was that a 139-word post produced thirteen abstentions
+ * and nothing else — no score and no observations, which is the format most of
+ * the author's writing is in. "Here is what I noticed, I cannot give you a
+ * rate for it" is honest and useful. Silence is neither, and it is not more
+ * honest: the rule did look, and throwing away what it found reports less than
+ * was known.
  */
 export function abstained(args: {
   rule: string;
   kind: RuleResult['kind'];
   reason: string;
+  findings?: readonly Finding[];
+  minWords?: number;
 }): RuleResult {
-  return { rule: args.rule, kind: args.kind, outcome: 'abstained', findings: [], reason: args.reason };
+  return {
+    rule: args.rule,
+    kind: args.kind,
+    outcome: 'abstained',
+    findings: args.findings ?? [],
+    reason: args.reason,
+    ...(args.minWords === undefined ? {} : { minWords: args.minWords }),
+  };
+}
+
+/**
+ * Findings suppressed by a structural rule's exception list.
+ *
+ * `doesNotMatch` and `except` reach the eight lexicon-driven rules, because
+ * those have entries to hang an exception on. The other eight are regular
+ * expressions in TypeScript, and the sharpest false positive in the day-one
+ * survey — `verbal-adverb-close` firing on the infinitive `reći` — was in that
+ * half. This is the seam that closes it: the rule stays a regex, the
+ * exceptions become data.
+ *
+ * Suppression is by containment, the same rule the lexicon `except` uses: a
+ * finding is dropped when its span lies inside an occurrence of an exception
+ * phrase. For a single-word exception like `reći` that is exact-word matching.
+ */
+export function withoutExceptions(
+  findings: readonly Finding[],
+  text: string,
+  ctx: RuleContext,
+  rule: string,
+  starts?: readonly number[],
+): Finding[] {
+  const exceptions = ctx.lexicon.exceptions[rule] ?? [];
+  if (exceptions.length === 0 || findings.length === 0) return [...findings];
+
+  const spans = exceptions.flatMap((exception) =>
+    findMatches(text, new RegExp(phraseSource(exception.phrase), 'giu'), starts).map(
+      (f) => [f.offset, f.offset + f.text.length] as const,
+    ),
+  );
+
+  return findings.filter((hit) => !spans.some((span) => overlapsWholly(hit, span)));
 }
 
 /**
  * Builds the RuleResult for a density rule from a count and a band.
  *
- * Abstains below {@link DENSITY_MIN_WORDS}. The gate is on WORD count even for
- * `bold-ratio`, whose own denominator is characters: a thirty-word note with
- * one bolded word has no meaningful emphasis ratio either, and gating every
- * density rule on one number keeps "this text was too short to grade" a single
- * fact about the report rather than a per-rule footnote.
+ * Abstains below the gate DERIVED from this rule's own ceiling — see
+ * {@link minWordsFor}. A rule with a tight ceiling needs a longer text before
+ * it can say anything, which is a property of the rule rather than a fact
+ * about texts, and one number for all of them was hiding that.
+ *
+ * `gateOn` lets a rule opt out. `bold-ratio` does, because its denominator is
+ * characters rather than words and a character ratio is measurable at almost
+ * any length.
  */
 export function densityResult(args: {
   rule: string;
@@ -60,14 +112,21 @@ export function densityResult(args: {
   ceiling: UncalibratedConstant;
   /** What the density is a density OF, e.g. "matches per 1000 words". */
   unit: string;
+  /** False for a rule whose denominator is not words. Default true. */
+  gateOnWordCount?: boolean;
 }): RuleResult {
-  if (args.ctx.wordCount < DENSITY_MIN_WORDS.value) {
+  const minWords = minWordsFor(args.ceiling.value);
+  if (args.gateOnWordCount !== false && args.ctx.wordCount < minWords) {
     return abstained({
       rule: args.rule,
       kind: 'density',
+      findings: args.findings,
+      minWords,
       reason:
-        `not measured: ${args.ctx.wordCount} words, below the ${DENSITY_MIN_WORDS.value} ` +
-        `at which a rate carries information`,
+        `not scored: ${args.ctx.wordCount} words. One occurrence here is ` +
+        `${perThousand(1, args.ctx.wordCount).toFixed(2)} per 1000, at or above this ` +
+        `rule's ceiling of ${args.ceiling.value}, so a single ordinary use would ` +
+        `score 0. Needs ${minWords} words (1000 / ${args.ceiling.value})`,
     });
   }
 
@@ -131,7 +190,7 @@ export function lexiconRule(spec: {
     name: spec.name,
     kind: 'density',
     languages: spec.languages,
-    uncalibrated: [floor, ceiling, DENSITY_MIN_WORDS],
+    uncalibrated: [floor, ceiling],
     check(text: string, ctx: RuleContext): RuleResult {
       const entries = ctx.lexicon.entries[spec.name] ?? [];
 
@@ -147,8 +206,12 @@ export function lexiconRule(spec: {
       }
 
       const starts = lineStarts(text);
-      const findings: Finding[] = entries.flatMap((entry) =>
-        matchEntry(text, compileEntry(entry), starts),
+      const findings: Finding[] = withoutExceptions(
+        entries.flatMap((entry) => matchEntry(text, compileEntry(entry), starts)),
+        text,
+        ctx,
+        spec.name,
+        starts,
       );
       findings.sort((a, b) => a.offset - b.offset);
 

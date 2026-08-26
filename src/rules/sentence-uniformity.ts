@@ -21,7 +21,7 @@
  */
 
 import { abstained } from './helpers.js';
-import { DENSITY_MIN_WORDS, derivePassed } from '../scoring.js';
+import { derivePassed } from '../scoring.js';
 import { sentences, standardDeviation } from '../text.js';
 import { guess } from '../uncalibrated.js';
 import type { Rule, RuleContext, RuleResult } from '../types.js';
@@ -45,23 +45,14 @@ export const sentenceUniformity: Rule = {
   name: 'sentence-uniformity',
   kind: 'density',
   languages: ['sr', 'en'],
-  uncalibrated: [TARGET_SD, MIN_SENTENCES, DENSITY_MIN_WORDS],
-  check(text: string, ctx: RuleContext): RuleResult {
+  uncalibrated: [TARGET_SD, MIN_SENTENCES],
+  check(text: string, _ctx: RuleContext): RuleResult {
     const lengths = sentences(text).map((s) => s.words);
 
-    // Two gates, because this rule can fail to be measurable in two ways: too
-    // few words for any rate (the shared gate), or enough words spread over
-    // too few sentences for a deviation to mean anything (its own).
-    if (ctx.wordCount < DENSITY_MIN_WORDS.value) {
-      return abstained({
-        rule: 'sentence-uniformity',
-        kind: 'density',
-        reason:
-          `not measured: ${ctx.wordCount} words, below the ${DENSITY_MIN_WORDS.value} ` +
-          `at which a rate carries information`,
-      });
-    }
-
+    // One gate, and it is sentences rather than words. This rule has no
+    // ceiling to derive a word gate from — it is not a count per 1000 words,
+    // it is a standard deviation — so the only question is whether there are
+    // enough sentences for a deviation to mean anything.
     if (lengths.length < MIN_SENTENCES.value) {
       return abstained({
         rule: 'sentence-uniformity',

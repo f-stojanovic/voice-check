@@ -34,11 +34,18 @@ export function compileEntry(entry: LexiconEntry): CompiledEntry {
 /**
  * Every match of one entry, with the suppressed ones removed.
  *
- * Suppression is containment: a match is dropped when its span lies inside an
- * occurrence of one of the entry's `except` phrases. `ključ*` fires on
- * `Ključna` and the exception `ključna reč` covers it, so the finding
- * disappears; the same entry still fires on `ključan trenutak`, which no
- * exception covers.
+ * Suppression is containment IN EITHER DIRECTION: a match is dropped when its
+ * span lies inside an exception's, or an exception's lies inside the match's.
+ *
+ * Both directions are needed and each has a real case. `ključ*` fires on the
+ * single word `Ključna`, which sits inside the exception `ključna reč` — the
+ * narrow-match case. `rule-of-three` matches a whole clause, `care about
+ * architecture, code quality, and shipping`, and the exception names the list
+ * inside it — the wide-match case. A one-directional check handles one and
+ * silently fails the other, which is how the second one was found.
+ *
+ * The cost of the second direction is that a broad exception suppresses any
+ * match containing it, which is the intent here and is worth watching.
  */
 export function matchEntry(
   text: string,
@@ -52,12 +59,17 @@ export function matchEntry(
     findMatches(text, re, starts).map((f) => [f.offset, f.offset + f.text.length] as const),
   );
 
-  return hits.filter(
-    (hit) =>
-      !suppressed.some(
-        ([from, to]) => hit.offset >= from && hit.offset + hit.text.length <= to,
-      ),
-  );
+  return hits.filter((hit) => !suppressed.some((span) => overlapsWholly(hit, span)));
+}
+
+/** True when either span wholly contains the other. */
+export function overlapsWholly(
+  hit: { offset: number; text: string },
+  [from, to]: readonly [number, number],
+): boolean {
+  const start = hit.offset;
+  const end = hit.offset + hit.text.length;
+  return (start >= from && end <= to) || (from >= start && to <= end);
 }
 
 /** True when this entry fires anywhere in the given text. Used by the entry tests. */

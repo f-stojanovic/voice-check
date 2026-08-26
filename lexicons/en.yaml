@@ -3,7 +3,7 @@
 #
 # The `*` inflection suffix is available here too but is rarely needed, because
 # English inflection mostly is not a suffix problem.
-version: "0.2.0"
+version: "0.3.0"
 language: en
 
 phrases:
@@ -94,4 +94,37 @@ patterns:
   rule-of-three:
     - pattern: (?<![\p{L}])\p{L}{3,}(?:[ \t]+\p{L}+){0,2},\s+\p{L}{3,}(?:[ \t]+\p{L}+){0,2},?\s+and\s+\p{L}{3,}(?![\p{L}])
       matches: "Knowledge, tools, and people."
-      doesNotMatch: "Two settings where one should have done."
+      # An ordinary enumeration in technical prose, not a tricolon tic. There
+      # is no structural difference between the two — see the README: this
+      # suppresses one literal list and does not generalise.
+      doesNotMatch: "I care about architecture, code quality, and shipping."
+      except:
+        - architecture, code quality, and shipping
+# Exceptions for STRUCTURAL rules. See lexicons/sr.yaml for the reasoning.
+#
+# `participial-close` fires on any `-ing` word directly after a comma, and most
+# of those really are participial closes. The exceptions here are words that
+# are NEVER a participle in that position.
+#
+# Deliberately NOT exempted: `meaning`, `warning`, `feeling`, `building`. Each
+# looks like a false positive and is not — `, meaning the job fails silently`
+# is exactly the construction the rule exists for, and the pattern requires the
+# word directly after the comma, so `, a building` never matches in the first
+# place. An exception list that grows by adding whatever last annoyed somebody
+# ends up suppressing the rule.
+exceptions:
+  participial-close:
+    - phrase: nothing
+      suppresses: "The alert fired, nothing else happened."
+    - phrase: something
+      suppresses: "We waited, something had to give."
+    - phrase: anything
+      suppresses: "He never said, anything at all."
+    - phrase: everything
+      suppresses: "The import ran, everything looked fine."
+    - phrase: during
+      suppresses: "It failed twice, during the nightly import."
+    - phrase: morning
+      suppresses: "We checked it twice, morning and night."
+    - phrase: evening
+      suppresses: "The job ran late, evening after evening."

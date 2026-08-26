@@ -34,8 +34,15 @@ import type { Language, Lexicon, LexiconEntry } from './types.js';
  */
 const EntrySchema = z.object({
   matches: z.string().min(1, 'matches must be a text this entry fires on'),
+  /** Further examples. Required for a stemmed entry — see LexiconEntry. */
+  alsoMatches: z.array(z.string().min(1)).default([]),
   doesNotMatch: z.string().min(1).optional(),
   except: z.array(z.string().min(1)).default([]),
+});
+
+const ExceptionSchema = z.object({
+  phrase: z.string().min(1, 'phrase must be the literal text to suppress'),
+  suppresses: z.string().min(1, 'suppresses must be a text this exception silences'),
 });
 
 const PhraseEntrySchema = EntrySchema.extend({
@@ -51,6 +58,7 @@ const LexiconSchema = z.object({
   language: z.enum(['sr', 'en']),
   phrases: z.record(z.string(), z.array(PhraseEntrySchema).min(1)).default({}),
   patterns: z.record(z.string(), z.array(PatternEntrySchema).min(1)).default({}),
+  exceptions: z.record(z.string(), z.array(ExceptionSchema).min(1)).default({}),
 });
 
 /** Thrown with the file name and the exact path into the document. */
@@ -113,7 +121,7 @@ export function parseLexicon(source: string, origin: string): Lexicon {
       push(rule, {
         source: e.phrase,
         kind: 'phrase',
-        matches: e.matches,
+        matches: [e.matches, ...e.alsoMatches],
         except: e.except,
         ...(e.doesNotMatch === undefined ? {} : { doesNotMatch: e.doesNotMatch }),
       });
@@ -124,7 +132,7 @@ export function parseLexicon(source: string, origin: string): Lexicon {
       push(rule, {
         source: e.pattern,
         kind: 'pattern',
-        matches: e.matches,
+        matches: [e.matches, ...e.alsoMatches],
         except: e.except,
         ...(e.doesNotMatch === undefined ? {} : { doesNotMatch: e.doesNotMatch }),
       });
@@ -136,6 +144,7 @@ export function parseLexicon(source: string, origin: string): Lexicon {
     version: data.version,
     contentHash: contentHash(data),
     entries,
+    exceptions: data.exceptions,
   };
 }
 
@@ -152,12 +161,15 @@ function contentHash(data: {
   language: string;
   phrases: Record<string, readonly unknown[]>;
   patterns: Record<string, readonly unknown[]>;
+  exceptions: Record<string, readonly unknown[]>;
 }): string {
   const canonical = JSON.stringify({
     version: data.version,
     language: data.language,
     phrases: sortKeys(data.phrases),
     patterns: sortKeys(data.patterns),
+    // Exceptions change what every score means exactly as much as phrases do.
+    exceptions: sortKeys(data.exceptions),
   });
   return createHash('sha256').update(canonical, 'utf8').digest('hex');
 }

@@ -7,6 +7,7 @@ stops sounding like you and starts sounding like a language model.
 ```
 npm run check -- samples/machine-sr.md          # grade prose against the rules
 npm run brief -- https://example.com/article    # prepare material from a source
+npm run calibrate -- ~/drafts                   # what densities do you write at?
 ```
 
 It is not a general-purpose prose linter and it is not trying to be. The rules
@@ -52,15 +53,28 @@ Nine per thousand words is a machine. A boolean check would report the same
 thing about both, throwing away exactly the signal the tool exists to measure
 ([ADR 002](docs/decisions/002-scores-are-continuous.md)).
 
-**And a rule may abstain.** A density is a rate, and a rate needs a
-denominator. A 40-word note containing one perfectly good `međutim` used to
-score 0, because at a floor of 4 per 1000 words a single occurrence in a short
-text lands at 143 per 1000. That number described arithmetic, not prose. Below
-200 words a density rule now declines to measure: not scored, not counted as
-passing, excluded from the mean, and listed in the report with its reason
-([ADR 005](docs/decisions/005-density-rules-abstain.md)). `Report.score` is
-`null` when nothing could be measured — the absence of a claim rather than a
-bad one.
+**And a rule may abstain — at a threshold derived from its own ceiling.** A
+density is a rate, and a rate needs a denominator. A rule can say nothing
+about a text until one occurrence is distinguishable from its own ceiling,
+which is `1000 / ceiling` words: 167 for a default phrase rule, **334 for
+`negative-parallelism`**, whose ceiling is tightest.
+
+That number is derived, not guessed, and it replaced a guess. Day two used a
+single `density.min-words = 200` for every rule. It cost a real measurement:
+`negative-parallelism` scored **0.00 on a single occurrence in a 258-word
+text**, because 1/258 is 3.88 per thousand against a ceiling of 3. The style
+guide asks for that construction "extremely rarely". One in 258 words is rare.
+The rule was right to notice and wrong to grade it
+([ADR 005](docs/decisions/005-density-rules-abstain.md)).
+
+**An abstaining rule still reports what it found**, marked as observed and not
+scored. Most of the author's posts are 150–400 words, and day two's version
+answered a 139-word post with thirteen abstentions and nothing else. "Here is
+what I noticed, I cannot give you a rate for it" is useful. Silence is not
+more honest — the rule did look.
+
+`Report.score` is `null` when nothing could be measured: the absence of a
+claim rather than a bad one.
 
 The CLI exits 1 on a hard failure and 0 otherwise, **whatever the score**. A
 low score is a number to read and argue with, not a gate — the moment a good
@@ -112,7 +126,7 @@ and the report says "shape only" rather than pretending otherwise.
 ```
 # voice-check: samples/machine-sr.md
 
-**0.257** over 13 density rules · 274 words · `sr` · lexicon `0.2.0+…`
+**0.278** over 12 density rules · 274 words · `sr` · lexicon `0.3.0+…`
 
 Hard rules: 2 passed.
 
@@ -138,9 +152,9 @@ and two written as ordinary prose:
 
 | file | words | score |
 | --- | --- | --- |
-| `machine-sr.md` | 274 | 0.257 |
-| `machine-en.md` | 322 | 0.242 |
-| `ordinary-sr.md` | 322 | 0.968 |
+| `machine-sr.md` | 274 | 0.278 |
+| `machine-en.md` | 322 | 0.262 |
+| `ordinary-sr.md` | 322 | 0.986 |
 | `ordinary-en.md` | 352 | 0.992 |
 
 The two machine samples were 172 and 199 words on day one. They had to be
@@ -195,10 +209,45 @@ assertion. `except` suppresses a match inside a containing literal phrase, and
 is the suppression mechanism deliberately withheld on day one until the survey
 said what shape it needed ([ADR 006](docs/decisions/006-lexicon-entries-carry-their-examples.md)).
 
+### The examples have to pin the stem
+
 An example has to be the form that actually broke. The first `spektakular*`
-example used the feminine `spektakularne`, which the *broken* stem also
-matches — so the guard passed against a dead entry until the example was
-changed to the masculine.
+example used the feminine `spektakularne`, which the *broken* stem
+`spektakularn*` also matches — so the guard passed against a dead entry.
+
+That is now a mechanical check rather than a thing to remember. A stemmed
+entry must carry examples whose matched forms share **no prefix longer than
+the declared stem**: if they did, a longer stem would pass the same examples
+and they prove nothing. Under the stricter rule **all six stemmed Serbian
+entries failed** — every one had a single example — and each gained a second
+grammatical form:
+
+```yaml
+- phrase: kompleks*
+  matches: "Materija je kompleksna."
+  alsoMatches:
+    - "Problem je kompleksan."      # the fleeting -a- the broken stem missed
+```
+
+### Structural rules get exception lists too
+
+`except` reaches the eight rules that read phrase lists. The other eight are
+regular expressions, and day one's second false positive was in that half:
+`verbal-adverb-close` fires on `reći` in `neće ništa reći`, because `-ći` is
+both the verbal-adverb ending the guide names and the Serbian infinitive
+ending. It had nowhere to be fixed.
+
+An `exceptions:` block gives it somewhere. The rule stays a regex; the 32
+infinitives it must not fire on are data. Each carries a `suppresses` example,
+and the test asserts **both** halves — that the rule fires on that text with
+exceptions removed, and does not with them applied. An exception that
+suppresses nothing is as dead as a phrase that matches nothing.
+
+The English list is deliberately short — `nothing`, `something`, `anything`,
+`everything`, `during`, `morning`, `evening`. `meaning`, `warning` and
+`feeling` are **not** exempted: `, meaning the job fails silently` is exactly
+the construction the rule exists for. An exception list that grows by adding
+whatever last annoyed somebody ends up suppressing the rule.
 
 ## Uncalibrated constants
 
@@ -239,11 +288,22 @@ genuinely new versus restated, what it asserts without support, and what it
 leaves open. Returned through a **forced tool call** with `strict: true`, never
 as prose to be parsed ([ADR 007](docs/decisions/007-the-analyst-returns-structure.md)).
 
-Every statement carries a quote, and **the quotes are checked against the
-source** rather than trusted. The brief prints the ratio — on the live run
-below, 12 of 12 found verbatim. A model that paraphrases a quote is not lying,
-but a statement traced to text that is not in the source is traced to nothing,
-and you are entitled to know which one you are holding.
+Every statement carries a quote, and **the quotes are a gate, not a
+statistic**. `analyse` checks each one against the source and a quote that is
+not there **fails the run** — the analysis is discarded and the command exits
+7, naming the field, the statement and the quote.
+
+Day two printed the ratio under the report. A number nobody compares against
+anything is an observation; this is the one number here that can be a control,
+because it is the one claim the analyst makes that is not judgement. Whether a
+point is "genuinely new" is arguable. Whether a sentence is in the document is
+not ([ADR 010](docs/decisions/010-the-analyst-has-one-mechanical-check.md)).
+
+The gate has three outcomes, and the distinction matters: `exact` is
+byte-for-byte, `normalized` differs only in whitespace or case — a quote
+spanning a line break in a hard-wrapped file — and only `absent` fails. A gate
+that conflated the last two would fire on formatting on most real inputs, be
+switched off within a week, and take the real check with it.
 
 Empty is an answer. `novelty.genuinelyNew: []` is a value the system prompt
 explicitly asks for, and the brief prints **"Nothing genuinely new"** in bold
@@ -286,15 +346,22 @@ whoever adds it to read the argument first
 ### What a run costs
 
 ```
-**Traceability:** 12 of 12 quotes found verbatim in the source.
+**Traceability:** 12 of 12 quotes found in the source — 12 exact. A quote that
+was not there at all would have failed this run.
 
 **Cost:** $0.1024 · 6778 in / 2741 out · `claude-opus-5` · rates as of 2026-06-24
 ```
 
-Measured at the client seam, printed on every brief. Knowing what a brief costs
-is the difference between a tool and a demo. `costUsd` returns `null` for a
-model with no published rate rather than a zero, because a zero sums into a
-total that reads as authoritative.
+Measured at the client seam, printed on every brief. `costUsd` returns `null`
+for a model with no published rate rather than a zero, because a zero sums
+into a total that reads as authoritative.
+
+**Cost and latency are compared against nothing.** There is no budget, no
+baseline, and no run has ever failed because of either — they are observations,
+and a printed number reads as a control, so it is worth saying. A baseline
+needs a fixed set of cases to be a baseline of, and `brief` runs against
+whatever URL you pass it. Two runs against different sources have no cost
+relationship for a gate to compare.
 
 ### The key comes from a file, by path
 
@@ -329,6 +396,46 @@ most common of those into an error instead of an analysis of an empty div.
 
 When a page reads wrong, save it as Markdown and pass the file.
 
+## Calibration: against your own writing
+
+```
+npm run calibrate -- <dir> [--lang sr|en]
+```
+
+Twenty-three constants are declared as guesses, and nearly every note says the
+same thing: *this would be justified by measuring the author's own accepted
+drafts, a corpus that does not exist*. That sentence has been in the code since
+day one. Writing it is honest; leaving it there forever is not.
+
+`calibrate` reads a directory of texts you consider good and reports, per rule:
+how many documents produced a density, the min, median, p90 and max of those
+densities, and the floor that distribution would imply — the p90, so that nine
+in ten of the writing you already accept passes untouched.
+
+**It recommends. It does not write.** Nothing edits a constant, and that is the
+decision rather than an unfinished feature. A tool that tunes its own
+thresholds against a corpus it also scores converges on "this writing is
+perfect", which is true by construction and carries no information. Moving a
+constant is a commit somebody signs
+([ADR 011](docs/decisions/011-calibration-recommends.md)).
+
+**No ceiling is derivable and none is offered.** A floor answers "how much of
+this appears in writing you accept", which a corpus of accepted writing
+contains. A ceiling answers "how much appears in writing that has gone wrong",
+which it does not contain at all. Every ceiling cell reads `not derivable`.
+Calibrating ceilings needs a second, labelled corpus.
+
+**Every figure carries its own n.** Below ten documents no percentile is
+reported at all — the cell says `n=1, too few`, because a 90th percentile of
+four values is the largest of the four wearing a statistical hat, and in a
+table it looks identical to a percentile of four hundred.
+
+**An abstention is an exclusion, not a zero.** A document too short for a rule
+contributes no density. A zero would be a measurement — "this text contains no
+weasel words" — and a short text supports no such claim; averaging it in would
+drag every floor toward zero in proportion to how many short texts the corpus
+happened to contain.
+
 ## False positives: what fires on prose that is fine
 
 Day one surveyed these. Day two encoded what could be encoded and left the rest
@@ -346,15 +453,13 @@ so widening the stem fails the build instead of quietly accusing an ordinary
 sentence. The entry still fires on `ključan trenutak`, which is the usage the
 guide objects to, and a test asserts both halves.
 
-**`verbal-adverb-close` — still fires, and cannot be fixed the same way.**
-`reći` in `neće ništa reći` is an infinitive, not a verbal adverb. The rule
-matches `-ći` because the guide names `-ći`, and `-ći` is also the Serbian
-infinitive ending. This rule reads no lexicon — it is a regular expression in
-TypeScript — so it has no entry to hang an exception on. **That asymmetry is
-the day-two finding**: the suppression mechanism only reaches the eight
-lexicon-driven rules, and the false positive that most obviously needs it is in
-one of the other eight. The fix it wants is a closed list of common infinitives
-(`reći`, `ići`, `moći`, `naći`, `doći`), which is a different mechanism again.
+**`verbal-adverb-close` — fixed on day three.** `reći` in `neće ništa reći` is
+an infinitive, not a verbal adverb. Day two could not fix it: the rule is a
+regex with no lexicon entry to hang an exception on. Day three gave structural
+rules their own `exceptions:` block, and the 32 common `-ći` infinitives are
+now data. `ići` and `ući` are deliberately absent — the pattern needs two
+letters before `-ći`, so they never fire and an exception for them would be
+dead.
 
 **`sentence-uniformity` — not a false positive, an uncalibrated constant.**
 Standard deviation 5.02 against an invented target of 6.0. The text reads fine.
@@ -368,6 +473,16 @@ catches adjectives — `The output was long, boring and repetitive.` — as
 readily as participles. It is asserted as a known false positive in its own
 test file.
 
+**`rule-of-three` — suppressed for one literal list, and that does not
+generalise.** It fired on `care about architecture, code quality, and
+shipping`, which is an ordinary enumeration in technical prose. There is **no
+structural difference** between that and the tricolon tic the guide objects to
+— same shape, same punctuation, different intent — so the only available fix
+was an `except` naming that exact list. It is in the lexicon with a
+`doesNotMatch` guarding it, and it suppresses precisely one sentence. Adding
+lists one at a time will not scale, and the honest read is that this rule's
+signal is the *rate* rather than any instance.
+
 **What this survey is still missing.** Four texts, all written by the author of
 the tool, two of them written specifically to trip it.
 
@@ -379,6 +494,7 @@ Node 22 (`.nvmrc`), Node 20 or newer supported.
 npm install
 npm run check -- <file> [--lang sr|en] [--json]      # grade prose
 npm run brief -- <file|url> [--lang sr|en] [--json]  # prepare material (2 API calls)
+npm run calibrate -- <dir> [--lang sr|en]            # observe your own densities
 npm test
 npm run typecheck
 npm run build
@@ -407,57 +523,52 @@ right answer whenever it is known.
 
 ## Status
 
-Day two of a one-week project.
+Day three of a one-week project.
 
 **Day one — the checker**
 
-- [x] Domain types — the contract, documented with why rather than what
-- [x] Two kinds of rule, with hard failures kept out of the mean
-- [x] Continuous density scoring with a documented linear shape
-- [x] YAML lexicons validated with Zod, with actionable load errors
-- [x] Lexicon version and content hash recorded in every report
-- [x] All sixteen rules, registered, with a test that no rule file goes unregistered
-- [x] Findings carry line, column and offset from the start
+- [x] Domain types, two kinds of rule, continuous density scoring
+- [x] Zod-validated YAML lexicons, versioned and content-hashed
+- [x] All sixteen rules registered, with positions on every finding
 - [x] CLI with markdown and JSON output, exiting 1 only on hard failures
-
-**Day two — closing day one's findings**
-
-- [x] **A density rule may abstain.** Below 200 words it declines to measure
-      rather than reporting arithmetic ([ADR 005](docs/decisions/005-density-rules-abstain.md))
-- [x] **No dead lexicon entries.** Every entry carries a `matches` example a
-      test runs; `doesNotMatch` and `except` encode known false positives in
-      the data ([ADR 006](docs/decisions/006-lexicon-entries-carry-their-examples.md))
-- [x] Language detection votes on stopwords first, diacritics as a tiebreak
-- [x] `bullet-bold-restate` renamed to `bullet-bold-shape` — the name must not
-      claim a check the code does not perform
-- [x] README and ADR 003 state which eight rules are lexicon-driven
 
 **Day two — the agents**
 
-- [x] Analyst returning structure through a forced tool call, with every
-      statement traced to a quote and the quotes verified against the source
-- [x] Angles agent, ending each angle in a question back to the writer
-- [x] **The refusal**: no drafting agent, as a module with an argument and a
-      test that keeps it a decision ([ADR 008](docs/decisions/008-there-is-no-writing-agent.md))
-- [x] Both agents behind an injected client; 250 tests, no network, no key
-- [x] Usage and cost recorded per call and printed
-- [x] `npm run brief` against a file or a URL
-- [x] API key read from `.env` by path, never from the environment
+- [x] Analyst and angles agent, both through forced tool calls
+- [x] The refusal: no drafting agent, as a module with a test that keeps it one
+- [x] Injected client, so tests never touch the network
+- [x] Usage and cost recorded per call; API key read from `.env` by path
+
+**Day three — measurement**
+
+- [x] **Per-rule abstention, derived** from each rule's ceiling
+      (`1000 / ceiling` words). `density.min-words` is deleted — the gate now
+      inherits the ceiling's error instead of adding its own
+- [x] **An abstaining rule still reports what it found**, marked observed and
+      not scored, so a 150-word post produces something usable
+- [x] **Exception lists for structural rules** — 32 Serbian `-ći` infinitives,
+      each with a `suppresses` example and a test that it is load-bearing
+- [x] **Stemmed entries must pin their stem** with examples in two
+      grammatical forms. All six Serbian stemmed entries failed the stricter
+      check and were fixed
+- [x] **Traceability is a gate.** An invented quote fails the run and names
+      the statement; `normalized` matches pass, so it cannot fire on formatting
+- [x] **`npm run calibrate`** — observes densities across a corpus, reports
+      implied floors, refuses to derive ceilings, and writes nothing
 
 **Not done**
 
+- [ ] **A corpus.** The bottleneck everything else waits on. `calibrate` has
+      run against two documents and reported that two is not enough
+- [ ] **A single calibrated constant.** All 23 are still guesses
+- [ ] **A negative corpus** — texts the author labels machine-written. Without
+      one, no ceiling can be calibrated, only floors
 - [ ] **Refusing a comparison across lexicon versions.** Recorded, not enforced
-      ([ADR 003](docs/decisions/003-lexicons-are-versioned-data.md))
-- [ ] **A single calibrated constant.** All 23 are guesses.
-      `sentence-uniformity.target-sd` has the clearest path to a measurement
-- [ ] **Suppression for the eight non-lexicon rules.** `except` reaches only
-      the lexicon-driven half, and `verbal-adverb-close` — the survey's other
-      false positive — is in the half it does not reach
+- [ ] **A record of which figure justified which constant.** Nothing enforces
+      that a calibration run happened before a threshold moved
 - [ ] **A judge for `bullet-bold-shape`**, so it checks restatement not shape
 - [ ] **A recorded-fixture test of the real request shape.** Every agent test
-      runs against a fake, so a rejected parameter would pass the whole suite
-      and fail on the first live call
-- [ ] A corpus. Four texts, all written by the author of the tool
+      runs against a fake
 - [ ] CI
 - [ ] Editor integration — the reason positions are recorded
 
@@ -466,19 +577,25 @@ Day two of a one-week project.
 Everything here is true of the current commit.
 
 **No constant in this tool has been calibrated against anything.** Twenty-three
-distinct guesses — twenty-one take part in a Serbian run, twenty in an English
-one — each declared and counted, none measured. The scores discriminate between
-the two sample sets by a wide margin (0.24–0.26 against 0.97–0.99), and that is
+distinct guesses, each declared and counted, none measured. `calibrate` now
+exists to change that and has been run once, against two documents, which it
+correctly refused to draw a conclusion from. The scores discriminate between
+the two sample sets by a wide margin (0.26–0.28 against 0.99), and that remains
 the only evidence that any of the numbers are in the right place.
 
-**The agents have been run against one article.** Twice. Both runs returned
+**Half the constants cannot be calibrated by the command that exists.** Floors
+come from a corpus of accepted writing. Ceilings need a corpus of writing the
+author considers machine-written, labelled by him, which nobody has assembled.
+
+**The agents have been run against one article.** Three times. Both runs returned
 valid structures and 12-of-12 traceable quotes, which is one data point about
 an easy case: a well-structured English essay with clear claims. Nothing has
 been run against a transcript, a Serbian source, a badly-written source, or a
 source the analyst should refuse to find novelty in.
 
-**The 200-word abstention threshold is a guess.** A better one is derivable per
-rule — `1000 / ceiling` words — and was not implemented.
+**The abstention gate is now derived, which moves the guess rather than
+removing it.** `1000 / ceiling` inherits whatever error is in the ceiling. If a
+ceiling is wrong, so is the length at which the rule starts speaking.
 
 **The corpus is four texts and two of them are targets.** `machine-sr.md` and
 `machine-en.md` were written to trip the rules. A tool scoring the text written

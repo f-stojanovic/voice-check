@@ -49,9 +49,13 @@ describe('the rule registry', () => {
     }
   });
 
-  it('abstains rather than scoring every density rule on an empty text', () => {
+  it('abstains rather than scoring every word-gated density rule on an empty text', () => {
+    // `bold-ratio` is exempt by design: its denominator is characters, so it
+    // has no word gate. Every other density rule must decline.
     for (const language of ['sr', 'en'] as const) {
-      for (const rule of rulesFor(language).filter((r) => r.kind === 'density')) {
+      for (const rule of rulesFor(language).filter(
+        (r) => r.kind === 'density' && r.name !== 'bold-ratio',
+      )) {
         expect(runRule(rule, '', language).outcome, rule.name).toBe('abstained');
       }
     }

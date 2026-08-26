@@ -19,7 +19,7 @@
 #
 # `version` is bumped by hand when the lists change. The loader also hashes the
 # content, because the bump somebody forgets is the one that matters.
-version: "0.2.0"
+version: "0.3.0"
 language: sr
 
 phrases:
@@ -44,14 +44,20 @@ phrases:
   promotional-tone:
     - phrase: neverovat*
       matches: "Rezultat je neverovatan."
+      alsoMatches:
+        - "Priča je neverovatna."
     - phrase: zadivljujuć*
       matches: "Bio je zadivljujući."
+      alsoMatches:
+        - "Brzina je zadivljujuća."
     # The example is the MASCULINE form on purpose. The entry that broke on
     # day one was `spektakularn*`, which still matches `spektakularne` — so an
     # example in the feminine would have passed against the broken stem and
     # proved nothing. An example has to be the form that actually failed.
     - phrase: spektakular*
       matches: "Rezultat je spektakularan."
+      alsoMatches:
+        - "Uštede su spektakularne."
     - phrase: obavezno isprobati
       matches: "Ovo je obavezno isprobati."
 
@@ -60,10 +66,14 @@ phrases:
       matches: "Moramo zaroniti u temu."
     - phrase: kompleks*
       matches: "Materija je kompleksna."
+      alsoMatches:
+        - "Problem je kompleksan."
     - phrase: pejzaž
       matches: "Pejzaž industrije se promenio."
     - phrase: sinergij*
       matches: "Potrebna je sinergija."
+      alsoMatches:
+        - "Govorili su o sinergiji."
     - phrase: osnažiti
       matches: "Treba osnažiti timove."
     - phrase: unaprediti
@@ -76,6 +86,8 @@ phrases:
     # accusing an ordinary sentence.
     - phrase: ključ*
       matches: "Ovo je ključan trenutak."
+      alsoMatches:
+        - "Ovo je ključna razlika."
       doesNotMatch: "Ključna reč u celoj priči je postepeno."
       except:
         - ključna reč
@@ -126,3 +138,86 @@ patterns:
     - pattern: (?<![\p{L}])\p{L}{3,}(?:[ \t]+\p{L}+){0,2},\s+\p{L}{3,}(?:[ \t]+\p{L}+){0,2}\s+i\s+\p{L}{3,}(?![\p{L}])
       matches: "Treba nam znanje, alat i vreme."
       doesNotMatch: "Dva podešavanja umesto jednog."
+# Exceptions for STRUCTURAL rules — the ones with no phrase list of their own.
+#
+# `except` on a lexicon entry reaches the eight rules that read phrase lists.
+# The other eight are regular expressions in TypeScript, and the sharpest false
+# positive the day-one survey found was in that half: `verbal-adverb-close`
+# fires on `reći` in `neće ništa reći`, because `-ći` is both the verbal-adverb
+# ending the guide names and the Serbian infinitive ending. The rule stays a
+# regex; the list of words it must not fire on is data.
+#
+# Each exception carries `suppresses` — a text where the rule WOULD fire and
+# must not. A test asserts both halves: that the rule fires on that text with
+# exceptions removed, and does not with them applied. An exception that
+# suppresses nothing is as dead as a phrase that matches nothing.
+#
+# Only infinitives the rule can actually reach are listed. `ići` and `ući` have
+# a single letter before `-ći` and the pattern requires two, so they never fire
+# and need no exception.
+exceptions:
+  verbal-adverb-close:
+    - phrase: reći
+      suppresses: "Ovo je teško reći."
+    - phrase: doći
+      suppresses: "Nisam znao hoće li doći."
+    - phrase: poći
+      suppresses: "Odlučili smo da ipak pođemo, ali nismo znali kuda poći."
+    - phrase: naći
+      suppresses: "Trebalo je samo naći."
+    - phrase: moći
+      suppresses: "Sumnjam da ćemo moći."
+    - phrase: pomoći
+      suppresses: "Niko nije mogao da pomogne, a ja sam hteo da pomoći."
+    - phrase: proći
+      suppresses: "Znali smo da će proći."
+    - phrase: otići
+      suppresses: "Bilo je vreme da otići."
+    - phrase: preći
+      suppresses: "Ostalo je samo da preći."
+    - phrase: sići
+      suppresses: "Nije imao kuda da sići."
+    - phrase: izaći
+      suppresses: "Tražili smo način da izaći."
+    - phrase: stići
+      suppresses: "Nadali smo se da ćemo stići."
+    - phrase: postići
+      suppresses: "Nije bilo jasno šta želi da postići."
+    - phrase: dostići
+      suppresses: "Taj broj je teško dostići."
+    - phrase: seći
+      suppresses: "Ostalo je samo da seći."
+    - phrase: preseći
+      suppresses: "Najlakše je bilo preseći."
+    - phrase: odseći
+      suppresses: "Nije se usudio da odseći."
+    - phrase: iseći
+      suppresses: "Trebalo je samo iseći."
+    - phrase: teći
+      suppresses: "Voda je nastavila da teći."
+    - phrase: poteći
+      suppresses: "Znali smo odakle će poteći."
+    - phrase: isteći
+      suppresses: "Rok samo što nije isteći."
+    - phrase: vući
+      suppresses: "Nije imao snage da vući."
+    - phrase: izvući
+      suppresses: "Ostalo je samo da izvući."
+    - phrase: privući
+      suppresses: "Cilj je bio privući."
+    - phrase: navući
+      suppresses: "Nije hteo da navući."
+    - phrase: peći
+      suppresses: "Sutra ćemo peći."
+    - phrase: ispeći
+      suppresses: "Ostalo je samo da ispeći."
+    - phrase: leći
+      suppresses: "Jedino što je hteo bilo je leći."
+    - phrase: tući
+      suppresses: "Niko nije hteo da tući."
+    - phrase: obući
+      suppresses: "Nije znao šta da obući."
+    - phrase: svući
+      suppresses: "Trebalo je samo svući."
+    - phrase: zateći
+      suppresses: "Nismo znali šta ćemo zateći."

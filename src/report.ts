@@ -164,6 +164,30 @@ export function formatMarkdown(
       out.push(`- \`${abstention.rule}\` — ${abstention.reason}`);
     }
     out.push('');
+
+    // An abstaining rule still reports what it saw. Day two returned silence
+    // here, and a 139-word post produced thirteen abstentions and nothing
+    // else — no score and no observations, which is the format most of the
+    // author's writing is in. "Here is what I noticed, I cannot give you a
+    // rate for it" is honest and useful; silence is neither, and it is not
+    // more honest, because the rule did look.
+    const observed = report.rules.filter(
+      (r) => r.outcome === 'abstained' && r.findings.length > 0,
+    );
+    if (observed.length > 0) {
+      out.push('### Observed, not scored');
+      out.push('');
+      out.push(
+        'These rules found something and declined to put a rate on it. Read them ' +
+          'as notes, not as a grade.',
+      );
+      out.push('');
+      for (const result of observed) {
+        out.push(`**${result.rule}** — ${result.findings.length} found`);
+        out.push('');
+        out.push(...quote(result));
+      }
+    }
   }
 
   if (scoredDensity.length > 0) {

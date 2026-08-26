@@ -9,7 +9,7 @@
 
 import { expect } from 'vitest';
 import { loadLexicon } from '../lexicon.js';
-import { DENSITY_MIN_WORDS } from '../scoring.js';
+import { minWordsFor } from '../scoring.js';
 import { countWords } from '../text.js';
 import type { Language, Lexicon, Rule, RuleResult, ScoredRuleResult } from '../types.js';
 
@@ -32,8 +32,8 @@ export function runRule(rule: Rule, text: string, language: Language): RuleResul
 }
 
 /**
- * Filler that trips no rule, appended to bring a test fixture over
- * {@link DENSITY_MIN_WORDS}.
+ * Filler that trips no rule, appended to bring a test fixture over every
+ * rule's derived abstention gate.
  *
  * WHY tests need this at all: a density rule abstains on a short text, which
  * is correct behaviour and makes a two-sentence fixture unusable for asserting
@@ -50,11 +50,19 @@ const PAD_SENTENCE: Record<Language, string> = {
   en: 'The query ran slowly so we started to measure its duration.',
 };
 
+/**
+ * The strictest gate in the rule set: `negative-parallelism` has the tightest
+ * ceiling (3), so it needs the longest text before it can score anything.
+ * Derived rather than typed, so tightening a ceiling lengthens the fixtures
+ * instead of silently making them abstain.
+ */
+export const PAD_TARGET_WORDS = minWordsFor(3);
+
 export function pad(text: string, language: Language): string {
   const filler = PAD_SENTENCE[language];
   const parts = [text];
   let words = countWords(text);
-  while (words < DENSITY_MIN_WORDS.value) {
+  while (words < PAD_TARGET_WORDS) {
     parts.push(filler);
     words += countWords(filler);
   }

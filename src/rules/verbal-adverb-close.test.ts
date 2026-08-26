@@ -23,11 +23,17 @@ describe('verbal-adverb-close', () => {
     expect(runOnPadded(verbalAdverbClose, text, 'sr').findings).toEqual([]);
   });
 
-  it('also fires on a sentence-final infinitive in -ći, which is known noise', () => {
-    // `-ći` is the infinitive ending as well as a verbal-adverb ending. The
-    // guide names `-ći` explicitly, so it stays in and the noise is reported
-    // rather than silently narrowed away.
+  it('no longer fires on a sentence-final infinitive in -ći', () => {
+    // `-ći` is the infinitive ending as well as a verbal-adverb ending, and
+    // day one reported this as the survey's second false positive. It had
+    // nowhere to be fixed: the rule is a regex with no lexicon entry to hang
+    // an exception on. The `exceptions:` block in the lexicon is that seam.
     const result = runOnPadded(verbalAdverbClose, 'Ovo je teško reći.', 'sr');
-    expect(result.findings.map((f) => f.text)).toEqual(['reći']);
+    expect(result.findings.map((f) => f.text)).toEqual([]);
+  });
+
+  it('still fires on a real verbal adverb, so the exceptions are narrow', () => {
+    const result = runOnPadded(verbalAdverbClose, 'Ćutali smo, slušajući.', 'sr');
+    expect(result.findings.map((f) => f.text)).toEqual(['slušajući']);
   });
 });

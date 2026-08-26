@@ -52,29 +52,31 @@ export const PHRASE_CEILING = guess(
 );
 
 /**
- * The word count below which a density rule ABSTAINS rather than scoring.
+ * The word count below which a density rule abstains — DERIVED, not guessed.
  *
- * WHY THIS IS A DIFFERENT KIND OF GUESS from the floors and ceilings above,
- * and the ADR says so at length: a floor is a guess about what counts as good
- * prose, which is a judgement somebody could reasonably disagree with. This is
- * a guess about whether a measurement is POSSIBLE at all — whether the text is
- * long enough for a rate to carry information. Being wrong about a floor means
- * disagreeing with a writer. Being wrong about this means reporting a number
- * that describes arithmetic rather than prose.
+ * A rule cannot say anything about a text until one occurrence is
+ * distinguishable from its own ceiling. One occurrence in `w` words is
+ * `1000 / w` per thousand; that has to come out strictly below the ceiling, so
+ * `w > 1000 / ceiling`.
  *
- * The principled version is per-rule: a rule cannot say anything until one
- * occurrence lands at or below its own ceiling, which is `1000 / ceiling`
- * words — 167 for a default phrase rule, 333 for `negative-parallelism`. A
- * single number is the day-two simplification, and 200 sits inside that range
- * rather than at either end of it.
+ * WHY THIS REPLACED A CONSTANT. Day two used a single `density.min-words = 200`
+ * for every rule, declared as a guess, with a comment saying the principled
+ * version was per-rule and had not been implemented. It cost a real
+ * measurement: `negative-parallelism` (ceiling 3) scored 0.00 on a single
+ * occurrence in a 258-word text, because 1/258 is 3.88 per thousand. The style
+ * guide asks for that construction "extremely rarely". One in 258 words IS
+ * rare. The rule was right to notice and wrong to score it zero.
+ *
+ * At ceiling 3 the derived gate is 334 words, so that text now abstains and
+ * reports the finding as observed rather than grading it. The number is no
+ * longer an independent assumption: it inherits whatever error is in the
+ * ceiling and adds none of its own, which is why `density.min-words` is gone
+ * from the uncalibrated registry rather than moved within it.
  */
-export const DENSITY_MIN_WORDS = guess(
-  'density.min-words',
-  200,
-  'words below which a density rule abstains instead of scoring; a guess ' +
-    'about whether a rate is measurable at all, not about what counts as good ' +
-    'prose — the principled replacement is per-rule, at 1000/ceiling words',
-);
+export function minWordsFor(ceiling: number): number {
+  if (!Number.isFinite(ceiling) || ceiling <= 0) return 0;
+  return Math.floor(1000 / ceiling) + 1;
+}
 
 /**
  * The threshold `RuleResult.passed` is derived from.

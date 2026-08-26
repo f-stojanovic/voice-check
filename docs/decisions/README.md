@@ -15,3 +15,5 @@ is "nothing yet".
 - [007. The analyst returns structure, not prose](007-the-analyst-returns-structure.md)
 - [008. There is no writing agent](008-there-is-no-writing-agent.md)
 - [009. Agents take an injected client, so tests never touch the network](009-agents-are-injected.md)
+- [010. The analyst’s only mechanical check is whether its evidence exists](010-the-analyst-has-one-mechanical-check.md)
+- [011. Calibration recommends; a human moves the constant](011-calibration-recommends.md)

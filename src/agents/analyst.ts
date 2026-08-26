@@ -15,12 +15,19 @@
  * what here is new rather than restated, what is asserted without support, and
  * what is left unanswered.
  *
- * EVERY FIELD IS TRACEABLE. Each statement carries a `quote` the model says it
- * came from, and `verifyQuotes` checks each one against the source rather than
- * trusting it. The result is a measured figure — "9 of 11 quotes found
- * verbatim" — printed in the brief. A model that paraphrases a quote is not
- * lying, but a claim traced to a quote that is not in the text is a claim
- * traced to nothing, and the reader should be told which they are holding.
+ * EVERY FIELD IS TRACEABLE, AND TRACEABILITY IS A GATE. Each statement carries
+ * a `quote`, `verifyQuotes` checks each one against the source, and a quote
+ * that is not there FAILS THE RUN. Day two printed the ratio as a statistic;
+ * a statistic nobody compares against anything is an observation, and this is
+ * the one number here that can be a control. A quote absent from the source is
+ * not a judgement call the reader can weigh — it is a fact about the model:
+ * it produced text and attributed it to a document that does not contain it.
+ *
+ * The gate distinguishes three outcomes, because conflating them would make it
+ * fire on formatting. An EXACT match is byte-for-byte. A NORMALISED match
+ * differs only in whitespace or case — a quote spanning a line break in a
+ * wrapped file, or one whose capitalisation was tidied — and passes, because
+ * the text is there. Only ABSENT fails.
  *
  * EMPTY IS AN ANSWER. The system prompt says so explicitly and the schema
  * allows it: `novelty` may be empty, `hype` may be empty, evidence may be
@@ -180,10 +187,13 @@ export interface AnalystInput {
   readonly origin?: string;
 }
 
+/** An analyst run, plus the traceability verdicts that let it through the gate. */
+export type AnalysisRun = AgentRun<Analysis> & { readonly traceability: readonly QuoteCheck[] };
+
 export async function analyse(
   client: ModelClient,
   input: AnalystInput,
-): Promise<AgentRun<Analysis>> {
+): Promise<AnalysisRun> {
   // Guarded here rather than in the CLI so the check holds for every caller,
   // and guarded BEFORE the call so an empty file costs nothing. An empty
   // source is not a source the model should be asked to be creative about.
@@ -213,39 +223,91 @@ export async function analyse(
     );
   }
 
-  return runOf(parsed.data, response);
+  const traceability = verifyQuotes(parsed.data, input.text);
+  if (traceability.some((c) => c.match === 'absent')) {
+    // The gate. Not a warning printed under the result — the run fails, and
+    // the caller decides. Everything else the analyst produces is judgement
+    // and needs a judge or a human; this is the one claim that can be checked
+    // mechanically, so it is checked.
+    throw new UntraceableQuoteError(traceability, input.origin ?? 'the source');
+  }
+
+  return { ...runOf(parsed.data, response), traceability };
 }
 
-/** One traceability verdict: the quote, and whether it is actually in the source. */
+/**
+ * How a quote relates to the source.
+ *
+ * `exact` — present byte for byte.
+ * `normalized` — present once whitespace is collapsed and case is folded. A
+ *   quote that crossed a line break in a hard-wrapped file lands here, and so
+ *   does one whose capitalisation was tidied. The text IS in the source; only
+ *   its formatting moved. This passes.
+ * `absent` — not in the source under either comparison. The model attributed
+ *   text to a document that does not contain it. This fails the run.
+ */
+export type QuoteMatch = 'exact' | 'normalized' | 'absent';
+
+/** One traceability verdict. */
 export interface QuoteCheck {
   readonly field: string;
+  /** The statement the quote was supposed to support, for an actionable failure. */
+  readonly statement: string;
   readonly quote: string;
-  readonly found: boolean;
+  readonly match: QuoteMatch;
+}
+
+/** The gate failed: at least one quote is not in the source. */
+export class UntraceableQuoteError extends Error {
+  readonly checks: readonly QuoteCheck[];
+  constructor(checks: readonly QuoteCheck[], origin: string) {
+    const absent = checks.filter((c) => c.match === 'absent');
+    super(
+      `the analyst attributed ${absent.length} quote${absent.length === 1 ? '' : 's'} ` +
+        `to ${origin} that ${absent.length === 1 ? 'is' : 'are'} not in it:\n` +
+        absent
+          .map(
+            (c) =>
+              `  ${c.field}\n    statement: ${c.statement}\n    quote:     ${JSON.stringify(c.quote)}`,
+          )
+          .join('\n'),
+    );
+    this.name = 'UntraceableQuoteError';
+    this.checks = checks;
+  }
 }
 
 /**
  * Checks every quote against the source instead of trusting it.
  *
- * Whitespace is normalised before comparison — a quote spanning a line break
- * in a wrapped file is the same quote — and nothing else is. A quote the model
- * paraphrased will not be found, which is the intended outcome: the reader is
- * told which statements are traced to text and which are traced to a
- * plausible-looking string.
+ * Two comparisons, and the distinction between them is what keeps the gate
+ * from firing on formatting: the raw string first, then whitespace-collapsed
+ * and case-folded. A quote that only survives the second is still a quote that
+ * is in the source.
  */
 export function verifyQuotes(analysis: Analysis, source: string): QuoteCheck[] {
-  const haystack = normalise(source);
+  const normalised = normalise(source);
   const checks: QuoteCheck[] = [];
 
-  const add = (field: string, quote: string): void => {
+  const add = (field: string, statement: string, quote: string): void => {
     if (quote.trim().length === 0) return; // an absence has no quote to check
-    checks.push({ field, quote, found: haystack.includes(normalise(quote)) });
+    const match: QuoteMatch = source.includes(quote)
+      ? 'exact'
+      : normalised.includes(normalise(quote))
+        ? 'normalized'
+        : 'absent';
+    checks.push({ field, statement, quote, match });
   };
 
-  add('claim', analysis.claim.quote);
-  analysis.evidence.forEach((e, i) => add(`evidence[${i}]`, e.quote));
-  analysis.novelty.genuinelyNew.forEach((n, i) => add(`novelty.genuinelyNew[${i}]`, n.quote));
-  analysis.novelty.restated.forEach((n, i) => add(`novelty.restated[${i}]`, n.quote));
-  analysis.hype.forEach((h, i) => add(`hype[${i}]`, h.quote));
+  add('claim', analysis.claim.statement, analysis.claim.quote);
+  analysis.evidence.forEach((e, i) => add(`evidence[${i}]`, e.statement, e.quote));
+  analysis.novelty.genuinelyNew.forEach((n, i) =>
+    add(`novelty.genuinelyNew[${i}]`, n.statement, n.quote),
+  );
+  analysis.novelty.restated.forEach((n, i) =>
+    add(`novelty.restated[${i}]`, n.statement, n.quote),
+  );
+  analysis.hype.forEach((h, i) => add(`hype[${i}]`, h.statement, h.quote));
 
   return checks;
 }

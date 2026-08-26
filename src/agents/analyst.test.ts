@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { analyse, AnalysisSchema, ANALYST_TOOL_SCHEMA, EmptySourceError, verifyQuotes } from './analyst.js';
+import {
+  analyse,
+  AnalysisSchema,
+  ANALYST_TOOL_SCHEMA,
+  EmptySourceError,
+  UntraceableQuoteError,
+  verifyQuotes,
+} from './analyst.js';
 import { MalformedToolCallError, ModelUnavailableError } from './client.js';
 import { failingClient, GOOD_ANALYSIS, scriptedClient } from './agents.test-kit.js';
 
@@ -79,38 +86,93 @@ describe('the analyst', () => {
   });
 });
 
-describe('quote verification', () => {
-  it('confirms quotes that are actually in the source', () => {
-    const checks = verifyQuotes(AnalysisSchema.parse(GOOD_ANALYSIS), SOURCE);
-    expect(checks.every((c) => c.found)).toBe(true);
-    expect(checks.length).toBeGreaterThan(0);
+describe('the traceability gate', () => {
+  it('passes an analysis whose quotes are all in the source', async () => {
+    const run = await analyse(scriptedClient([GOOD_ANALYSIS]), {
+      text: SOURCE,
+      language: 'sr',
+    });
+    expect(run.traceability.every((c) => c.match !== 'absent')).toBe(true);
+    expect(run.traceability.length).toBeGreaterThan(0);
   });
 
-  it('flags a quote the model paraphrased', () => {
-    // Not an error — models paraphrase. But a statement traced to a quote that
-    // is not in the text is traced to nothing, and the reader is told which.
-    const drifted = AnalysisSchema.parse({
+  it('FAILS THE RUN when a quote is not in the source', async () => {
+    // Day two printed this as a statistic. A statistic nobody compares against
+    // anything is an observation; this is the one number here that can be a
+    // control, so it is one.
+    const invented = {
       ...GOOD_ANALYSIS,
-      claim: { statement: 'x', quote: 'Nothing in the code had changed at all.' },
-    });
-    const claim = verifyQuotes(drifted, SOURCE).find((c) => c.field === 'claim');
-    expect(claim?.found).toBe(false);
+      claim: { statement: 'x', quote: 'A sentence that appears nowhere in the source.' },
+    };
+    await expect(
+      analyse(scriptedClient([invented]), { text: SOURCE, language: 'sr' }),
+    ).rejects.toThrow(UntraceableQuoteError);
   });
 
-  it('matches a quote that spans a line break in wrapped source', () => {
-    const wrapped = 'Ništa se nije\npromenilo u kodu.';
-    const analysis = AnalysisSchema.parse({
+  it('names the failing statement and its quote, so the failure is actionable', async () => {
+    const invented = {
       ...GOOD_ANALYSIS,
-      claim: { statement: 'x', quote: 'Ništa se nije promenilo u kodu.' },
-      evidence: [],
-      novelty: { genuinelyNew: [], restated: [] },
-    });
-    expect(verifyQuotes(analysis, wrapped)[0]?.found).toBe(true);
+      hype: [{ statement: 'The author overclaims about latency.', quote: 'Ovo nije u tekstu.' }],
+    };
+    let error: UntraceableQuoteError | undefined;
+    try {
+      await analyse(scriptedClient([invented]), {
+        text: SOURCE,
+        language: 'sr',
+        origin: 'post.md',
+      });
+    } catch (cause) {
+      error = cause as UntraceableQuoteError;
+    }
+    expect(error).toBeInstanceOf(UntraceableQuoteError);
+    expect(error?.message).toContain('post.md');
+    expect(error?.message).toContain('hype[0]');
+    expect(error?.message).toContain('The author overclaims about latency.');
+    expect(error?.message).toContain('Ovo nije u tekstu.');
+    expect(error?.checks.filter((c) => c.match === 'absent')).toHaveLength(1);
+  });
+
+  it('does NOT fail on a quote that only differs in whitespace', async () => {
+    // Conflating "absent" with "present but reformatted" would make the gate
+    // fire on hard-wrapped source files, which is most of them.
+    const wrapped = 'Ništa se nije\npromenilo u kodu. Upit se vratio na osamdeset milisekundi.';
+    const run = await analyse(
+      scriptedClient([
+        {
+          ...GOOD_ANALYSIS,
+          claim: { statement: 'x', quote: 'Ništa se nije promenilo u kodu.' },
+          evidence: [],
+          novelty: { genuinelyNew: [], restated: [] },
+        },
+      ]),
+      { text: wrapped, language: 'sr' },
+    );
+    expect(run.traceability[0]?.match).toBe('normalized');
+  });
+
+  it('does NOT fail on a quote that only differs in case', async () => {
+    const run = await analyse(
+      scriptedClient([
+        {
+          ...GOOD_ANALYSIS,
+          claim: { statement: 'x', quote: 'ništa se nije promenilo u kodu.' },
+          evidence: [],
+          novelty: { genuinelyNew: [], restated: [] },
+        },
+      ]),
+      { text: SOURCE, language: 'sr' },
+    );
+    expect(run.traceability[0]?.match).toBe('normalized');
+  });
+
+  it('marks a byte-for-byte quote as exact, not merely normalised', async () => {
+    const run = await analyse(scriptedClient([GOOD_ANALYSIS]), { text: SOURCE, language: 'sr' });
+    expect(run.traceability.filter((c) => c.match === 'exact').length).toBeGreaterThan(0);
   });
 
   it('does not count an absence as an unfound quote', () => {
-    // "the source offers no evidence" has no quote, and scoring it as a miss
-    // would make the traceability figure punish the honest answer.
+    // "the source offers no evidence" has no quote, and treating that as a
+    // miss would make the gate fire on the honest answer.
     const analysis = AnalysisSchema.parse({
       ...GOOD_ANALYSIS,
       evidence: [{ kind: 'none', statement: 'It offers nothing.', quote: '' }],

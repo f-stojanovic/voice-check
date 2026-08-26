@@ -141,9 +141,23 @@ export interface ScoredRuleResult extends RuleResultCommon {
   readonly passed: boolean;
 }
 
-/** A rule that declined to measure. Carries no score, because it has none. */
+/**
+ * A rule that declined to score. Carries no score, because it has none —
+ * but it still carries whatever it found, marked as observed rather than
+ * graded.
+ */
 export interface AbstainedRuleResult extends RuleResultCommon {
   readonly outcome: 'abstained';
+  /**
+   * The word count this rule needed, when the abstention was a length gate.
+   *
+   * Machine-readable so a consumer does not have to parse it back out of
+   * `reason`. The calibration report reads it; the first version of that
+   * report recovered the gate by string-matching a constant id instead, got
+   * `density.phrase-ceiling` wrong because it ends in `-ceiling` and not
+   * `.ceiling`, and silently reported a gate of 0.
+   */
+  readonly minWords?: number;
 }
 
 export type RuleResult = ScoredRuleResult | AbstainedRuleResult;
@@ -269,12 +283,40 @@ export interface LexiconEntry {
   /** The phrase or regular expression, exactly as written in the YAML. */
   readonly source: string;
   readonly kind: 'phrase' | 'pattern';
-  /** A text this entry must fire on. Asserted by a test. */
-  readonly matches: string;
+  /**
+   * Texts this entry must fire on. Never empty; the first is the YAML's
+   * `matches` and the rest come from `alsoMatches`.
+   *
+   * WHY MORE THAN ONE IS SOMETIMES REQUIRED. A stemmed entry needs examples
+   * that PIN THE STEM. `spektakular*` with only `spektakularne` as its example
+   * passes just as happily as `spektakularn*` would — the broken stem the
+   * examples exist to catch. The examples only prove the declared stem is the
+   * right one if no longer stem would also match all of them, which is
+   * checkable and is checked. See `lexicon-entries.test.ts`.
+   */
+  readonly matches: readonly string[];
   /** A text this entry must NOT fire on. Asserted by a test when present. */
   readonly doesNotMatch?: string;
   /** Literal phrases inside which a match is suppressed. */
   readonly except: readonly string[];
+}
+
+/**
+ * An exception belonging to a STRUCTURAL rule — one with no lexicon entries.
+ *
+ * `except` on a lexicon entry reaches the eight rules that read phrase lists.
+ * The other eight are regular expressions in TypeScript, and the sharpest
+ * false positive the day-one survey found — `verbal-adverb-close` firing on
+ * the infinitive `reći`, because `-ći` is both a verbal-adverb ending and the
+ * infinitive ending — was in that half, with nowhere to hang an exception.
+ *
+ * These give it somewhere. The rule stays a regular expression; the list of
+ * things it must not fire on becomes data a writer can extend.
+ */
+export interface LexiconException {
+  readonly phrase: string;
+  /** A text where this exception must suppress the rule. Asserted by a test. */
+  readonly suppresses: string;
 }
 
 /**
@@ -304,4 +346,6 @@ export interface Lexicon {
    * editing it, and a rule does not care which syntax a tell was written in.
    */
   readonly entries: Readonly<Record<string, readonly LexiconEntry[]>>;
+  /** Rule name -> phrases that rule must not fire on. See {@link LexiconException}. */
+  readonly exceptions: Readonly<Record<string, readonly LexiconException[]>>;
 }
