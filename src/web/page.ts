@@ -102,11 +102,11 @@ checker nobody pastes into.</p>
 <p><strong>Limits:</strong> ${options.maxChars.toLocaleString('en-GB')} characters per
 submission, ${options.rateLimitPerMinute} submissions per minute per address.
 Both are stated here rather than discovered by hitting them.</p>
-<p><strong>If this page took about a minute to load, that is the free tier.</strong>
-Render spins the service down after fifteen minutes without traffic, and says
-spinning back up takes about a minute. There is no queue and nothing is wrong.
-That figure is Render's; we have tried twice to observe it and failed both
-times, so treat it as theirs rather than ours.</p>
+<p><strong>If this page took about a minute to load, that is a free service
+waking up.</strong> Render spins a free service down after fifteen minutes
+without traffic and documents the wake as about a minute. Whether this one ever
+goes idle is not established — its health check may count as traffic — so the
+wait may never happen here.</p>
 <p>The rules are deterministic and run in this process — no model is called, so
 this page costs nothing to serve and needs no API key. The <code>brief</code>
 command, which does call a model, stays on the command line.</p>

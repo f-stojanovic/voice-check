@@ -2,16 +2,11 @@
 
 ### → [voice-check-m8b7.onrender.com](https://voice-check-m8b7.onrender.com)
 
-> **It may take about a minute to load the first time.** Render spins a free
-> service down after "15 minutes without receiving any inbound traffic", and
-> spinning back up "takes about one minute". Nothing is wrong and there is no
-> queue.
->
-> *That figure is Render's, quoted. This repository has tried twice to observe
-> it and failed both times — the service was already awake — so it is
-> unverified here. An earlier version of this file said "30–50 seconds" and
-> attributed it to Render's documentation. It is not in their documentation.
-> See [ADR 013](docs/decisions/013-the-public-surface-splits-on-marginal-cost.md).*
+> **If it takes about a minute, that is a free service waking up.** Render
+> spins a free service down after "15 minutes without receiving any inbound
+> traffic" and documents the wake as "about one minute". Whether this one ever
+> goes idle is not established — its health check may count as traffic — so
+> the wait may never happen here.
 
 A style guide, compiled into checks. It grades prose against one writer's own
 documented rules, in Serbian and English.
@@ -219,10 +214,10 @@ server-rendered, **no client JavaScript** — a form post, not a fetch, so it
 works in a text browser and with scripts disabled. Nothing is stored: no
 database, no log of what you pasted, no analytics. The limits (40,000
 characters, 20 submissions a minute) are printed on the page rather than
-discovered by hitting them. Render spins a free service down after 15 minutes
-without inbound traffic and says spinning up "takes about one minute"; that
-wait **has not been reproduced here** in two attempts, both finding the service
-already awake.
+discovered by hitting them. Render documents a free service as spinning down
+after 15 minutes without inbound traffic and waking in "about one minute";
+whether this service ever goes idle is not established, because its health
+check may count as traffic ([ADR 013](docs/decisions/013-the-public-surface-splits-on-marginal-cost.md)).
 
 **Private, CLI only — `brief`.** It makes two Claude calls at about $0.11 a
 run. A public endpoint for that is a public endpoint for spending somebody

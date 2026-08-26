@@ -246,44 +246,41 @@ The rejected alternative remains `commit`, which is what this service did on
 its first day: deploy every push whether or not the tests passed. A deploy that
 can outrun its own tests is not a gate.
 
-**THE COLD START IS STILL UNMEASURED AFTER TWO ATTEMPTS, and both failures were
-caused by this investigation rather than by the service.**
+**THE PAGE MUST NOT ASSERT A COLD START AS A FACT ABOUT THIS SERVICE.** It
+says, conditionally: Render documents a free service as spinning down after 15
+minutes without inbound traffic and waking in "about one minute", and whether
+this service ever goes idle is not established, because `healthCheckPath` is
+set and Render's documentation does not say whether their own probing counts as
+inbound traffic.
 
-Attempt one measured 0.169s after what was believed to be a 15-minute idle
-window. It was 13 minutes: polling `/healthz` to check the deployment had kept
-the service awake, and that polling was not counted as traffic when the window
-was planned.
+That is the whole claim, and the conditional is the point. **A page that warns
+about something that never happens is the same defect as a page that hides
+something that does** — both describe a service other than the one running. The
+question worth resolving was never how long a wake takes; it was whether this
+service wakes at all, and that is unresolved and stated as unresolved.
 
-Attempt two measured 0.140s after a genuine 21-minute window with no requests
-at all. Also not a cold start: `uptimeSeconds` showed 478, so the process had
-restarted 8 minutes earlier — the deploy described above. The gate firing reset
-the clock.
+Two attempts to observe a cold start failed, and both failures were caused by
+this investigation rather than by the service: the first measured 0.169s after
+a believed 15-minute window that was 13, because polling `/healthz` to check
+the deployment kept the service awake; the second measured 0.140s after a
+genuine 21-minute window, but `uptimeSeconds` was 478 — the gate had deployed 8
+minutes earlier and reset the clock. A third attempt was not run, because the
+answer it could produce ("still awake") is consistent with both hypotheses and
+would not resolve anything.
 
-**AND THE FIGURE WAS NEVER RENDER'S.** Checking their documentation in order to
-attribute it properly, it says: Render "spins down a Free web service that goes
-15 minutes without receiving any inbound traffic", and spinning back up "takes
-about one minute". There is no "30–50 seconds" anywhere in it.
+**The figure quoted for two days was a fabricated citation.** "30–50 seconds"
+was introduced on 2026-08-26 in `4b23fa6`, presented as Render's documentation,
+and repeated into four files. It is not in their documentation, which says
+"about one minute". A plausible-sounding range was invented and then attributed
+— strictly worse than an unverified vendor figure, because a reader checking
+the source would have found nothing to check against. Corrected everywhere, and
+`web.test.ts` asserts the page does not contain the old string so it cannot
+return silently.
 
-That number was introduced on 2026-08-26 in commit `4b23fa6`, presented as
-Render's documentation, and repeated into four files over two days. It was not
-quoted from anything. It is a plausible-sounding range that was invented and
-then attributed — which is a fabricated citation, and strictly worse than the
-unverified vendor figure it was mistaken for, because a reader checking the
-source would have found nothing to check against.
-
-Corrected everywhere to the documented "about one minute", quoted, and labelled
-as Render's rather than as this repository's.
-
-The shape is the one ADR 014 describes: a figure adopted on authority, repeated
-until it reads as established, never checked against the thing it describes.
-The difference is that the catalogue really was Wikipedia's. This was nobody's.
-
-There is a second possibility that neither attempt can exclude: that this
-service does not spin down at all. `render.yaml` sets `healthCheckPath:
-/healthz`, and whether Render's own health probing counts as traffic against
-the free tier's idle timer is not something this repository can observe from
-outside. If it does, the warning on the page describes an event that never
-happens here.
+The shape is what [ADR 014](014-the-catalogue-was-adopted-on-authority.md)
+describes: a figure adopted on authority, repeated until it reads as
+established, never checked. The difference is that the catalogue really was
+Wikipedia's. This was nobody's.
 
 **The health endpoint cannot say which build it is running.** It reports the
 lexicon identity, which is the thing ADR 003 asked for, and not the commit. So
