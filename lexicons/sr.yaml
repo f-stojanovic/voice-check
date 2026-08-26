@@ -1,0 +1,70 @@
+# Serbian lexicon for voice-check.
+#
+# Phrases are data so that adding a tell is a one-line diff a writer can make,
+# not an edit to a regular expression. A trailing `*` allows up to four further
+# letters, which is how one entry covers Serbian inflection: `kompleks*` catches
+# kompleksan, kompleksna, kompleksnim. It is a crude stemmer and it will
+# overreach — `ključ*` catches `ključna reč`, which is an ordinary phrase and
+# not inflated vocabulary. That false positive is deliberate and unfixed today;
+# see the false-positive report in the README.
+#
+# `version` is bumped by hand when the lists change. The loader also hashes the
+# content, because the bump somebody forgets is the one that matters.
+version: "0.1.0"
+language: sr
+
+phrases:
+  weasel-words:
+    - stručnjaci kažu
+    - mnogi smatraju
+    - izveštaji pokazuju
+    - neki kritičari tvrde
+
+  editorializing:
+    - važno je napomenuti
+    - vredi pomenuti
+    - u ovom tekstu
+
+  promotional-tone:
+    - neverovat*
+    - zadivljujuć*
+    - spektakular*
+    - obavezno isprobati
+
+  inflated-vocabulary:
+    - zaroniti
+    - kompleks*
+    - pejzaž
+    - sinergij*
+    - osnažiti
+    - unaprediti
+    - ključ*
+
+  summary-close:
+    - sve u svemu
+    - u zaključku
+    - da rezimiramo
+
+  transition-density:
+    - sa druge strane
+    - štaviše
+    - pored toga
+    - dodatno
+    - međutim
+    - nasuprot tome
+
+# Patterns are regular expressions, compiled with the `u` flag at load time so a
+# broken one fails loudly with the rule name rather than silently matching
+# nothing. Only rules whose tell is a word ORDER rather than a word list live
+# here; morphology (verbal adverbs, diacritics) is code, because a writer cannot
+# usefully tune it in YAML.
+patterns:
+  # The guide calls this the single strongest tell: the shape that sets up a
+  # negation only to deliver the real claim. `nije … već/nego`.
+  negative-parallelism:
+    - (?<![\p{L}])nije(?![\p{L}])[^.!?\n]{0,80}?(?<![\p{L}])(već|nego)(?![\p{L}])
+    - (?<![\p{L}])ne\s+samo(?![\p{L}])[^.!?\n]{0,80}?(?<![\p{L}])(već|nego)(?![\p{L}])
+
+  # `X, Y i Z`. Three is a rhythm, and a text made entirely of it is a machine.
+  rule-of-three:
+    - (?<![\p{L}])\p{L}{3,}(?:[ \t]+\p{L}+){0,2},\s+\p{L}{3,}(?:[ \t]+\p{L}+){0,2}\s+i\s+\p{L}{3,}(?![\p{L}])
