@@ -1,10 +1,33 @@
 # 017. The pinned eval harness costs build time, not disk — and the ONNX runtime is still downloaded
 
 Date: 2026-08-27
-Status: Accepted. Supersedes [016](016-agent-evals-is-a-pinned-dev-dependency.md),
-whose title, headline figure and unresolved question are all now answered:
-`agent-evals` is pinned to a commit SHA rather than a tag, `npm ci` works, and
-the 400MB it named is not what a consumer installs.
+Status: Accepted, and **its central cost figure is wrong** — corrected below
+2026-08-27 against the first real deploy. It still supersedes
+[016](016-agent-evals-is-a-pinned-dev-dependency.md), whose title, headline
+figure and unresolved question are all answered here: `agent-evals` is pinned to
+a commit SHA rather than a tag, `npm ci` works, and the 400MB it named is not
+what a consumer installs.
+
+        WHAT IT GOT WRONG. This record said the pin costs "roughly a minute of
+        extra build time" per deploy, from a 73.03s cold-cache install measured
+        on a laptop. The Render build took **14 seconds** for the whole
+        `npm ci --include=dev`. The arithmetic was right and the number was
+        real; it was a measurement of a different machine, presented as this
+        one's cost.
+
+        THE GENERAL FORM, because it will happen again: a figure measured where
+        it is convenient becomes the figure quoted where it matters, and the
+        substitution is invisible once the sentence is written. Nothing in the
+        original said "on this laptop" at the point where the cost was claimed —
+        it said so in `Evidence:` and then dropped the qualifier in the prose
+        eleven lines later. The qualifier has to travel with the number.
+
+        AND A SECOND ERROR, MINE AND SHARPER. I had both figures — 73.03s cold,
+        4.38s warm — and wrote that the cold one was "the number that matters,
+        because it is the one a build container sees". The build log opens with
+        `==> Downloading cache...` and `==> Downloaded 37MB in 1s`, before the
+        build command runs. The builder is not a cold cache. My own warm figure
+        was the better predictor and I argued past it.
 Evidence: MEASURED IN THIS REPOSITORY, 2026-08-27, Node 22.22.1 / npm 10.9.4,
           against `github:f-stojanovic/agent-evals#2e6633ee`. Each figure is
           this repository before and after the pin — the only pairing that is a
@@ -45,11 +68,41 @@ Evidence: MEASURED IN THIS REPOSITORY, 2026-08-27, Node 22.22.1 / npm 10.9.4,
           `@anthropic-ai/sdk` resolves to ONE copy, at 0.120.0.
           `npm test` 389 → 389. `npm run typecheck` exit 0. `npm run verify`
           exit 0. `npm run eval:fixture` exit 0.
-          NOT MEASURED, AND IT IS THE ONLY THING THAT SETTLES THE QUESTION: any
-          of this on Render. Every figure above is a laptop with an SSD and a
-          nearby registry. Build duration, build memory and build disk are not
-          documented for the Free instance type as far as I could find, and I am
-          not going to infer them. What would count: one deploy.
+          MEASURED ON RENDER, 2026-08-27, the deploy of commit 1400103 — the
+          "one deploy" this line originally said was the only thing that would
+          settle it. Verbatim from the build log:
+
+            04:01:16  ==> Downloading cache...
+            04:01:17  ==> Checking out commit 140010374314ef0babb098df89f943c8392ac265 in branch main
+            04:01:18  ==> Downloaded 37MB in 1s. Extraction took 1s.
+            04:01:20  ==> Running build command 'npm ci --include=dev && npm run build'...
+            04:01:33  added 74 packages, and audited 75 packages in 14s
+            04:01:33  > voice-check@0.1.0 build
+            04:01:33  > tsc -p tsconfig.build.json
+            04:01:37  ==> Uploading build...
+            04:01:40  ==> Build successful 🎉
+            04:02:03  ==> Your service is live 🎉
+
+          `npm ci --include=dev`: **14s** by npm's own count, 04:01:20 → 04:01:33
+          by the clock. Against 73.03s measured locally on a cold cache.
+          `tsc`: 04:01:33 → 04:01:37, about 4s, against 0.73s locally.
+          Build command start to "Build successful": 04:01:20 → 04:01:40, 20s.
+          Push to live: service up at 04:02:03.
+          No disk warning, no memory warning, no failure. The build survived,
+          which no local figure could have established.
+          A CACHE IS RESTORED BEFORE THE BUILD — `Downloading cache` /
+          `Downloaded 37MB`. What that 37MB contains is not stated in the log
+          and is not inferred here. It is enough to say the builder is not the
+          cold-cache case this record measured.
+          74 PACKAGES ON RENDER, 73 LOCALLY. One more, unexplained; the obvious
+          candidate is a platform-specific optional binary that differs between
+          linux-x64 and darwin-arm64, and that is a guess rather than a
+          finding — nothing was run to confirm it.
+          STILL NOT MEASURED: the transient 474,544 KB and the ~143 MB of
+          downloads, on Render. The log reports neither, and with a cache
+          restored beforehand the local figures may not transfer at all. Build
+          duration, memory and disk limits for the Free instance type remain
+          undocumented as far as I could find.
 
 ## Context
 
@@ -103,15 +156,28 @@ a consumer *ends up with*. A git dependency with a `prepare` script does not
 only deliver its output; it runs its whole development install on the
 consumer's machine first.
 
-**What this says about Render, stated narrowly.** Render's Free instance type is
-0.1 CPU and 512 MB RAM, and what its docs describe as metered on the free plan
-is build pipeline minutes and outbound bandwidth. So this change costs, on every
-deploy, roughly a minute of extra build time and roughly 143 MB of extra
-download — both recurring, both metered. It says **nothing** about whether the
-build survives: build duration, build memory and build disk limits are not
-documented anywhere I found, and the transient 474,544 KB is exactly the kind of
-figure a limit would bite on. Nothing short of a real deploy answers that, and
-the first one after this is pushed is the measurement.
+**What this says about Render — CORRECTED 2026-08-27, and the original is kept
+below it because the way it was wrong is the useful part.**
+
+The deploy happened. `npm ci --include=dev` took **14 seconds**, the build
+command ran 04:01:20 → 04:01:40, and the service was live at 04:02:03, with no
+disk or memory complaint. The build survives, comfortably.
+
+What the original said: "this change costs, on every deploy, roughly a minute of
+extra build time and roughly 143 MB of extra download — both recurring, both
+metered." The minute is wrong by a factor of five, and the 143 MB is unverified
+on the builder rather than confirmed by it.
+
+Two things went wrong and only one of them is about Render. The first is that a
+laptop figure was quoted as a deploy cost, with the qualifier left behind in
+`Evidence:`. The second is that I had a warm-cache measurement of 4.38s, chose
+the 73.03s cold one, and justified the choice with "it is the one a build
+container sees" — a claim about Render made without looking at Render, which the
+log's own first line refutes.
+
+What survives intact is the shape of the finding rather than its size: the cost
+of this dependency is install time, not disk, and it is spent building the git
+dependency rather than on anything this repository ships.
 
 ## Consequences
 
