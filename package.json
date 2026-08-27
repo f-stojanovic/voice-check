@@ -42,7 +42,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.18.9",
-    "agent-evals": "github:f-stojanovic/agent-evals#v0.1.0",
+    "agent-evals": "github:f-stojanovic/agent-evals#2e6633ee914f4e916910261a69a54b40651a3d85",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "vitest": "^3.2.4"
