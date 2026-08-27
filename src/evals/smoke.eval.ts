@@ -19,12 +19,25 @@
  * single command that goes red for either destroys the distinction. It also
  * keeps `npm test` from depending on a git dependency's build.
  *
- * WHY IT LIVES OUTSIDE `src/`. `tsconfig.build.json` has `rootDir: src`, so
- * nothing here is compiled into `dist/` and nothing here reaches the deployed
- * service. That is the same argument as putting `agent-evals` in
- * `devDependencies`: the Render service runs `check`, which calls no model, and
- * model-calling code has no business in that image. The cost is that
- * `npm run typecheck` does not cover this file — see docs/decisions/016.
+ * WHY IT LIVES IN `src/` AND IS NAMED `*.eval.ts`.
+ *
+ * It used to sit in `evals/`, outside `src/`, so that `rootDir: src` would keep
+ * it out of `dist/`. That worked, and it also put the one file importing the new
+ * git dependency outside `tsconfig.json`'s `include` — the only file in the
+ * repository `npm run typecheck` never looked at. It was checked once by hand
+ * with a throwaway config, which is not a property that stays true.
+ *
+ * This repository had already solved the same problem for tests: they live in
+ * `src/`, they are typechecked, and `tsconfig.build.json` excludes them from the
+ * build. `*.eval.ts` now sits beside `*.test.ts` in that exclude list, so the
+ * file is typechecked on every run and compiled into nothing.
+ *
+ * WHAT THAT DOES AND DOES NOT BUY, precisely. It keeps eval code out of the
+ * BUILT OUTPUT, so nothing the deployed server can import reaches it — the same
+ * argument as putting `agent-evals` in `devDependencies`. It does NOT keep the
+ * file off the Render disk, and never did: Render checks out the repository, so
+ * this source file is present there whether it lives in `evals/` or `src/`.
+ * `dist/` is what the service runs from, and that is what the exclude governs.
  */
 
 import {
