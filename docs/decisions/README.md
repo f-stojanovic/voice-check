@@ -21,7 +21,8 @@ is "nothing yet".
 - [013. The public surface is `check` only, and the split is marginal cost](013-the-public-surface-splits-on-marginal-cost.md)
 - [014. The catalogue was adopted on authority, and the first measurement retired half of it](014-the-catalogue-was-adopted-on-authority.md)
 - [015. An observation window shorter than the phenomenon produces a confident negative](015-an-observation-window-shorter-than-the-phenomenon.md)
-- [016. `agent-evals` is a pinned dev dependency, and it costs 400MB](016-agent-evals-is-a-pinned-dev-dependency.md)
+- [016. `agent-evals` is a pinned dev dependency, and it costs 400MB](016-agent-evals-is-a-pinned-dev-dependency.md) — superseded by 017
+- [017. The pinned eval harness costs build time, not disk — and the ONNX runtime is still downloaded](017-the-pinned-dependency-costs-build-time-not-disk.md)
 
 ## A note on the dates
 

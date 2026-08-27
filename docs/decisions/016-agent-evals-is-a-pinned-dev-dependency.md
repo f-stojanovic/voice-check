@@ -1,10 +1,17 @@
 # 016. `agent-evals` is a pinned dev dependency, and it costs 400MB
 
 Date: 2026-08-27
-Status: Accepted with one unresolved question — tag versus commit SHA, argued
-        below, not settled. THE COMMITTED MANIFEST DOES NOT INSTALL YET:
-        `github:f-stojanovic/agent-evals#v0.1.0` names a tag that does not
-        exist, so `npm ci` fails until it is created. See "Ordering".
+Status: SUPERSEDED by [017](017-the-pinned-dependency-costs-build-time-not-disk.md),
+        2026-08-27. Kept because its measurements were correct about the
+        package as it stood, and its headline conclusion was wrong within a
+        day. The open question is settled — a commit SHA, not a tag. The
+        manifest now installs. And "it costs 400MB" is wrong by two orders of
+        magnitude: `@huggingface/transformers` became an optional peer in
+        `agent-evals`, and the measured cost in this repository is +2,436 KB.
+        What ADR 017 found instead is that the 340MB is still DOWNLOADED during
+        the build, which nothing here anticipated.
+        Original status, for the record: accepted with the tag-versus-SHA
+        question open, and with a manifest that could not `npm ci`.
 Evidence: THE FOUR NUMBERS, measured on this machine, Node 22.22.1 / npm
           10.9.4, with `agent-evals` installed from a local
           `git+file://` URL because nothing has been pushed yet.

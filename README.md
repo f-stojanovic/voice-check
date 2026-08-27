@@ -327,13 +327,16 @@ lexicons being different lists, one corpus cannot say.
 
 The design decisions, each with a `Status:` and an `Evidence:` line saying what
 has actually been observed — including when the answer is "nothing yet" — are
-in [`docs/decisions/`](docs/decisions/). Sixteen of them, one of which
+in [`docs/decisions/`](docs/decisions/). Seventeen of them, one of which
 ([014](docs/decisions/014-the-catalogue-was-adopted-on-authority.md)) withdraws
 a claim the other thirteen were built around, one
 ([015](docs/decisions/015-an-observation-window-shorter-than-the-phenomenon.md))
-is about a wrong conclusion reached twice in one afternoon, and the newest
-([016](docs/decisions/016-agent-evals-is-a-pinned-dev-dependency.md)) argues
-against its own author about how to pin a dependency.
+is about a wrong conclusion reached twice in one afternoon, and one
+([016](docs/decisions/016-agent-evals-is-a-pinned-dev-dependency.md)) was
+superseded the day after it was written by
+([017](docs/decisions/017-the-pinned-dependency-costs-build-time-not-disk.md)),
+which measured the same dependency and found the headline figure wrong by two
+orders of magnitude.
 
 Worth reading if you only read one: how the lexicon carries the examples that
 prove each entry works ([006](docs/decisions/006-lexicon-entries-carry-their-examples.md)),
