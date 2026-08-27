@@ -327,7 +327,7 @@ lexicons being different lists, one corpus cannot say.
 
 The design decisions, each with a `Status:` and an `Evidence:` line saying what
 has actually been observed — including when the answer is "nothing yet" — are
-in [`docs/decisions/`](docs/decisions/). Seventeen of them, one of which
+in [`docs/decisions/`](docs/decisions/). Eighteen of them, one of which
 ([014](docs/decisions/014-the-catalogue-was-adopted-on-authority.md)) withdraws
 a claim the other thirteen were built around, one
 ([015](docs/decisions/015-an-observation-window-shorter-than-the-phenomenon.md))
