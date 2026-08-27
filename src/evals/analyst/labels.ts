@@ -54,8 +54,21 @@ const entrySchema = z.strictObject({
   index: z.number().int().positive(),
   /** Verbatim, and checked. See the header. */
   text: z.string().min(1),
-  /** One or more. A sentence may be both the claim and hype. */
-  marks: z.array(markSchema).min(1),
+  /**
+   * Zero or more. A sentence may be both the claim and hype.
+   *
+   * EMPTY IS ALLOWED, AND THAT IS A LABELLING-COST DECISION. The worksheet
+   * lists every sentence; the labeller fills in the few that need marks and
+   * leaves the rest alone. Requiring them to DELETE the unmarked entries — the
+   * first design — meant removing about 130 four-line blocks from a 139-
+   * sentence source, which is ten minutes of mechanical editing per source and
+   * a good way to delete the wrong block.
+   *
+   * Keeping them costs a longer file and buys something real: `checkLabels`
+   * verifies the stored text of EVERY sentence, not only the marked ones, so a
+   * splitter change is caught even when it moves a sentence nobody marked.
+   */
+  marks: z.array(markSchema),
   /** Free text from the labeller. Never read by any scorer. */
   note: z.string().optional(),
 });
@@ -67,8 +80,7 @@ export const labelFileSchema = z.strictObject({
   labelledBy: z.string().min(1),
   labelledAt: z.string().min(1),
   language: z.enum(['sr', 'en']),
-  /** Only marked sentences appear. An unmarked sentence is absent, not listed
-   *  with an empty array. */
+  /** Every sentence, in order, marked or not. See `marks`. */
   entries: z.array(entrySchema),
 });
 
@@ -107,7 +119,7 @@ export async function loadLabels(path: string): Promise<LabelFile> {
 export function checkLabels(labels: LabelFile, sentences: readonly Sentence[]): void {
   const problems: string[] = [];
 
-  if (labels.entries.length === 0) {
+  if (!labels.entries.some((e) => e.marks.length > 0)) {
     problems.push(
       `no marks. If this worksheet has not been filled in yet, it is not a label ` +
         `file and must not be scored against — an unlabelled source and a source ` +

@@ -129,4 +129,43 @@ describe('checkLabels', () => {
   it('refuses a worksheet nobody has filled in', () => {
     expect(() => checkLabels({ ...good, entries: [] }, sentences)).toThrow(/no marks/u);
   });
+
+  it('refuses a worksheet where every entry is present but blank', () => {
+    /* The shape a returned-but-untouched worksheet actually has, now that
+       blank entries are kept rather than deleted. */
+    const untouched = {
+      ...good,
+      entries: sentences.map((s) => ({ index: s.index, text: s.text, marks: [] })),
+    };
+    expect(() => checkLabels(untouched, sentences)).toThrow(/no marks/u);
+  });
+
+  it('accepts blank entries alongside marked ones', () => {
+    const mixed = {
+      ...good,
+      entries: sentences.map((s) => ({
+        index: s.index,
+        text: s.text,
+        marks: s.index === 2 ? (['E'] as const).slice() : [],
+      })),
+    };
+    expect(() => checkLabels(mixed, sentences)).not.toThrow();
+  });
+
+  /**
+   * The reason blank entries are worth keeping rather than merely tolerated:
+   * they extend the integrity check to sentences nobody marked. A splitter
+   * change that shifts an unmarked sentence is caught here, before it can shift
+   * a marked one on the next edit.
+   */
+  it('checks the stored text of unmarked entries too', () => {
+    const mixed = {
+      ...good,
+      entries: [
+        { index: 1, text: 'THIS IS NOT WHAT SENTENCE 1 SAYS', marks: [] },
+        { index: 2, text: 'Delta epsilon zeta.', marks: ['E' as const] },
+      ],
+    };
+    expect(() => checkLabels(mixed, sentences)).toThrow(/has moved/u);
+  });
 });

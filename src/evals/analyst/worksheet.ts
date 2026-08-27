@@ -57,10 +57,12 @@ const HEADER = `# Analyst eval — labelling worksheet
 #
 # A sentence may take more than one mark: [C, H] is a real combination.
 #
-# MOST SENTENCES GET NOTHING. Delete the entries you do not mark; only marked
-# sentences belong in the finished file. If you find yourself marking most of
-# the list, the vocabulary is wrong for this source and that is worth saying
-# rather than working around.
+# MOST SENTENCES GET NOTHING. Leave those exactly as they are — do not delete
+# them. Every sentence stays in the file so the integrity check can verify all
+# of them, not just the ones you marked.
+#
+# If you find yourself marking most of the list, the vocabulary is wrong for
+# this source and that is worth saying rather than working around.
 #
 # E is the one to be strict about. It means the analyst has FAILED if it misses
 # this, not that the sentence is somewhere in the vicinity of evidence.
@@ -68,8 +70,9 @@ const HEADER = `# Analyst eval — labelling worksheet
 # HOW TO FILL IT IN
 #
 #   1. Set labelledBy and labelledAt.
-#   2. For each sentence you want to mark, put its marks in the list.
-#   3. DELETE every entry you left blank.
+#   2. For each sentence that needs a mark, put it in that entry's marks list:
+#        marks: [E]
+#   3. Leave everything else alone. Blank entries are expected and ignored.
 #   4. Do not renumber, reword, or reformat the 'text' fields. They are checked
 #      against the splitter's output, and that check is what stops a splitter
 #      change from silently repointing your marks at different sentences.
