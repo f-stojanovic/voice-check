@@ -7,6 +7,7 @@ import {
   UntraceableQuoteError,
   verifyQuotes,
 } from './analyst.js';
+import type { Analysis } from './analyst.js';
 import { MalformedToolCallError, ModelUnavailableError } from './client.js';
 import { failingClient, GOOD_ANALYSIS, scriptedClient } from './agents.test-kit.js';
 
@@ -277,5 +278,98 @@ describe('the analyst tool schema', () => {
       for (const [key, value] of Object.entries(obj)) closed(value, `${path}.${key}`);
     };
     closed(ANALYST_TOOL_SCHEMA, 'schema');
+  });
+});
+
+/**
+ * Positions on QuoteCheck.
+ *
+ * These exist because the eval scorers grade by asking which sentence a quote
+ * landed in, and a position that is quietly off by the width of a collapsed
+ * newline would attribute a quote to the wrong sentence without failing
+ * anything. Every assertion below therefore checks the offsets against the
+ * SOURCE, by slicing it — not against a number written down here.
+ */
+describe('verifyQuotes positions', () => {
+  const analysisWith = (quote: string): Analysis => ({
+    claim: { statement: 's', quote },
+    evidence: [],
+    novelty: { genuinelyNew: [], restated: [] },
+    hype: [],
+    openQuestions: [],
+  });
+
+  it('gives an exact match offsets that slice back to the quote', () => {
+    const source = 'Alpha beta. Gamma delta epsilon. Zeta.';
+    const [check] = verifyQuotes(analysisWith('Gamma delta'), source);
+
+    expect(check?.match).toBe('exact');
+    expect(source.slice(check?.start, check?.end)).toBe('Gamma delta');
+  });
+
+  /**
+   * THE CASE THE OFFSET MAP EXISTS FOR. The quote crosses a hard line break, so
+   * it matches only after whitespace collapsing — and an index into the
+   * collapsed copy is not an index into the source, because `\s+ -> ' '`
+   * shortened it. A naive implementation lands short by one character per
+   * collapsed run, which is invisible until it attributes a quote to the
+   * previous sentence.
+   */
+  it('maps a normalized match back through the collapsed whitespace', () => {
+    const source = 'The retry converts an intermittent\n  failure into a slower green build.';
+    const [check] = verifyQuotes(analysisWith('intermittent failure into'), source);
+
+    expect(check?.match).toBe('normalized');
+    /* The slice is the SOURCE text, which still contains the newline and the
+       indent — so it cannot equal the quote, and that is the point. What must
+       hold is that it starts and ends on the right words. */
+    const sliced = source.slice(check?.start, check?.end);
+    expect(sliced.startsWith('intermittent')).toBe(true);
+    expect(sliced.endsWith('into')).toBe(true);
+    expect(sliced.replace(/\s+/gu, ' ')).toBe('intermittent failure into');
+  });
+
+  it('maps a case-folded match back to the original casing', () => {
+    const source = 'Teams Keep Adding Retries to flaky tests.';
+    const [check] = verifyQuotes(analysisWith('teams keep adding retries'), source);
+
+    expect(check?.match).toBe('normalized');
+    expect(source.slice(check?.start, check?.end)).toBe('Teams Keep Adding Retries');
+  });
+
+  it('handles a leading-whitespace source without shifting every offset', () => {
+    const source = '\n\n   Alpha beta gamma. Delta.';
+    const [check] = verifyQuotes(analysisWith('beta gamma'), source);
+
+    expect(source.slice(check?.start, check?.end)).toBe('beta gamma');
+  });
+
+  it('gives no position to a quote that is not there', () => {
+    const source = 'Alpha beta gamma.';
+    const [check] = verifyQuotes(analysisWith('nothing like this'), source);
+
+    expect(check?.match).toBe('absent');
+    expect(check?.start).toBeUndefined();
+    expect(check?.end).toBeUndefined();
+  });
+
+  it('gives no position to a translated quote', () => {
+    const source = 'Тимови додају понављања уместо да поправе тестове.';
+    const [check] = verifyQuotes(analysisWith('Teams add retries instead of fixing tests'), source, 'sr');
+
+    expect(check?.match).toBe('foreign');
+    expect(check?.start).toBeUndefined();
+  });
+
+  /* Serbian Latin with diacritics, hard-wrapped: the combination the whole
+     corpus is made of, and the one where a byte-vs-character error would show. */
+  it('maps a normalized match in Serbian text with diacritics', () => {
+    const source = 'Timovi dodaju ponavljanja umesto da poprave\nnepouzdane testove u projektu.';
+    const [check] = verifyQuotes(analysisWith('poprave nepouzdane testove'), source, 'sr');
+
+    expect(check?.match).toBe('normalized');
+    expect(source.slice(check?.start, check?.end).replace(/\s+/gu, ' ')).toBe(
+      'poprave nepouzdane testove',
+    );
   });
 });

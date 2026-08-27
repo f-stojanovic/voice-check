@@ -279,6 +279,28 @@ export interface QuoteCheck {
   readonly statement: string;
   readonly quote: string;
   readonly match: QuoteMatch;
+  /**
+   * Where the quote sits in the source, as offsets into the ORIGINAL string.
+   * `end` is exclusive. Present for `exact` and `normalized`, absent for
+   * `foreign` and `absent`, which by definition have no position.
+   *
+   * WHY THIS IS HERE RATHER THAN IN A SECOND MATCHER. The eval scorers
+   * (src/evals/analyst/) grade by asking which sentence a quote landed in, and
+   * that is the same question this function already answers — it located the
+   * quote in order to decide `exact` versus `normalized`, and then threw the
+   * location away. Recovering it separately would mean a second matcher with
+   * its own normalisation rules, and the two would have to agree forever.
+   *
+   * THE `normalized` CASE IS THE WHOLE DIFFICULTY. That arm matches against a
+   * whitespace-collapsed, case-folded copy, so an index into that copy is not
+   * an index into the source: `\s+ -> ' '` changes lengths. `normaliseWithMap`
+   * therefore records, for every character it emits, which source character it
+   * came from — so a hit in the normalised text converts back exactly. Without
+   * that map this field would be quietly wrong for precisely the quotes that
+   * crossed a line break, which is most of them in a hard-wrapped file.
+   */
+  readonly start?: number;
+  readonly end?: number;
 }
 
 /** Outcomes that fail the gate. */
@@ -344,19 +366,52 @@ export function verifyQuotes(
   source: string,
   language: Language = 'en',
 ): QuoteCheck[] {
-  const normalised = normalise(source);
+  const normalised = normaliseWithMap(source);
   const checks: QuoteCheck[] = [];
 
   const add = (field: string, statement: string, quote: string): void => {
     if (quote.trim().length === 0) return; // an absence has no quote to check
-    const match: QuoteMatch = source.includes(quote)
-      ? 'exact'
-      : normalised.includes(normalise(quote))
-        ? 'normalized'
-        : looksForeign(quote, source, language)
-          ? 'foreign'
-          : 'absent';
-    checks.push({ field, statement, quote, match });
+
+    /* `indexOf`, not `includes`. Same decision, and it keeps the position the
+       comparison already computed instead of discarding it. */
+    const exact = source.indexOf(quote);
+    if (exact !== -1) {
+      checks.push({
+        field,
+        statement,
+        quote,
+        match: 'exact',
+        start: exact,
+        end: exact + quote.length,
+      });
+      return;
+    }
+
+    const normalisedQuote = normalise(quote);
+    const hit = normalisedQuote.length === 0 ? -1 : normalised.text.indexOf(normalisedQuote);
+    if (hit !== -1) {
+      /* Convert the hit back through the map. `end` comes from the LAST matched
+         character rather than from `hit + length`, because the collapsed run of
+         whitespace the match spanned was longer in the source. */
+      const start = normalised.map[hit];
+      const lastIndex = normalised.map[hit + normalisedQuote.length - 1];
+      checks.push({
+        field,
+        statement,
+        quote,
+        match: 'normalized',
+        ...(start !== undefined && { start }),
+        ...(lastIndex !== undefined && { end: lastIndex + 1 }),
+      });
+      return;
+    }
+
+    checks.push({
+      field,
+      statement,
+      quote,
+      match: looksForeign(quote, source, language) ? 'foreign' : 'absent',
+    });
   };
 
   add('claim', analysis.claim.statement, analysis.claim.quote);
@@ -374,6 +429,54 @@ export function verifyQuotes(
 
 function normalise(text: string): string {
   return text.replace(/\s+/gu, ' ').trim().toLowerCase();
+}
+
+/**
+ * `normalise`, plus an index back to the original for every character emitted.
+ *
+ * `map[i]` is the offset in `text` of the character that produced
+ * `result.text[i]`. For a collapsed whitespace run that is the offset of the
+ * run's FIRST character, which is what makes a match's `start` land on the
+ * beginning of the gap rather than inside it.
+ *
+ * Written as an explicit walk rather than a regex replace because a replace
+ * cannot report where its output came from — which is the entire reason this
+ * function exists alongside the one above.
+ *
+ * `toLowerCase` is applied per character. That is not universally
+ * length-preserving in Unicode (German ß, some Turkic and Greek forms), so a
+ * character whose lower-case form is longer than one unit would desynchronise
+ * the map. Guarded by emitting one map entry per emitted unit rather than per
+ * source character, so the map stays aligned whatever the folding does.
+ */
+function normaliseWithMap(text: string): { text: string; map: number[] } {
+  let out = '';
+  const map: number[] = [];
+  let i = 0;
+
+  /* Leading whitespace is dropped, matching `.trim()` on the plain version. */
+  while (i < text.length && /\s/u.test(text[i] as string)) i += 1;
+
+  while (i < text.length) {
+    const ch = text[i] as string;
+    if (/\s/u.test(ch)) {
+      const runStart = i;
+      while (i < text.length && /\s/u.test(text[i] as string)) i += 1;
+      /* Trailing whitespace is dropped, again matching `.trim()`. */
+      if (i >= text.length) break;
+      out += ' ';
+      map.push(runStart);
+      continue;
+    }
+    const folded = ch.toLowerCase();
+    for (const unit of folded) {
+      out += unit;
+      map.push(i);
+    }
+    i += 1;
+  }
+
+  return { text: out, map };
 }
 
 const CYRILLIC = /\p{Script=Cyrillic}/u;
