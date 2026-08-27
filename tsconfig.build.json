@@ -1,4 +1,21 @@
 {
   "extends": "./tsconfig.json",
-  "exclude": ["src/**/*.test.ts", "src/**/*.test-kit.ts", "src/**/*.eval.ts"]
+  /* Excluded from the BUILD, still covered by `typecheck`, which uses the base
+     config and its own include.
+
+     The exclude names the src/evals TREE rather than an "eval dot ts" glob. The
+     glob was the obvious rule and it is not enough: only the runnable entry
+     points carry that suffix, so the modules they import — sentences, labels,
+     worksheet, scoring — compiled straight into dist/, and scoring's emitted
+     .d.ts imported a type from the agent-evals devDependency. Verified after
+     fixing: dist/evals does not exist and nothing under dist/ names
+     agent-evals.
+
+     The deployed service runs `check`, which calls no model. Eval code in its
+     image is the same category error as an eval harness in `dependencies`. */
+  "exclude": [
+    "src/**/*.test.ts",
+    "src/**/*.test-kit.ts",
+    "src/evals/"
+  ]
 }

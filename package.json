@@ -32,7 +32,8 @@
     "corpus:generate": "tsx src/corpus-generate.ts",
     "web": "tsx src/web/server.ts",
     "eval:fixture": "tsx src/evals/smoke.eval.ts",
-    "label:analyst": "tsx src/evals/analyst/label-cli.eval.ts"
+    "label:analyst": "tsx src/evals/analyst/label-cli.eval.ts",
+    "eval:analyst": "tsx src/evals/analyst.eval.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.120.0",
