@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "A style checker that grades prose against a writer's own rules, in Serbian and English.",
   "license": "MIT",
-  "author": "Filip Stojanovi\u0107",
+  "author": "Filip Stojanović",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -29,7 +29,8 @@
     "brief": "tsx src/brief.ts",
     "calibrate": "tsx src/calibrate.ts",
     "corpus:generate": "tsx src/corpus-generate.ts",
-    "web": "tsx src/web/server.ts"
+    "web": "tsx src/web/server.ts",
+    "eval:fixture": "tsx evals/smoke.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.120.0",
@@ -41,6 +42,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.18.9",
+    "agent-evals": "github:f-stojanovic/agent-evals#v0.1.0",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "vitest": "^3.2.4"

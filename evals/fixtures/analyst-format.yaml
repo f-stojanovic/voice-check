@@ -1,0 +1,44 @@
+# The canned response the smoke case replays. No network call, no API key.
+#
+# `provenance` is `hand-authored` and says who by, because that field is the
+# whole point of `agent-evals` ADR 015: a recording that claims to come from a
+# model, in a comment, is a claim nobody can check. This one was written by
+# Claude in the pass that wired the two repositories together. It has never
+# been near the model, and the report prints that tally on every run.
+#
+# It is a canned SUBJECT OUTPUT, which is an input to the scorer. It is not a
+# label and nothing is scored against it — the case scores the route the
+# payload arrived by, not its contents. The `record_analysis` payload below is
+# shaped to match `ANALYST_TOOL_SCHEMA` so it stays readable next to the real
+# thing, and nothing checks that it does.
+
+- caseId: analyst-returns-a-tool-call-01
+  provenance:
+    kind: hand-authored
+    author: Claude
+    note: >
+      Written to wire up the harness, not captured from a run. Replace it with a
+      recorded output when the analyst suite gets real cases.
+  output:
+    model: hand-authored-fixture
+    inputTokens: 0
+    outputTokens: 0
+    latencyMs: 0
+    toolCalls:
+      - name: record_analysis
+        input:
+          claim:
+            statement: Retrying a flaky test hides the failure rather than removing it.
+            quote: A retry converts an intermittent failure into a slower green build
+          evidence:
+            - kind: data
+              statement: The claim is supported by a count across four repositories.
+              quote: We looked at four repositories
+          novelty:
+            genuinelyNew: []
+            restated:
+              - statement: Flaky tests being papered over with retries is a familiar complaint.
+                quote: Teams keep adding retries to flaky integration tests
+          hype: []
+          openQuestions:
+            - Which four repositories, and were they chosen before or after the result was known?

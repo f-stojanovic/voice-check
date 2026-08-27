@@ -1,0 +1,35 @@
+# The wiring case. It exists to fail when `agent-evals` stops being importable
+# or stops running, and for no other reason.
+#
+# WHAT IT ASSERTS, AND WHY THAT IS NOT A LABEL. `format: tool-call` says the
+# structured payload arrived as a tool call rather than as JSON in prose. That
+# is a transport fact the harness reads off the response, and it restates a
+# constraint this repository already made in code: `analyst.ts` sends
+# `tool_choice: { type: 'tool', ... }` with `strict: true`, so a compliant
+# response has no other shape available to it (ADR 007).
+#
+# Nothing here is a judgement about whether the analysis is any good. There is
+# no `expect.fields`, no `expect.similar`, and no rubric, because every one of
+# those would be an expected output somebody had to decide on, and deciding
+# those is not this case's job — nor, per `agent-evals` ADR 021, a job for
+# anything but a human. When the real analyst cases arrive they will carry
+# labels, and Filip will write them.
+#
+# `id` is permanent. Renaming it orphans whatever baseline history it accrues.
+
+- id: analyst-returns-a-tool-call-01
+  description: >
+    Smoke case. Proves the harness is installed, importable, and able to load a
+    case, replay a fixture, extract a payload, score it and exit — nothing more.
+  tags: [smoke, wiring]
+  weight: 1
+  input:
+    language: en
+    text: |
+      Teams keep adding retries to flaky integration tests instead of fixing
+      them. A retry converts an intermittent failure into a slower green build,
+      which is the outcome everyone wanted and nobody asked for. We looked at
+      four repositories and found the median retried test had been failing
+      roughly one run in nine for over a year.
+  expect:
+    format: tool-call
