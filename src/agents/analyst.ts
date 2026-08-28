@@ -66,6 +66,7 @@
 import { z } from 'zod';
 import type { Language } from '../types.js';
 import { runOf, type AgentRun, type ModelClient, MalformedToolCallError } from './client.js';
+import { VOICE_CHECK, failSpan, setCost, tracer } from '../tracing.js';
 
 /** A statement plus the span of source it is traced to. */
 const TracedSchema = z.object({
@@ -240,6 +241,43 @@ export interface AnalystInput {
 export type AnalysisRun = AgentRun<Analysis> & { readonly traceability: readonly QuoteCheck[] };
 
 export async function analyse(
+  client: ModelClient,
+  input: AnalystInput,
+): Promise<AnalysisRun> {
+  /* The agent-run span: one analysis, wrapping however many model calls it
+     takes. Today that is exactly one, and the nesting is what makes a future
+     multi-call agent legible without re-instrumenting. */
+  return tracer.startActiveSpan('analyse', async (span) => {
+    span.setAttributes({
+      [VOICE_CHECK.sourceLanguage]: input.language,
+      ...(input.origin !== undefined && { [VOICE_CHECK.caseId]: input.origin }),
+    });
+    try {
+      const run = await analyseInner(client, input);
+      span.setAttribute(VOICE_CHECK.requestAttempts, run.attempts);
+      setCost(span, run.costUsd, run.model);
+      /* Traceability as attributes, because it is a number this repository
+         already computes and which is otherwise invisible unless somebody
+         reads the report. */
+      const tally = { exact: 0, normalized: 0, foreign: 0, absent: 0 };
+      for (const check of run.traceability) tally[check.match] += 1;
+      span.setAttributes({
+        [VOICE_CHECK.quoteExact]: tally.exact,
+        [VOICE_CHECK.quoteNormalized]: tally.normalized,
+        [VOICE_CHECK.quoteForeign]: tally.foreign,
+        [VOICE_CHECK.quoteAbsent]: tally.absent,
+      });
+      return run;
+    } catch (cause) {
+      failSpan(span, cause);
+      throw cause;
+    } finally {
+      span.end();
+    }
+  });
+}
+
+async function analyseInner(
   client: ModelClient,
   input: AnalystInput,
 ): Promise<AnalysisRun> {

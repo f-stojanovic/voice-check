@@ -49,6 +49,8 @@ import type {
 import { analyse } from '../agents/analyst.js';
 import { anthropicClient } from '../agents/client.js';
 import { costUsd, formatCost } from '../agents/pricing.js';
+import { startTracing } from './tracing-setup.eval.js';
+import { VOICE_CHECK, failSpan, tracer } from '../tracing.js';
 import { splitSentences } from './analyst/sentences.js';
 import { checkLabels, indicesFor, loadLabels } from './analyst/labels.js';
 import {
@@ -168,6 +170,31 @@ function analystSubject(): Subject {
       toolCalls: [{ name: 'record_analysis', input: run.value }],
     };
   };
+}
+
+/**
+ * The outermost of the three spans: one per eval case.
+ *
+ * WRAPS WHATEVER SUBJECT IS RUNNING, live or fixture, rather than living inside
+ * the live one. It was inside `analystSubject` first, which meant a replay
+ * produced no spans at all — so the tracing could only ever be demonstrated by
+ * spending money, which is the opposite of what the rest of this suite is
+ * built for. A replay now yields a case span with no children, which is an
+ * honest picture of a replay: nothing was called.
+ */
+function tracedSubject(inner: Subject): Subject {
+  return (input, ctx) =>
+    tracer.startActiveSpan(`eval case ${ctx.caseId}`, async (span) => {
+      span.setAttribute(VOICE_CHECK.caseId, ctx.caseId);
+      try {
+        return await inner(input, ctx);
+      } catch (cause) {
+        failSpan(span, cause);
+        throw cause;
+      } finally {
+        span.end();
+      }
+    });
 }
 
 /** Writes what the model said, so the next run is free. */
@@ -307,6 +334,13 @@ function spendLines(run: RunSummary, outputs: Map<string, SubjectOutput>, live: 
 
 export async function main(argv: readonly string[]): Promise<number> {
   const live = argv.includes('--live');
+  /* OFF BY DEFAULT. A default-on exporter that silently fails to connect looks
+     instrumented and delivers nothing, which is worse than no tracing. */
+  const trace = argv.includes('--trace');
+  const tracing = trace
+    ? startTracing({ console: argv.includes('--trace-console') })
+    : undefined;
+  if (tracing !== undefined) console.error(`tracing -> ${tracing.endpoint}\n`);
 
   const sources = await loadSources();
   if (sources.length === 0) {
@@ -361,7 +395,7 @@ export async function main(argv: readonly string[]): Promise<number> {
 
   const run = await runSuite({
     cases,
-    subject,
+    subject: trace ? tracedSubject(subject) : subject,
     subjectId: live ? 'analyst' : 'fixture',
     scorers,
     /* One sample. The subject is stochastic and this is a pilot; sampling
@@ -398,6 +432,10 @@ export async function main(argv: readonly string[]): Promise<number> {
       console.log(`\nRecorded ${await recordFixture(source, output, capturedAt)}`);
     }
   }
+
+  /* Awaited, because a BatchSpanProcessor holds spans until a timer fires and
+     a one-case run would otherwise exit having exported nothing. */
+  if (tracing !== undefined) await tracing.shutdown();
 
   return exitCode(comparison);
 }

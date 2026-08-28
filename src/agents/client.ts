@@ -15,6 +15,8 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { readApiKey } from './env.js';
 import { costUsd, ZERO_USAGE, type Usage } from './pricing.js';
+import { GEN_AI, VOICE_CHECK, failSpan, setCost, tracer } from '../tracing.js';
+import { SpanKind } from '@opentelemetry/api';
 
 /** The model every agent in this repository runs on. */
 export const MODEL = 'claude-opus-5';
@@ -257,13 +259,48 @@ export function anthropicClient(options: { apiKey?: string; model?: string } = {
     },
 
     async callTool(request: ToolCallRequest): Promise<ToolCallResponse> {
+      const maxTokens = request.maxTokens ?? MAX_TOKENS;
+      /* THE ONLY INSTRUMENTATION POINT FOR A MODEL CALL. This is where the SDK
+         call happens and where `usage` is read, so it is the only place a span
+         can carry honest numbers — anywhere else would be re-deriving them.
+         Span name and kind follow the GenAI conventions; see tracing.ts. */
+      return tracer.startActiveSpan(
+        `chat ${model}`,
+        { kind: SpanKind.CLIENT },
+        async (span) => {
+          span.setAttributes({
+            [GEN_AI.operationName]: 'chat',
+            [GEN_AI.providerName]: 'anthropic',
+            [GEN_AI.requestModel]: model,
+            [GEN_AI.requestMaxTokens]: maxTokens,
+            [VOICE_CHECK.toolName]: request.tool.name,
+          });
+          try {
+            return await callToolInner(request, maxTokens, span);
+          } catch (cause) {
+            failSpan(span, cause);
+            throw cause;
+          } finally {
+            span.end();
+          }
+        },
+      );
+    },
+  };
+
+  async function callToolInner(
+    request: ToolCallRequest,
+    maxTokens: number,
+    span: import('@opentelemetry/api').Span,
+  ): Promise<ToolCallResponse> {
+    {
       let response: Anthropic.Message;
       let attempts: number;
       try {
         ({ response, attempts } = await withTransientRetry(request.tool.name, () =>
           client.messages.create({
           model,
-          max_tokens: request.maxTokens ?? MAX_TOKENS,
+          max_tokens: maxTokens,
           system: request.system,
           messages: [{ role: 'user', content: request.userContent }],
           tools: [
@@ -334,19 +371,30 @@ export function anthropicClient(options: { apiKey?: string; model?: string } = {
         );
       }
 
-      return {
-        attempts,
-        input: block.input,
-        model: response.model,
-        usage: {
-          inputTokens: response.usage.input_tokens,
-          outputTokens: response.usage.output_tokens,
-          cacheCreationInputTokens: response.usage.cache_creation_input_tokens ?? 0,
-          cacheReadInputTokens: response.usage.cache_read_input_tokens ?? 0,
-        },
+      const usage: Usage = {
+        inputTokens: response.usage.input_tokens,
+        outputTokens: response.usage.output_tokens,
+        cacheCreationInputTokens: response.usage.cache_creation_input_tokens ?? 0,
+        cacheReadInputTokens: response.usage.cache_read_input_tokens ?? 0,
       };
-    },
-  };
+
+      span.setAttributes({
+        [GEN_AI.responseModel]: response.model,
+        [GEN_AI.usageInputTokens]: usage.inputTokens,
+        [GEN_AI.usageOutputTokens]: usage.outputTokens,
+        [VOICE_CHECK.requestAttempts]: attempts,
+        [VOICE_CHECK.transientRetries]: attempts - 1,
+        ...(response.id !== undefined && { [GEN_AI.responseId]: response.id }),
+        ...(response.stop_reason !== null && {
+          [GEN_AI.responseFinishReasons]: [response.stop_reason],
+        }),
+      });
+      /* Absent-with-a-reason when unpriced, never zero. See setCost. */
+      setCost(span, costUsd(response.model, usage), response.model);
+
+      return { attempts, input: block.input, model: response.model, usage };
+    }
+  }
 }
 
 /** What an agent returns: the value, and what it cost to get it. */
