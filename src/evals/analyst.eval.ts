@@ -285,7 +285,24 @@ export async function main(argv: readonly string[]): Promise<number> {
 
   validateExpectations(cases, scorers);
 
-  const subject = live ? analystSubject() : fixtureSubject(await loadFixtures(FIXTURES_DIR));
+  /* A missing fixtures directory is the normal state before the first live
+     run, so it gets a sentence rather than an ENOENT stack trace. */
+  let subject: Subject;
+  if (live) {
+    subject = analystSubject();
+  } else {
+    try {
+      subject = fixtureSubject(await loadFixtures(FIXTURES_DIR));
+    } catch (cause) {
+      if ((cause as NodeJS.ErrnoException).code !== 'ENOENT') throw cause;
+      console.error(
+        `No fixtures in ${FIXTURES_DIR}/ yet.\n\n` +
+          `  npm run eval:analyst -- --live    records them, once, against the model\n` +
+          `  npm run eval:analyst              replays them for free thereafter\n`,
+      );
+      return 1;
+    }
+  }
 
   const run = await runSuite({
     cases,

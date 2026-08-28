@@ -1,0 +1,126 @@
+# Recorded by `npm run eval:analyst -- --live`. Do not hand-edit.
+[
+  {
+    "caseId": "analyst-agentstep-korisnicka-podrska",
+    "provenance": {
+      "kind": "recorded",
+      "model": "claude-opus-5",
+      "capturedAt": "2026-08-28"
+    },
+    "output": {
+      "model": "claude-opus-5",
+      "inputTokens": 8280,
+      "outputTokens": 2417,
+      "latencyMs": 44765,
+      "toolCalls": [
+        {
+          "name": "record_analysis",
+          "input": {
+            "claim": {
+              "statement": "Tekst tvrdi da su AI agenti postali centralni deo korisničke podrške i da će u 2026. postati strateška osnova podrške, uz kombinaciju AI-a i ljudi kao najuspešniji model.",
+              "quote": "AI agenti i AI chatbotovi postali su ključni igrači u korisničkoj podršci – i taj trend će u 2026. samo jačati."
+            },
+            "evidence": [
+              {
+                "statement": "Navodi procentualni podatak o skraćenju vremena odgovora, bez izvora.",
+                "quote": "kompanije koje su uvele AI podršku skratile su prosečno vreme odgovora i do 74%",
+                "kind": "data"
+              },
+              {
+                "statement": "Navodi uporedne troškove interakcije bota i ljudskog agenta, bez izvora.",
+                "quote": "Prosečna interakcija preko chatbota košta tek oko $0.50, u poređenju sa oko $6 po interakciji sa ljudskim agentom.",
+                "kind": "data"
+              },
+              {
+                "statement": "Poziva se na Gartnerovu prognozu uštede od 80 milijardi dolara do 2026.",
+                "quote": "Gartner predviđa da će primena konverzacijskog AI-a do 2026. uštedeti firmama oko 80 milijardi dolara na troškovima korisničkih centara",
+                "kind": "citation"
+              },
+              {
+                "statement": "Poziva se na dve Forresterove prognoze — o rastu rešenih zahteva putem self-service kanala i o formiranju paralelnih AI timova.",
+                "quote": "Forrester predviđa da će 30% preduzeća formirati paralelne AI timove unutar službi za korisnike",
+                "kind": "citation"
+              },
+              {
+                "statement": "Citira anketne procente o poverenju u AI odgovore, stavu CX menadžera i očekivanjima lidera o glasu brenda, bez navođenja istraživanja.",
+                "quote": "78% donosilaca odluka u domenu veštačke inteligencije smatra odgovore AI sistema pouzdanim",
+                "kind": "data"
+              }
+            ],
+            "novelty": {
+              "genuinelyNew": [],
+              "restated": [
+                {
+                  "statement": "Standardna tvrdnja da moderni AI botovi razumeju više od starih skriptovanih botova zahvaljujući NLP-u i generativnom AI-u.",
+                  "quote": "moderni AI agenti koriste napredne modele mašinskog učenja i obrade jezika (NLP) – uključujući i generativni AI"
+                },
+                {
+                  "statement": "Opštepoznata praksa obaveznog prebacivanja na živog agenta kada bot ne može da pomogne ili je korisnik frustriran.",
+                  "quote": "ako “zapne” ili se korisnik frustrira, prebacivanje na živog agenta je obavezno"
+                },
+                {
+                  "statement": "Uobičajen savet da se počne od jednostavnih upita i postepeno širi opseg.",
+                  "quote": "Krenite od jednostavnih zadataka i učite postepeno"
+                },
+                {
+                  "statement": "Poznat savet o kvalitetu podataka i redovnom ažuriranju baze znanja kao osnovi tačnih odgovora.",
+                  "quote": "Kvalitet odgovora AI chatbota direktno zavisi od kvaliteta podataka na kojima je obučen"
+                },
+                {
+                  "statement": "Već rasprostranjena preporuka da se korisniku jasno kaže da razgovara sa botom.",
+                  "quote": "Ne pokušavajte da prevarite korisnike da misle da pričaju sa čovekom"
+                },
+                {
+                  "statement": "Uobičajena teza da AI preuzima rutinu i oslobađa ljude za složene slučajeve.",
+                  "quote": "preuzimaju rutinske i repetitivne zadatke, ostavljajući ljudskim agentima vreme da se fokusiraju na kompleksnije zahteve"
+                }
+              ]
+            },
+            "hype": [
+              {
+                "statement": "Podatak o smanjenju vremena odgovora do 74% dat je bez izvora, uzorka ili definicije merenja.",
+                "quote": "skratile su prosečno vreme odgovora i do 74%"
+              },
+              {
+                "statement": "Cifre o ceni interakcije ($0.50 vs $6) navedene su bez izvora i konteksta tržišta.",
+                "quote": "košta tek oko $0.50, u poređenju sa oko $6 po interakciji sa ljudskim agentom"
+              },
+              {
+                "statement": "Procenat poverenja u AI odgovore predstavljen je kao „istraživanja pokazuju“ bez identifikacije istraživanja.",
+                "quote": "zanimljivo je da istraživanja pokazuju kako 78% donosilaca odluka"
+              },
+              {
+                "statement": "Tvrdnja da je 70% korisnika prvo biralo telefon i da taj procenat sada opada nije potkrepljena podatkom o padu.",
+                "quote": "Donedavno je oko 70% njih kao prvi izbor problema biralo poziv telefonom, ali taj procenat opada"
+              },
+              {
+                "statement": "Procena da bi agent mogao biti rasterećen oko sat vremena dnevno data je bez osnove izračuna.",
+                "quote": "prosečan agent za podršku mogao bi biti rasterećen za oko sat vremena dnevno"
+              },
+              {
+                "statement": "Statistike od 75% CX menadžera i 72% lidera navedene su bez ikakvog izvora.",
+                "quote": "čak 72% lidera očekuje da AI agent odražava vrednosti i glas kompanije"
+              },
+              {
+                "statement": "Retorička tvrdnja da AI pretvara agente u „super-agente“ nije poduprta nikakvim merenjem.",
+                "quote": "Time se ljudski agenti pretvaraju u super-agente"
+              },
+              {
+                "statement": "Nepotkrepljena tvrdnja da korisnici cene kombinaciju bota i čoveka.",
+                "quote": "daje najbolji rezultat i klijent to zna da ceni"
+              }
+            ],
+            "openQuestions": [
+              "Odakle dolaze navedeni procenti (74%, 78%, 75%, 72%, 70%) — koje istraživanje, koji uzorak, koja godina?",
+              "Kako su izračunati troškovi po interakciji od $0.50 i $6 i za koje industrije/kanale važe?",
+              "Tekst najavljuje „pet glavnih pravaca“ za 2026., a navodi samo tri — koji su ostali dvojica trenda?",
+              "Kako se konkretno meri „tačnost rezolucije“ i kvalitet rezolucije naspram same defleksije?",
+              "Koliko traje i koliko košta implementacija, i koji su primeri realnih neuspeha ili rizika (halucinacije, privatnost, regulativa)?",
+              "Postoji li ijedan konkretan slučaj kompanije, sa brojevima pre i posle uvođenja AI podrške?"
+            ]
+          }
+        }
+      ]
+    }
+  }
+]
