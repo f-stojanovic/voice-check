@@ -34,9 +34,18 @@ import {
   formatReport,
   loadFixtures,
   runSuite,
+  summariseProvenance,
   validateExpectations,
 } from 'agent-evals';
-import type { EvalCase, Scorer, Subject, SubjectContext, SubjectOutput } from 'agent-evals';
+import type {
+  EvalCase,
+  ProvenanceSummary,
+  RunSummary,
+  Scorer,
+  Subject,
+  SubjectContext,
+  SubjectOutput,
+} from 'agent-evals';
 import { analyse } from '../agents/analyst.js';
 import { anthropicClient } from '../agents/client.js';
 import { costUsd, formatCost } from '../agents/pricing.js';
@@ -257,6 +266,45 @@ function retryLines(outputs: Map<string, SubjectOutput>, live: boolean): string[
   ];
 }
 
+/**
+ * What this run spent, kept apart from what the recording cost.
+ *
+ * THE HARNESS'S OWN `cost:` LINE IS THE RECORDING'S. `agent-evals` prices the
+ * token counts on the result, and on a replay those counts came out of the
+ * fixture — so a run that made no request reports `cost: $0.1018`. That figure
+ * is true of the recorded run and false of this one, and a reader has no way to
+ * tell which they are looking at.
+ *
+ * Same defect family as the `?? 0` that made an absent judge cost read as free
+ * (ADR 026), one layer up: a number that is real in one frame printed in
+ * another, with nothing marking the change of frame.
+ *
+ * Not fixable inside `formatReport` — that lives in the pinned dependency — so
+ * this section states both figures and says which is which.
+ */
+function spendLines(run: RunSummary, outputs: Map<string, SubjectOutput>, live: boolean): string[] {
+  const model = [...outputs.values()][0]?.model ?? '';
+  const usd = costUsd(model, {
+    inputTokens: run.usage.inputTokens,
+    outputTokens: run.usage.outputTokens,
+    cacheCreationInputTokens: 0,
+    cacheReadInputTokens: 0,
+  });
+  const tokens = `${run.usage.inputTokens} in / ${run.usage.outputTokens} out`;
+
+  if (live) {
+    return ['', '### Spend', '', `- this run: ${formatCost(usd)} — ${tokens}, live against \`${model}\``];
+  }
+  return [
+    '',
+    '### Spend',
+    '',
+    '- this run: **$0.0000** — every response was replayed from a recording; no request was made',
+    `- the recording it replays: ${formatCost(usd)} — ${tokens}, \`${model}\``,
+    "  - the `cost:` line above is that recording's, re-priced. It is not what this run cost.",
+  ];
+}
+
 export async function main(argv: readonly string[]): Promise<number> {
   const live = argv.includes('--live');
 
@@ -288,11 +336,18 @@ export async function main(argv: readonly string[]): Promise<number> {
   /* A missing fixtures directory is the normal state before the first live
      run, so it gets a sentence rather than an ENOENT stack trace. */
   let subject: Subject;
+  /* Kept so the report can say where the responses came from. Without it the
+     harness prints "live subject: responses came from the model" on a replay,
+     which is the third number-shaped lie in this report and the same family as
+     the cost line: true of the recording, false of the run printing it. */
+  let provenance: ProvenanceSummary | undefined;
   if (live) {
     subject = analystSubject();
   } else {
     try {
-      subject = fixtureSubject(await loadFixtures(FIXTURES_DIR));
+      const fixtures = await loadFixtures(FIXTURES_DIR);
+      provenance = summariseProvenance('fixtures', [...fixtures.values()]);
+      subject = fixtureSubject(fixtures);
     } catch (cause) {
       if ((cause as NodeJS.ErrnoException).code !== 'ENOENT') throw cause;
       console.error(
@@ -322,10 +377,18 @@ export async function main(argv: readonly string[]): Promise<number> {
   for (const result of run.results) if (result.output !== undefined) outputs.set(result.caseId, result.output);
 
   const comparison = compareToBaseline(run, undefined, {}, scorers.map((s) => s.name));
-  console.log(formatReport({ run, comparison, models: {} }));
+  console.log(
+    formatReport({
+      run,
+      comparison,
+      models: {},
+      ...(provenance !== undefined && { provenance }),
+    }),
+  );
   console.log(quoteMatchLines(sources, outputs).join('\n'));
   const retries = retryLines(outputs, live);
   if (retries.length > 0) console.log(retries.join('\n'));
+  console.log(spendLines(run, outputs, live).join('\n'));
 
   if (live) {
     const capturedAt = new Date().toISOString().slice(0, 10);
@@ -334,21 +397,6 @@ export async function main(argv: readonly string[]): Promise<number> {
       if (output === undefined) continue;
       console.log(`\nRecorded ${await recordFixture(source, output, capturedAt)}`);
     }
-    /* Priced by this repository's own table, which returns null rather than
-       zero for a model it does not know. */
-    const usd = costUsd(
-      run.results[0]?.output?.model ?? '',
-      {
-        inputTokens: run.usage.inputTokens,
-        outputTokens: run.usage.outputTokens,
-        cacheCreationInputTokens: 0,
-        cacheReadInputTokens: 0,
-      },
-    );
-    console.log(
-      `\nLive run cost: ${formatCost(usd)} — ` +
-        `${run.usage.inputTokens} in / ${run.usage.outputTokens} out`,
-    );
   }
 
   return exitCode(comparison);

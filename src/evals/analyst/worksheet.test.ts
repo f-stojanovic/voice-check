@@ -45,9 +45,36 @@ describe('emitWorksheet', () => {
 
   it('states the whole vocabulary in the file', () => {
     /* The labeller has this file open, not a README. */
-    for (const token of ['C ', 'E ', 'H ', 'central claim', 'load-bearing', 'hype']) {
+    for (const token of ['C ', 'E ', 'H ', 'central claim', 'measurable', 'hype']) {
       expect(yaml).toContain(token);
     }
+  });
+
+  /**
+   * E MUST ASK ABOUT THE SENTENCE, NOT ABOUT THE LABELLER'S OPINION OF IT.
+   *
+   * The first version asked, in effect, what actually SUPPORTS the claim. That
+   * is a judgement, and it pulled the marks away from what the analyst returns:
+   * across two labelling passes the model located the statistics and the labels
+   * located the descriptions, and sharpening the judgement made the overlap
+   * WORSE — to zero. The schema asks what the source "offers in support", so
+   * the worksheet now asks the same question.
+   */
+  it('defines E mechanically and sends the quality question to H', () => {
+    expect(yaml).toContain('OFFERS something measurable');
+    expect(yaml).toContain('Not whether it holds up');
+    expect(yaml).toContain('Whether it holds up is H');
+    /* And the old judgement framing is gone rather than merely supplemented. */
+    expect(yaml).not.toContain('load-bearing');
+    expect(yaml).not.toMatch(/an analyst that misses this has failed/iu);
+  });
+
+  it('shows [E, H] worked, on a sentence invented for the purpose', () => {
+    expect(yaml).toContain('[E, H]');
+    expect(yaml).toContain('That example is invented');
+    /* The point of inventing it: an example lifted from a text somebody is
+       about to mark tells them how to mark it. */
+    expect(yaml).toContain('tells them how to mark it');
   });
 
   it('round-trips through the schema once marks and metadata are filled in', () => {

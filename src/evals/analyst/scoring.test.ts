@@ -122,11 +122,48 @@ describe('analyst-claim-locates', () => {
     expect((await run(scorer, PERFECT)).value).toBe(1);
   });
 
-  it('scores 0 when the claim quote moves to an unmarked sentence', async () => {
+  it('scores 0 when the claim quote moves beyond the window', async () => {
+    /* Sentence 5; C is sentence 1. Four away, so the window does not reach. */
     const moved = { ...PERFECT, claim: { ...PERFECT.claim, quote: 'Nothing else here matters much' } };
     const score = await run(scorer, moved);
     expect(score.value).toBe(0);
     expect(score.reason).toContain('lands in sentence 5');
+  });
+
+  /**
+   * THE WINDOW, AND THE ASSERTION THAT KEEPS IT HONEST.
+   *
+   * A thesis is commonly stated in one sentence and completed in the next, so
+   * which of the two a labeller marks is close to arbitrary. The window absorbs
+   * that. What it must NOT do is absorb a quote from elsewhere in the document
+   * — that would make the scorer unable to fail, which is the failure mode
+   * `agent-evals` ADR 005 exists for.
+   */
+  it('accepts a claim quote one sentence away from the mark', async () => {
+    /* C is sentence 1; the quote lands in sentence 2. */
+    const adjacent = {
+      ...PERFECT,
+      claim: { ...PERFECT.claim, quote: 'We looked at four repositories' },
+    };
+    const score = await run(scorer, adjacent);
+    expect(score.value).toBe(1);
+    expect(score.reason).toContain('within 1 of C');
+    /* And the artifact records that it was NOT an exact hit, so a pass that
+       depended on the window is visible rather than inferred. */
+    expect(score.meta?.['exact']).toBe(false);
+  });
+
+  it('still records an exact hit as exact', async () => {
+    const score = await run(scorer, PERFECT);
+    expect(score.value).toBe(1);
+    expect(score.meta?.['exact']).toBe(true);
+    expect(score.reason).toContain('marked C');
+  });
+
+  it('reports C density, so a wide target is visible next to the score', async () => {
+    const score = await run(scorer, PERFECT);
+    /* One C sentence out of five. */
+    expect(score.meta?.['cDensity']).toBeCloseTo(0.2);
   });
 
   it('scores 0, naming traceability, when the claim quote is translated', async () => {

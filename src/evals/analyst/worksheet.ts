@@ -52,10 +52,31 @@ const HEADER = `# Analyst eval — labelling worksheet
 # THE VOCABULARY
 #
 #   C  carries the source's central claim
-#   E  load-bearing evidence — an analyst that misses this has failed
+#   E  the sentence OFFERS something measurable: a figure, a named source, a
+#      comparison, or a described observation. Not whether it holds up.
+#      Whether it holds up is H.
 #   H  hype: an assertion the source does not support
 #
-# A sentence may take more than one mark: [C, H] is a real combination.
+# WHY E IS MECHANICAL. The schema asks what the source "offers in support", and
+# whether an offer is any good is a separate question that H already carries.
+# The first version of this header asked, in effect, what actually SUPPORTS the
+# claim — a judgement — and the two questions pulled the marks apart from what
+# the analyst returns. E is now a property of the sentence, not of your opinion
+# of it.
+#
+# A sentence may take more than one mark, and [E, H] is the important pair: a
+# sentence that offers a figure AND does not support what it is used for.
+#
+#     "Naša platforma smanjuje vreme odgovora za 90%."
+#     ("Our platform reduces response time by 90%.")
+#
+#     E, because it offers a figure. H, because the figure has no source and
+#     the sentence is the vendor's own claim about itself. Both marks, one
+#     sentence, and they are not in conflict — they answer different questions.
+#
+# That example is invented. It is not from any source in this corpus, and it is
+# not from the one you are about to label: an example lifted from a text
+# somebody is about to mark tells them how to mark it.
 #
 # MOST SENTENCES GET NOTHING. Leave those exactly as they are — do not delete
 # them. Every sentence stays in the file so the integrity check can verify all
@@ -64,8 +85,10 @@ const HEADER = `# Analyst eval — labelling worksheet
 # If you find yourself marking most of the list, the vocabulary is wrong for
 # this source and that is worth saying rather than working around.
 #
-# E is the one to be strict about. It means the analyst has FAILED if it misses
-# this, not that the sentence is somewhere in the vicinity of evidence.
+# E is the one to be mechanical about. Ask "does this sentence put something
+# checkable on the table?" — not "is this a good reason to believe the claim?".
+# If you find yourself weighing whether the evidence is persuasive, that is H's
+# question and you have drifted.
 #
 # HOW TO FILL IT IN
 #

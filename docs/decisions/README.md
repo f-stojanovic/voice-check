@@ -24,6 +24,7 @@ is "nothing yet".
 - [016. `agent-evals` is a pinned dev dependency, and it costs 400MB](016-agent-evals-is-a-pinned-dev-dependency.md) — superseded by 017
 - [017. The pinned eval harness costs build time, not disk — and the ONNX runtime is still downloaded](017-the-pinned-dependency-costs-build-time-not-disk.md)
 - [018. The analyst is scored against sentences a human marked, deterministically](018-the-analyst-is-scored-against-marked-sentences.md)
+- [019. The analyst pilot measured the labels at least as much as the analyst](019-the-analyst-pilot-measured-the-labels.md)
 
 ## A note on the dates
 

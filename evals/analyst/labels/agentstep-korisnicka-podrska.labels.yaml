@@ -54,11 +54,11 @@ entries:
 
   - index: 3
     text: "Kompanije širom sveta već koriste veštačku inteligenciju kako bi pružile brže odgovore, 24/7 dostupnost i personalizovano iskustvo korisnicima."
-    marks: []
+    marks: [C]
 
   - index: 4
     text: "U ovom tekstu objašnjavamo šta su tačno AI agenti u korisničkoj podršci, koje konkretne prednosti donose, koji trendovi dominiraju 2026. godine, kao i najbolje prakse za uspešnu primenu."
-    marks: [C]
+    marks: []
 
   - index: 5
     text: "Šta su AI agenti (AI chatbotovi) u korisničkoj podršci?"
@@ -74,7 +74,7 @@ entries:
 
   - index: 8
     text: "Za razliku od ranijih generacija jednostavnih skriptovanih botova, moderni AI agenti koriste napredne modele mašinskog učenja i obrade jezika (NLP) – uključujući i generativni AI – što im omogućava da razumeju složenija pitanja i vode prirodniji razgovor."
-    marks: [C]
+    marks: []
 
   - index: 9
     text: "Na primer, savremeni AI chatbot može pretražiti bazu znanja kompanije i pružiti tačan odgovor ili rešenje problema, umesto samo da prepozna ključnu reč i da unapred pripremljen odgovor."
@@ -126,7 +126,7 @@ entries:
 
   - index: 21
     text: "Ovo dramatično smanjuje vreme prvog odgovora – kompanije koje su uvele AI podršku skratile su prosečno vreme odgovora i do 74%."
-    marks: [E, H]
+    marks: [H]
 
   - index: 22
     text: "Za korisnike to znači brz odgovor čak i van radnog vremena ili tokom praznika, što podiže zadovoljstvo uslugom."
@@ -142,7 +142,7 @@ entries:
 
   - index: 25
     text: "Prosečna interakcija preko chatbota košta tek oko $0.50, u poređenju sa oko $6 po interakciji sa ljudskim agentom."
-    marks: [H]
+    marks: [E, H]
 
   - index: 26
     text: "Gartner predviđa da će primena konverzacijskog AI-a do 2026. uštedeti firmama oko 80 milijardi dolara na troškovima korisničkih centara – zahvaljujući automatizaciji rutinskih upita."
@@ -150,7 +150,7 @@ entries:
 
   - index: 27
     text: "Doslednost i tačnost u odgovorima: AI agenti dosledno primenjuju ista pravila i informacije iz baze znanja."
-    marks: [C, E]
+    marks: []
 
   - index: 28
     text: "Za razliku od ljudi, ne zaboravljaju da pomenu neki korak i ne prave greške usled umora."
@@ -170,7 +170,7 @@ entries:
 
   - index: 32
     text: "AI asistenti mogu zaposlene osloboditi zamornih ponavljajućih zadataka i pomagati im tokom rada – npr. automatski predlažu odgovore ili relevantne informacije agentu tokom razgovora sa korisnikom."
-    marks: [C, E]
+    marks: []
 
   - index: 33
     text: "Time se ljudski agenti pretvaraju u super-agente, fokusirane na suštinu problema i izgradnju odnosa sa klijentima, dok im AI u pozadini šapuće rešenja i prikuplja podatke."
@@ -218,7 +218,7 @@ entries:
 
   - index: 44
     text: "Samim tim, raste poverenje da i chatbot može rešiti problem."
-    marks: [E]
+    marks: []
 
   - index: 45
     text: "Ovaj pomak već daje rezultate – Forrester predviđa da će jedna od četiri kompanije do kraja 2026. zabeležiti 10% više uspešno rešenih zahteva putem samouslužnih AI kanala, poput AI chatbotova i AI Agenata."
@@ -246,7 +246,7 @@ entries:
 
   - index: 51
     text: "AI jednostavno (još uvek) ne može da iskreno saoseća niti da kreativno reši zapetljan slučaj nezadovoljnog klijenta."
-    marks: [C]
+    marks: []
 
   - index: 52
     text: "Zato kompanije kombinuju: AI chatbot rešava jednostavno, a ako “zapne” ili se korisnik frustrira, prebacivanje na živog agenta je obavezno."
@@ -254,7 +254,7 @@ entries:
 
   - index: 53
     text: "Čak 75% menadžera za korisničko iskustvo gleda na AI kao na način da pojačaju inteligenciju ljudi, ne da ih zamene."
-    marks: [C]
+    marks: []
 
   - index: 54
     text: "AI kao deo core strategije (integracija i nove uloge): Mnoge organizacije ulaze u fazu u kojoj AI nije više samo pilot-projekat sa strane, već strateška okosnica korisničke podrške."
@@ -266,7 +266,7 @@ entries:
 
   - index: 56
     text: "U praksi, 2026. je godina kada kompanije konsoliduju svoju tehnologiju i procese da bi izvukle maksimum iz AI: integrišu AI agente sa CRM sistemima, povezuju bazu znanja, uspostavljaju nadzor i mere uspeh AI alata kroz KPI-je koji su bliži biznis ciljevima."
-    marks: [C, E]
+    marks: []
 
   - index: 57
     text: "Više se ne gleda samo stopa “defleksije” (koliko je zahteva rešeno bez ljudi), već i kvalitet rezolucije koji AI pruža i uticaj na zadovoljstvo i lojalnost korisnika."
@@ -322,7 +322,7 @@ entries:
 
   - index: 70
     text: "Jedna od najvažnijih praksi je da AI agent jasno ponudi opciju “Želite li razgovor sa operaterom?"
-    marks: [E]
+    marks: []
 
   - index: 71
     text: "” kada prepozna da pitanje prelazi njegove mogućnosti ili kada korisnik to zatraži."
@@ -398,7 +398,7 @@ entries:
 
   - index: 89
     text: "Preporučljivo je da od samog početka komunikacije jasno naznačite da je AI chatbot u pitanju (npr. ime virtualnog agenta i napomena da koristi AI za odgovore)."
-    marks: [C]
+    marks: []
 
   - index: 90
     text: "Ne pokušavajte da prevarite korisnike da misle da pričaju sa čovekom – većina će to ionako shvatiti, a takva neiskrenost može narušiti kredibilitet."
@@ -422,7 +422,7 @@ entries:
 
   - index: 95
     text: "Uskladite ton i brending AI agenta sa kompanijom: Iako je reč o mašini, ličnost vašeg AI chatbota treba da bude u skladu sa tonom brenda."
-    marks: [E]
+    marks: []
 
   - index: 96
     text: "Definišite stil komunikacije – da li je strogo profesionalan, ili neformalniji i prijateljski?"
@@ -438,7 +438,7 @@ entries:
 
   - index: 99
     text: "Najbolji AI agenti su zapravo produžetak identiteta brenda – čak 72% lidera očekuje da AI agent odražava vrednosti i glas kompanije."
-    marks: [E, H]
+    marks: [H]
 
   - index: 100
     text: "Stoga, u fazi implementacije, uključite i timove za marketing/komunikacije kako biste obučili AI model da koristi odgovarajući rečnik i tonalitet."

@@ -33,9 +33,19 @@
  *   2. The extractor damaged the source — a smart quote, an entity, a
  *      character set — so the text is there and no longer matches.
  *   3. The source changed between being fetched and being checked.
- *   4. The model translated the quote. On a Serbian source this is the
- *      likeliest failure of the four, and it has never been observed, because
- *      no Serbian source has been run.
+ *   4. The model translated the quote. This said "on a Serbian source this is
+ *      the likeliest failure of the four", which was reasoning from the shape
+ *      of the task rather than from data — no Serbian source had been run.
+ *
+ *      ONE HAS NOW BEEN RUN, 2026-08-28: a 101-sentence Serbian article, 20
+ *      traced quotes, distribution exact 20 / normalized 0 / foreign 0 /
+ *      absent 0. Not one translated quote.
+ *
+ *      One observation retracts nothing. What it does is stop the prediction
+ *      being stated as though it were established: translation is a failure
+ *      this gate is built for and has not yet seen. If it stays at zero across
+ *      the remaining cases, the `foreign` arm is machinery guarding something
+ *      that does not happen — worth knowing, and not yet known.
  *
  * The failure message names all four rather than asserting the first.
  *
@@ -44,6 +54,8 @@
  * passes, because the text is there. `foreign` is absent AND written in a
  * different script or language from the source, which is the one cause the
  * gate can actually diagnose. `absent` is everything else. The last two fail.
+ * `foreign` has fired zero times in the one Serbian run measured so far — see
+ * cause 4 above.
  *
  * EMPTY IS AN ANSWER. The system prompt says so explicitly and the schema
  * allows it: `novelty` may be empty, `hype` may be empty, evidence may be
