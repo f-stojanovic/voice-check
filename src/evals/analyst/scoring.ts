@@ -117,40 +117,31 @@ function marked(source: LabelledSource, mark: Mark): Set<number> {
 }
 
 /**
- * How far from a `C` sentence a claim quote may land and still count.
+ * A ±1 SENTENCE WINDOW WAS ADDED HERE AND REVERTED. Both halves are recorded
+ * because the reversal is the useful part.
  *
- * ±1 SENTENCE. A thesis in prose is not confined to one sentence: it is
- * commonly stated in one and completed in the next, and which of the two a
- * labeller marks is close to arbitrary. Requiring an exact hit measures that
- * arbitrariness as much as it measures the analyst.
+ * It was added after watching this scorer return 0.00 on the pilot case, where
+ * the model quoted sentence 2 and the label marked sentence 3, with a
+ * justification about prose: a thesis is often stated in one sentence and
+ * completed in the next, so which one a labeller marks is close to arbitrary.
  *
- * THE ORDER THIS WAS ADOPTED IN MATTERS, AND IT IS THE WORST THING ABOUT IT.
- * The rule was written AFTER watching this scorer return 0.00 on the pilot
- * case, where the model quoted sentence 2 and the label marks sentence 3.
- * Loosening a scorer once you have seen it fail is exactly how a suite gets
- * tuned until it cannot fail, and nothing about the sequence here is
- * distinguishable from that.
+ * It came out because that argument does not pick 1. "A thesis spans a sentence
+ * or two" argues equally for 2, and the only thing that actually fixed the
+ * value was that the observed gap was 1. The mean moved 0.192 -> 0.661 with the
+ * analyst untouched, which is what a tuned metric looks like from the outside.
  *
- * What makes it defensible is that the justification does not mention the
- * number it produces. It is a claim about how prose works, it was applied to
- * every future case rather than to this one, and it predicts specific things
- * that could turn out false — a window of 1 should not rescue a quote from the
- * far side of a document, and if a later case passes only because of the
- * window, that is worth looking at rather than banking.
- *
- * What would make it indefensible: widening it again the next time a case
- * scores 0. One adjustment with a stated rationale is a design decision; two is
- * a fitting procedure.
+ * The boundary belongs to the person reading, not to a constant: where a thesis
+ * genuinely spans sentences, the labeller marks every sentence that carries it.
+ * The worksheet header says so. See ADR 019.
  */
-export const CLAIM_WINDOW = 1;
 
 /**
- * Did `claim.quote` land on, or next to, a sentence the human marked `C`?
+ * Did `claim.quote` land in a sentence the human marked `C`?
  *
  * BINARY, AND THAT IS A DEPARTURE from `agent-evals` ADR 001, which argues
  * scores should be continuous because a boolean throws away direction. It is a
  * departure with a reason: there is no meaningful half of "found the central
- * claim". A quote either reaches a C sentence or it does not, and inventing
+ * claim". A quote either lands in a C sentence or it does not, and inventing
  * partial credit — proportion of touched sentences that are C, say — would
  * punish an analyst for quoting one sentence of context around the right one,
  * which is not a defect.
@@ -180,40 +171,23 @@ export function claimLocates(lookup: SourceLookup): Scorer {
         );
       }
 
-      /* Within CLAIM_WINDOW of any marked sentence, not on it. */
-      const near = (index: number): number | undefined =>
-        [...wanted].find((c) => Math.abs(c - index) <= CLAIM_WINDOW);
-      const exactHit = claim.sentences.filter((i) => wanted.has(i));
-      const nearHit = claim.sentences
-        .map((i) => ({ landed: i, marked: near(i) }))
-        .filter((h): h is { landed: number; marked: number } => h.marked !== undefined);
-
-      const value = nearHit.length > 0 ? 1 : 0;
-      const reason =
-        exactHit.length > 0
-          ? `claim quote lands in sentence ${exactHit.join(', ')}, marked C`
-          : nearHit.length > 0
-            ? `claim quote lands in sentence ${nearHit.map((h) => h.landed).join(', ')}, ` +
-              `within ${CLAIM_WINDOW} of C at ${nearHit.map((h) => h.marked).join(', ')}`
-            : `claim quote lands in sentence ${claim.sentences.join(', ')}; ` +
-              `C is ${[...wanted].join(', ')}`;
-
+      const hit = claim.sentences.filter((i) => wanted.has(i));
       return Promise.resolve({
         scorer: name,
-        value,
-        passed: value === 1,
-        reason,
+        value: hit.length > 0 ? 1 : 0,
+        passed: hit.length > 0,
+        reason:
+          hit.length > 0
+            ? `claim quote lands in sentence ${hit.join(', ')}, marked C`
+            : `claim quote lands in sentence ${claim.sentences.join(', ')}; ` +
+              `C is ${[...wanted].join(', ')}`,
         meta: {
           landedIn: claim.sentences,
           marked: [...wanted],
           match: claim.match,
-          window: CLAIM_WINDOW,
-          /* Recorded so a pass that depended on the window is visible in the
-             artifact rather than inferred from the score. */
-          exact: exactHit.length > 0,
           /* Marked C over total sentences: how wide the target was. A case
-             where this is high makes a hit cheap, and the number should be
-             read next to the score rather than after somebody wonders. */
+             where this is high makes a hit cheap, and the number should be read
+             next to the score rather than after somebody wonders. */
           cDensity: Number((wanted.size / found.source.sentences.length).toFixed(4)),
         },
       });

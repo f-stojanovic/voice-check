@@ -122,8 +122,7 @@ describe('analyst-claim-locates', () => {
     expect((await run(scorer, PERFECT)).value).toBe(1);
   });
 
-  it('scores 0 when the claim quote moves beyond the window', async () => {
-    /* Sentence 5; C is sentence 1. Four away, so the window does not reach. */
+  it('scores 0 when the claim quote moves to an unmarked sentence', async () => {
     const moved = { ...PERFECT, claim: { ...PERFECT.claim, quote: 'Nothing else here matters much' } };
     const score = await run(scorer, moved);
     expect(score.value).toBe(0);
@@ -131,33 +130,22 @@ describe('analyst-claim-locates', () => {
   });
 
   /**
-   * THE WINDOW, AND THE ASSERTION THAT KEEPS IT HONEST.
+   * STRICT, AND THAT IS A REVERSAL. A +/-1 sentence window was added here after
+   * this scorer returned 0.00 on the pilot case, then removed: the prose
+   * argument for it ("a thesis spans a sentence or two") does not pick 1, and
+   * the only thing fixing the value was that the observed gap happened to be 1.
    *
-   * A thesis is commonly stated in one sentence and completed in the next, so
-   * which of the two a labeller marks is close to arbitrary. The window absorbs
-   * that. What it must NOT do is absorb a quote from elsewhere in the document
-   * — that would make the scorer unable to fail, which is the failure mode
-   * `agent-evals` ADR 005 exists for.
+   * Where a thesis genuinely spans sentences, the LABEL carries it — the
+   * worksheet tells the labeller to mark every sentence that carries the claim.
+   * The boundary belongs to the person reading. See ADR 019.
    */
-  it('accepts a claim quote one sentence away from the mark', async () => {
-    /* C is sentence 1; the quote lands in sentence 2. */
+  it('does not accept a quote in the sentence next to the mark', async () => {
+    /* C is sentence 1; this lands in sentence 2. One away, and it fails. */
     const adjacent = {
       ...PERFECT,
       claim: { ...PERFECT.claim, quote: 'We looked at four repositories' },
     };
-    const score = await run(scorer, adjacent);
-    expect(score.value).toBe(1);
-    expect(score.reason).toContain('within 1 of C');
-    /* And the artifact records that it was NOT an exact hit, so a pass that
-       depended on the window is visible rather than inferred. */
-    expect(score.meta?.['exact']).toBe(false);
-  });
-
-  it('still records an exact hit as exact', async () => {
-    const score = await run(scorer, PERFECT);
-    expect(score.value).toBe(1);
-    expect(score.meta?.['exact']).toBe(true);
-    expect(score.reason).toContain('marked C');
+    expect((await run(scorer, adjacent)).value).toBe(0);
   });
 
   it('reports C density, so a wide target is visible next to the score', async () => {

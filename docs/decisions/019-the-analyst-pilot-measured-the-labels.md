@@ -1,9 +1,12 @@
 # 019. The analyst pilot measured the labels at least as much as the analyst
 
 Date: 2026-08-28
-Status: Accepted as a record of what the pilot found. **No baseline is adopted,
-and none should be** until the vocabulary has survived a source it was not
-rewritten for. The machinery ships; the numbers do not.
+Status: Accepted as a record of what the pilot found, and as a REVERSAL: the
+±1 window this record originally defended was removed the same day it was
+adopted (see "The window"). **No baseline is adopted, and none should be** until
+the vocabulary has survived a source it was not rewritten for. The machinery
+ships; the numbers do not. The remaining seven sources are deferred — see
+`docs/issues/001-the-remaining-analyst-sources.md`.
 Evidence: THREE LABELLING PASSES OVER ONE SOURCE — a 101-sentence Serbian
           article — against ONE recorded fixture. No model call after the first:
           every score below is a replay.
@@ -12,6 +15,12 @@ Evidence: THREE LABELLING PASSES OVER ONE SOURCE — a 101-sentence Serbian
             1     C 8 · E 8 · H 9    0.00   0.20     0.13       0.44   0.192
             2     C 1 · E 7 · H 9    0.00   0.00     0.00       0.44   0.111
             3     C 1 · E 1 · H 9    1.00   0.20     1.00       0.44   0.661
+            4     C 1 · E 1 · H 9    0.00   0.20     1.00       0.44   0.411
+
+          Rows 3 and 4 are THE SAME LABELS AND THE SAME FIXTURE. The only
+          difference is that row 3 was scored with a ±1 sentence window on
+          `claim-locates` and row 4 without it, after the window was reverted.
+          A quarter of the mean was a constant.
 
           THE ANALYST DID NOT CHANGE ACROSS ANY OF IT. Same twenty quotes, same
           five evidence items, same sentences. The mean moved 0.192 → 0.111 →
@@ -21,9 +30,12 @@ Evidence: THREE LABELLING PASSES OVER ONE SOURCE — a 101-sentence Serbian
           overlap: the model located the statistics, the labels located the
           descriptions. A vocabulary that gets further from the subject as it
           gets more precise is measuring something other than the subject.
-          `hype-recall` HELD AT 0.44 ACROSS ALL THREE. It is the only mark that
-          asks about the text rather than about the reader's relationship to
-          the text, and it is the only number that stayed still.
+          `hype-recall` HELD AT 0.44 ACROSS ALL FOUR. It is the only mark that
+          asks about the text rather than about the reader's relationship to the
+          text, and it is the only number that stayed still. THE HONEST CAVEAT:
+          that is also exactly what it would look like if `H` had simply never
+          been edited, which it was not — the H set is identical in every pass.
+          Stability under no change is not evidence of stability.
           QUOTE TRACEABILITY, all three passes: exact 20, normalized 0,
           foreign 0, absent 0. Every quote byte-exact against a Serbian source.
           C DENSITY, pass 3: 1/101 = 1.0%.
@@ -70,35 +82,39 @@ for — is now a documented pair with a worked example.
 **The example in the worksheet is invented.** An example drawn from a text
 somebody is about to label tells them how to label it.
 
-## The window, and why the order it was adopted in is the problem
+## The window: adopted, defended, and reverted
 
-`analyst-claim-locates` now accepts a quote landing within **±1 sentence** of a
-marked `C`. The model quoted sentence 2; the label marks sentence 3.
+`analyst-claim-locates` briefly accepted a quote landing within **±1 sentence**
+of a marked `C`. The model quoted sentence 2; the label marked sentence 3.
 
-**THIS RULE WAS WRITTEN AFTER WATCHING THE SCORER RETURN 0.00.** That ordering
-is the honest account and it is also what makes it suspect: loosening a scorer
-once you have seen it fail is precisely how a suite is tuned until it cannot
-fail, and nothing about the sequence distinguishes the two.
+**IT WAS ADOPTED AFTER WATCHING THE SCORER RETURN 0.00.** The justification was
+about prose: a thesis is commonly stated in one sentence and completed in the
+next, so which of the two a labeller marks is close to arbitrary, and an exact
+rule measures that arbitrariness as much as it measures the analyst.
 
-What is offered against that:
+**IT WAS REVERTED, AND THE ARGUMENT AGAINST IT IS BETTER.** The prose claim does
+not pick 1. "A thesis spans a sentence or two" argues just as well for 2, and
+the only thing that actually fixed the value was that the observed gap was 1. A
+justification that cannot derive its own constant is a rationalisation of a
+number chosen from the data.
 
-- The justification is about prose, not about the number. A thesis is commonly
-  stated in one sentence and completed in the next, and which of the two a
-  labeller marks is close to arbitrary. An exact-match rule measures that
-  arbitrariness as much as it measures the analyst.
-- It applies to every future case, not to this one.
-- It is falsifiable. A window of 1 must not rescue a quote from the far side of
-  a document, and a test asserts it does not.
-- The artifact records whether a pass was `exact` or only within the window, so
-  a score that depended on the loosening is visible rather than inferred.
+The arithmetic makes it plain. Rows 3 and 4 above are the same labels, the same
+fixture, the same twenty quotes: 0.661 with the window, 0.411 without. **A
+quarter of the mean was the constant**, on a suite whose purpose is to notice
+when the analyst moves.
 
-What would make it indefensible: **widening it again the next time a case scores
-0.** One adjustment with a stated rationale is a design decision. Two is a
-fitting procedure, and the second one should be refused on the strength of this
-paragraph.
+WHERE THE BOUNDARY ACTUALLY BELONGS: with the person reading. Where a thesis
+genuinely spans sentences, the labeller marks every sentence that carries it,
+and the worksheet header now says so. That puts the judgement in the hands of
+someone who has read the article, instead of in a constant that has not.
 
-`C` density is now reported per case — pass 3 is 1/101, 1.0% — so a case whose
-target is unusually wide is visible next to the score instead of discovered
+This is the second reversal on the record here, and the pattern in both is the
+same: a number was adjusted to fit an observation, the adjustment was written
+down, and writing it down is what made it reviewable. A decision that was right
+first time teaches nobody anything.
+
+`C` density is reported per case — pass 4 is 1/101, 1.0% — so a case whose
+target is unusually wide is visible next to the score rather than discovered
 later.
 
 ## Why no baseline
@@ -119,6 +135,11 @@ you build a gate from.
 
 What would change this: the vocabulary applied to a source it was not rewritten
 for, by the same labeller, producing scores that do not need another edit.
+
+Stated as plainly as it can be: **the vocabulary was not stable enough to
+measure with, and one source cannot say whether it is stable now, because it was
+rewritten to fit that source.** Four passes over one article moved the mean
+0.192 → 0.111 → 0.661 → 0.411 without the analyst changing once.
 
 ## Consequences
 
@@ -143,9 +164,11 @@ retracts nothing and it stops the sentence being stated as established. If
 guarding something that does not happen.
 
 **The judge is still absent and the hole is now visibly larger.** Every scorer
-here measures WHERE a quote landed. Pass 3 scores `evidence-recall` at 1.00 off
-a single marked sentence — one hit out of one — which says nothing whatever
-about whether the analyst understood the article. A per-item check of whether a
+here measures WHERE a quote landed. Passes 3 and 4 score `evidence-recall` at
+1.00 off a single marked sentence — one hit out of one. That number is
+**arithmetically true and evidentially worthless, and it flatters the run**: it
+says nothing whatever about whether the analyst understood the article, and it
+is the largest contributor to a mean anyone might mistake for a result. A per-item check of whether a
 `statement` restates its `quote` faithfully is the missing half, and one source
 is not the place to add a model call.
 

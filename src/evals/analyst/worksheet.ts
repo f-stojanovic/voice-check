@@ -51,7 +51,12 @@ const HEADER = `# Analyst eval — labelling worksheet
 #
 # THE VOCABULARY
 #
-#   C  carries the source's central claim
+#   C  carries the source's central claim. IF THE THESIS SPANS SENTENCES, MARK
+#      EVERY SENTENCE THAT CARRIES IT — do not pick the best one. The scorer is
+#      strict: a quote either lands in a marked sentence or it does not, and
+#      where the boundary falls is your judgement rather than a constant's.
+#      A +/-1 sentence window was tried in the scorer and reverted; ADR 019 says
+#      why.
 #   E  the sentence OFFERS something measurable: a figure, a named source, a
 #      comparison, or a described observation. Not whether it holds up.
 #      Whether it holds up is H.
