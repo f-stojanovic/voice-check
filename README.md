@@ -1,5 +1,7 @@
 # voice-check
 
+[![build](https://github.com/f-stojanovic/voice-check/actions/workflows/build.yml/badge.svg)](https://github.com/f-stojanovic/voice-check/actions/workflows/build.yml)
+
 ### → [voice-check-m8b7.onrender.com](https://voice-check-m8b7.onrender.com)
 
 > **If it takes about a minute, that is a free service waking up.** Render
