@@ -48,6 +48,8 @@ export function scriptedClient(
         input: inputs[i++],
         model: options.model ?? 'claude-opus-5',
         usage: options.usage ?? FAKE_USAGE,
+        /* A fake never retries: there is no network to be flaky. */
+        attempts: 1,
       };
     },
     async complete(request: CompletionRequest): Promise<CompletionResponse> {

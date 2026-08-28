@@ -188,6 +188,27 @@ export const ANALYST_TOOL = {
   inputSchema: ANALYST_TOOL_SCHEMA,
 };
 
+/**
+ * Output ceiling for one analysis, and the first constant here with a
+ * measurement behind it.
+ *
+ * MEASURED, 2026-08-28, on `agentstep-korisnicka-podrska.md` (8,280 input
+ * tokens): successful runs returned 2,248 and 2,434 output tokens. 4,000 is
+ * about 1.6x the largest of those.
+ *
+ * It is a CEILING, not a target. Hitting it is now a loud failure rather than a
+ * silently truncated tool call — `client.ts` refuses a `stop_reason` of
+ * `max_tokens` — so the cost of setting it too low is an error message naming
+ * the ceiling, and the cost of leaving it at the shared 16,000 was a run that
+ * generated 16,000 tokens over 137 seconds and produced nothing usable.
+ *
+ * WHAT THIS NUMBER DOES NOT REST ON: any explanation of that runaway. Two
+ * observations and one anomaly is not a distribution, and 1.6x headroom is a
+ * convention rather than a measured tail. A longer source will need more, and
+ * the failure will say so.
+ */
+export const ANALYST_MAX_TOKENS = 4_000;
+
 /** The source was empty or whitespace. Checked before spending a request. */
 export class EmptySourceError extends Error {
   constructor(message: string) {
@@ -223,6 +244,7 @@ export async function analyse(
   const response = await client.callTool({
     system: SYSTEM,
     tool: ANALYST_TOOL,
+    maxTokens: ANALYST_MAX_TOKENS,
     userContent:
       `The source is written in ${input.language === 'sr' ? 'Serbian' : 'English'}.` +
       `${input.origin === undefined ? '' : ` It came from: ${input.origin}.`}\n\n` +

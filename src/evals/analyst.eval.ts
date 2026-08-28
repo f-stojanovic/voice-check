@@ -220,6 +220,43 @@ function quoteMatchLines(
   ];
 }
 
+/**
+ * Transient-400 retries spent on this run.
+ *
+ * REPORTED BECAUSE IT IS A WORKAROUND. `client.ts` retries a 400 the API marks
+ * `x-should-retry: false`, on the strength of a measurement rather than a
+ * documented contract. A workaround whose cost nobody can see is a workaround
+ * that becomes permanent, so the number goes in the report on every live run.
+ *
+ * If it reads 0 for long enough, the API has been fixed and the retry should
+ * come out. Nothing here decides that; it just makes the evidence visible.
+ *
+ * Absent on a fixture replay, because a replay makes no requests.
+ */
+function retryLines(outputs: Map<string, SubjectOutput>, live: boolean): string[] {
+  if (!live) return [];
+  let attempts = 0;
+  let calls = 0;
+  for (const output of outputs.values()) {
+    const run = output.raw as { attempts?: unknown } | null;
+    if (typeof run?.attempts !== 'number') continue;
+    attempts += run.attempts;
+    calls += 1;
+  }
+  if (calls === 0) return [];
+  const retries = attempts - calls;
+  return [
+    '',
+    '### Transient 400 retries',
+    '',
+    `- ${retries} retr${retries === 1 ? 'y' : 'ies'} across ${calls} call${calls === 1 ? '' : 's'} ` +
+      `(${attempts} request${attempts === 1 ? '' : 's'} sent)`,
+    retries === 0
+      ? '  - none needed on this run. If that holds, the retry in client.ts can come out.'
+      : '  - the API marks this error `x-should-retry: false`; we retry it anyway on measured evidence (ADR 019).',
+  ];
+}
+
 export async function main(argv: readonly string[]): Promise<number> {
   const live = argv.includes('--live');
 
@@ -270,6 +307,8 @@ export async function main(argv: readonly string[]): Promise<number> {
   const comparison = compareToBaseline(run, undefined, {}, scorers.map((s) => s.name));
   console.log(formatReport({ run, comparison, models: {} }));
   console.log(quoteMatchLines(sources, outputs).join('\n'));
+  const retries = retryLines(outputs, live);
+  if (retries.length > 0) console.log(retries.join('\n'));
 
   if (live) {
     const capturedAt = new Date().toISOString().slice(0, 10);
