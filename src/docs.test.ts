@@ -73,6 +73,7 @@ describe('the README', () => {
       17: 'Seventeen',
       18: 'Eighteen',
       19: 'Nineteen',
+      20: 'Twenty',
     };
     const claimed = words[files.length];
     expect(claimed, `no word for ${files.length} ADRs`).toBeDefined();

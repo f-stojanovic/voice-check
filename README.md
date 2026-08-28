@@ -323,11 +323,62 @@ lexicons being different lists, one corpus cannot say.
 
 ---
 
+## Where the money goes, per step
+
+![Jaeger trace timeline of one analyst eval run: three nested spans — the eval
+case, the analyse agent run, and the chat claude-opus-5 model call — with the
+model call accounting for essentially the whole 43.59s
+duration.](docs/images/jaeger-analyst-waterfall.png)
+
+One eval case, traced. Three spans, nested: the **eval case**, the **agent run**
+(`analyse`), and the **model call** (`chat claude-opus-5`). The model call is
+43.58s of a 43.59s case, which is the shape you would expect and the reason the
+picture is worth having — it says the harness costs nothing and the model costs
+everything.
+
+The `chat` span carries the OpenTelemetry
+[GenAI semantic-convention](https://github.com/open-telemetry/semantic-conventions-genai)
+attributes, and cost as a custom one:
+
+```
+gen_ai.operation.name          chat
+gen_ai.provider.name           anthropic
+gen_ai.request.model           claude-opus-5
+gen_ai.request.max_tokens      4000
+gen_ai.response.model          claude-opus-5
+gen_ai.response.finish_reasons ["tool_use"]
+gen_ai.usage.input_tokens      8280
+gen_ai.usage.output_tokens     2347
+voice_check.cost.usd           0.100075
+voice_check.request.attempts   1
+```
+
+**THE COST IS NOT LEGIBLE IN THE SCREENSHOT ABOVE**, and the attributes are
+printed here rather than cropped into view: Jaeger collapses span tags until you
+click a span, and the run was captured headlessly, so no click happened. The
+waterfall demonstrates the nesting and the timing; the per-step cost is real, is
+on the span, and takes one click in the UI to see. Saying that is cheaper than a
+screenshot arranged to imply otherwise.
+
+**An unknown cost is an absent attribute, never a zero.** A model with no
+price-table entry gets `voice_check.cost.unknown_reason` and no
+`voice_check.cost.usd`, so anything summing cost across spans totals what is
+known and visibly omits the rest. A zero would render as a legitimate-looking
+bar beside real numbers, in the one artifact whose whole purpose is attribution.
+
+Tracing is off by default:
+
+```
+npm run eval:analyst -- --live --trace           # export to a local Jaeger
+npm run eval:analyst -- --trace --trace-console  # print spans, replay, free
+docker run -d -p 16686:16686 -p 4318:4318 jaegertracing/all-in-one:latest
+```
+
 ## Everything else
 
 The design decisions, each with a `Status:` and an `Evidence:` line saying what
 has actually been observed — including when the answer is "nothing yet" — are
-in [`docs/decisions/`](docs/decisions/). Nineteen of them, one of which
+in [`docs/decisions/`](docs/decisions/). Twenty of them, one of which
 ([014](docs/decisions/014-the-catalogue-was-adopted-on-authority.md)) withdraws
 a claim the other thirteen were built around, one
 ([015](docs/decisions/015-an-observation-window-shorter-than-the-phenomenon.md))
